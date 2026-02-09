@@ -3,12 +3,12 @@ import {
   Box,
   Button,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   Stack,
-  Typography,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { ColDef } from "ag-grid-community";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 
@@ -104,7 +104,17 @@ export default function ExternalView() {
           maxWidth="md"
           fullWidth
         >
-          <DialogTitle>문서번호 : KIDS-001</DialogTitle>
+          <DialogTitle>
+            <Box component="span" sx={{ flex: 1 }}>
+              문서번호 : KIDS-001
+            </Box>
+            <IconButton
+              aria-label="닫기"
+              onClick={() => setOpen(false)}
+              edge="end"
+            >
+              <CloseIcon />
+            </IconButton></DialogTitle>
           <DialogContent>
             <AgGridContainer
               colDefs={columnDefs}
