@@ -127,6 +127,16 @@ const menuItems: Menu[] = [
     ],
     menu: true,
   },
+  {
+    path: "exteralView",
+    label: "문서열람(외부)",
+    menuType: "MENU",
+    element: {
+      ko: "ExternalView",
+      en: "ExternalView",
+    },
+    menu: true,
+  },
 ];
 
 export default menuItems;

@@ -11,6 +11,7 @@ import DigitalDocForm from "@/pages/ko/DigitalDoc/DigitalDocForm";
 import DocDestructionReqList from "@/pages/ko/DocDestruction/DocDestructionReqList";
 import DocDestructionAppvList from "@/pages/ko/DocDestruction/DocDestructionAppvList";
 import DocDestructionList from "@/pages/ko/DocDestruction/DocDestructionList";
+import ExternalView from "@/pages/ko/ExternalView";
 
 export const componentMap = {
   DocClassificationList,
@@ -24,6 +25,7 @@ export const componentMap = {
   DocDestructionAppvList,
   DocDestructionList,
   DocDestructionDetail,
+  ExternalView
 };
 
 export type ComponentKey = keyof typeof componentMap;

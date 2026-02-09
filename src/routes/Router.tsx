@@ -1,60 +1,46 @@
+import i18n from "@/i18n/i18n";
 import { JSX, ReactElement, useEffect, useMemo } from "react";
 import {
-  Navigate,
   BrowserRouter,
-  Routes,
+  Navigate,
   Route,
+  Routes,
   useLocation,
   useParams,
 } from "react-router-dom";
-import i18n from "@/i18n/i18n";
+
+import { FALLBACK_LANG, detectBrowserLang, normalizeLang } from "./lang";
 
 import { Menu } from "@/features/menu/MenuSlice";
-import { componentMap, ComponentKey } from "@/routes/ComponentMap";
+import { ComponentKey, componentMap } from "./ComponentMap";
+import Layout from "@/components/layout/Layout";
 
-import Layout from "../components/layout/Layout";
-
-// ko 페이지들
-import NotFoundKo from "@/pages/ko/NotFound";
-
-import { normalizeLang, FALLBACK_LANG, detectBrowserLang } from "./lang";
 import menuItems from "./menuItems";
 
-type LangElementValue = JSX.Element | ComponentKey;
-
 type LangElementProps = {
-  byLang: Record<string, LangElementValue>;
+  byLang: Record<string, ComponentKey | null>;
 };
 
-const resolveLangValue = (value?: LangElementValue): JSX.Element | null => {
-  if (!value) {
-    return null;
-  }
+function NotFoundRedirect() {
+  const { lang } = useParams<{ lang?: string }>();
+  const normalized = normalizeLang(lang) ?? detectBrowserLang();
 
-  if (typeof value === "string") {
-    const Component = componentMap[value];
-    return Component ? <Component /> : null;
-  }
-
-  return value;
-};
+  return <Navigate to={`/${normalized}/home`} replace />;
+}
 
 function LangElement({ byLang }: LangElementProps) {
   const { lang } = useParams<{ lang: string }>();
   const normalized = normalizeLang(lang) ?? FALLBACK_LANG;
 
-  const resolved = resolveLangValue(byLang[normalized]);
-  const fallback = resolveLangValue(byLang[FALLBACK_LANG]);
+  const componentKey = byLang[normalized] ?? byLang[FALLBACK_LANG];
 
-  return resolved ?? fallback ?? null;
-}
+  if (!componentKey) {
+    return null;
+  }
 
-function LangIndexRedirect() {
-  const { lang } = useParams<{ lang: string }>();
-  const location = useLocation();
-  const normalized = normalizeLang(lang) ?? FALLBACK_LANG;
+  const Component = componentMap[componentKey];
 
-  return <Navigate to={`/${normalized}/home`} replace />;
+  return <Component />;
 }
 
 const LangGuard = ({ children }: { children: JSX.Element }) => {
@@ -179,24 +165,14 @@ export default function Router() {
         >
           {/* ✅ 루트(/)로 들어오면 브라우저 언어 기반으로 /ko 또는 /en로 보내기 */}
           <Route
-            path="/"
+            index
             element={<Navigate to={`/${detectBrowserLang()}`} replace />}
           />
-
-          {/* 언어별로 화면 전환 */}
-          <Route path="/:lang" element={<LangIndexRedirect />} />
-
+          
           {renderRoutes(menuItems)}
 
-          {/* lang 포함 NotFound - 반드시 가장 마지막에 배치 (와일드카드는 모든 경로를 매칭하므로) */}
-          <Route
-            path="/:lang/*"
-            element={
-              <LangElement
-                byLang={{ ko: <NotFoundKo />, en: <NotFoundKo /> }}
-              />
-            }
-          />
+          {/* lang 포함 NotFound */}
+          <Route path="/:lang/*" element={<NotFoundRedirect />} />
         </Route>
       </Routes>
     </BrowserRouter>
