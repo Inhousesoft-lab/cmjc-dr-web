@@ -1,0 +1,21 @@
+// 버튼 그룹
+.btn_wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.highlighted_btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--color-primary, #0a7a7e);
+  border-radius: 4px;
+  color: var(--color-primary, #0a7a7e);
+}

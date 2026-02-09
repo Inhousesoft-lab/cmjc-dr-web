@@ -1,0 +1,47 @@
+$default-width: 1200px;
+
+@mixin container($max-width: $default-width) {
+  width: min($max-width, calc(100% - 0px));
+  margin: 0 auto; 
+}
+@mixin sr_only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@mixin btn_type_01 {
+  display: inline-flex;
+  height: 64px;
+  font-size: 19px;
+  font-weight: 700;
+  padding:0 24px;
+}
+
+@mixin bullet_list {
+  li {
+    position: relative;
+    padding-left: 24px;
+    font-size: var(--fs-17);
+    margin-bottom: 8px;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 6px;
+      width: 6px;
+      height: 6px;
+      background-color: var(--color-text-1);
+      border-radius: 50%;
+    }
+
+    &:last-child { margin-bottom: 0; }
+  }
+}
+

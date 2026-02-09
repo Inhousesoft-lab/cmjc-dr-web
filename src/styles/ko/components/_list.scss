@@ -1,0 +1,223 @@
+/* list filter (label + input) */
+.filter {
+  display: grid;
+  gap: 12px;
+}
+.filter-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.filter-label {
+  flex: 0 0 60px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #222;
+}
+.filter-field > :not(.filter-label) {
+  flex: 1 1 auto;
+}
+@media (max-width: 767.98px) {
+  .filter-field {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .filter-label {
+    flex-basis: auto;
+  }
+}
+.filter-range {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+.filter-range .MuiFormControl-root,
+.filter-range .MuiTextField-root,
+.filter-range .MuiPickersTextField-root {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
+}
+.filter-range .MuiInputBase-root {
+  width: 100%;
+  min-width: 0;
+}
+.filter-range-sep {
+  color: #888;
+  font-weight: 600;
+}
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+@media (min-width: 1200px) {
+  .filter {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+  .filter-actions {
+    flex-direction: column;
+  }
+}
+
+.filter_finder {
+  position: relative;
+  margin: 0 0 40px 0;
+  padding: 10px;
+  background: #f2f4f6;
+  border: 1px solid rgb(26 16 82 / 14%);
+  border-radius: var(--border-radius01);
+}
+.filter_finder.compact {
+  margin: 0 0 16px 0;
+  padding: 6px 10px;
+}
+.filter_finder.compact .search_row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.filter_finder.compact .search_label {
+  position: relative;
+  padding-left: 12px;
+  font-weight: 600;
+}
+.filter_finder.compact .search_label::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color_01);
+}
+.filter_finder.compact .search_field {
+  width: 120px;
+  min-width: 120px;
+}
+.filter_finder.compact .search_button {
+  margin-left: auto;
+}
+@media (max-width: 640px) {
+  .filter_finder.compact .search_button {
+    width: 100%;
+    text-align: right;
+  }
+}
+.filter_finder .search_wrap {
+  position: relative;
+}
+.filter_finder .search_wrap .tbl_filter {
+  table-layout: fixed;
+  width: 100%;
+}
+.filter_finder .search_wrap .tbl_filter tbody th {
+  position: relative;
+  min-height: 40px;
+  padding: 5px 15px;
+  text-align: left;
+  font-weight: 600;
+  word-break: keep-all;
+}
+.filter_finder .search_wrap .tbl_filter tbody th::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  margin-top: -1px;
+  border-radius: 4px;
+  background-color: var(--color_01);
+}
+.filter_finder .search_wrap .tbl_filter tbody td {
+  min-height: 40px;
+  padding: 5px 15px;
+}
+.filter_finder .btn_area {
+  margin: 5px 0 0px 0;
+  padding: 10px 0 0 0;
+  border-top: 1px solid #e5e5e5;
+}
+.filter_finder .btn_area button {
+  width: 120px;
+  margin-left: 8px;
+}
+
+.modal .filter_finder {
+  padding: 5px;
+}
+.modal .filter_finder .search_wrap .tbl_filter tbody th,
+.modal .filter_finder .search_wrap .tbl_filter tbody td {
+  min-height: 35px;
+}
+
+.sub_title ~ .sub_title,
+.MuiBox-root + .MuiBox-root .sub_title {
+  margin-top: 40px;
+}
+.sub_title {
+  position: relative;
+  margin: 0px 0 10px 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+.sub_title::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.sub_title .tit {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  font-size: 18px;
+  color: #000;
+  font-weight: 700;
+  padding: 0px 0 0 18px;
+}
+.sub_title .tit::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 8px;
+  height: 8px;
+  background: var(--color_01);
+}
+.sub_title .tit::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  background: var(--color_02);
+}
+.sub_title .controller {
+  margin-left: auto;
+  display: flex;
+}
+.sub_title .controller button {
+  margin-left: 1px;
+  min-height: 28px;
+  height: 28px;
+}
+.sub_title .controller select {
+  margin-left: 1px;
+  min-height: 28px;
+  height: 28px;
+}
+.sub_title .controller input {
+  margin-left: 1px;
+  min-height: 28px;
+  height: 28px;
+}

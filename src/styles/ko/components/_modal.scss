@@ -1,0 +1,36 @@
+/* modal */
+.modal-title {
+  font-size: 20px;
+}
+.modal .modal-footer {
+  display: flex;
+  justify-content: center;
+  padding: 20px 20px 20px 20px;
+  background-color: #fff;
+  border-top: 1px solid #eee;
+}
+.modal .modal-footer button {
+  min-width: 120px;
+  height: 40px;
+}
+.modal .modal-footer button ~ button {
+  margin-left: 5px;
+}
+/* 모달 내 스크롤 영역 */
+.modal-content .scroll_area {
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #e5e5e5;
+  margin-top: 10px;
+}
+.modal-content .scroll_area::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-content .scroll_area::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+.modal-content .scroll_area::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}

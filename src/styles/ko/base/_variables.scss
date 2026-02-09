@@ -1,0 +1,136 @@
+:root {
+  --font-main: "Pretendard", sans-serif;
+  --main-font-color: #1e2124;
+
+  --container: 1400px;
+  --container-full: 100%;
+
+  --border: #e5e7eb;
+  --muted: #6b7280;
+  --bg: #ffffff;
+  --primary: #087c80;
+  --danger: #bd2c0f;
+
+  --color_01: #087c80;
+  --color_02: #043335;
+  --color_03: #58616a;
+  --color_04: #de3412;
+
+  --color-text-1: #1e2124;
+  --color-text-2: #087c80;
+  --color-text-3: #464c53;
+  --color-text-4: #cdd1d5;
+  --color-text-5: #333333;
+  --color-text-6: #666666;
+
+  --color-link-1: #1976d2;
+
+  --border-1: #8a949e;
+  --border-2: #cdd1d5;
+  --border-3: #087c80;
+
+  --box-border: #eee;
+
+  --border-radius01: 4px;
+  --border-radius02: 10px;
+
+  --placeholder: #8a949e;
+
+  /* 버튼 */
+  --btn_color_01: #087c80;
+  --btn_color_02: #58616a;
+  --btn_color_03: #256ef4;
+  --btn_color_04: #edf8f8;
+  --btn_color_05: #de3412;
+
+  --btn-bg-1: #087c80;
+  --btn-bg-1-hover: #0a6c70;
+  --btn-bg-2: #414343;
+  --btn-bg-2-hover: #363a3a;
+  --btn-bg-3: #ffffff;
+  --btn-bg-3-hover: #edf8f8;
+  --btn-bg-4: #1e2124;
+  --btn-bg-4-hover: #cdd1d5;
+
+  --btn_border_color_01: #087c80;
+  --btn-disabled-bg: #e5e5e5;
+  --btn-disabled-text: #bfbfbf;
+
+  /* 테이블 */
+  --table-header-bg: #f2f4f6;
+  --table-header-border: #1e1e20;
+  --cell-border-1: #e7e7e7;
+  --cell-border-2: #bcc7cd;
+  --table-body-alt: #f6f8f9;
+  --table-row-hover: rgba(0, 51, 38, 0.05);
+
+  /* 인풋 */
+  --inp-border: #58616a;
+
+  /* 체크박스 */
+  --chk-active-bg: var(--btn-bg-1);
+  --chk-default-bg: #ffffff;
+  --chk-default-border: var(--btn-bg-1);
+
+  /* 라디오 */
+  --radio-active-bg: var(--btn-bg-1);
+  --radio-default-bg: #ffffff;
+  --radio-default-border: var(--btn-bg-1);
+
+  /* 스위치 */
+  --switch-active-bg: var(--btn-bg-1);
+  --switch-default-bg: var(--btn-bg-1);
+  --switch-knob-bg: #ffffff;
+
+  /* 폼 */
+  --form-control-border: #9e9e9e;
+  --form-label-color: #0f172a;
+  --form-label-color-strong: #212124;
+  --form-disabled-text: #878787;
+  --form-disabled-text-strong: #b1b1b1;
+  --form-switch-border: #808080;
+  --form-switch-knob: #808080;
+  --form-switch-disabled: #d3d3d3;
+  --form-switch-hover: #d3d3d3;
+  --form-byte-current: #111827;
+  --form-byte-limit: #ef4444;
+  --form-clear-border: #666666;
+  --form-guide-text: #888888;
+  --form-error: #e0392d;
+  --form-error-bg: #fcedeb;
+  --form-success: #2b9e1e;
+  --form-success-bg: #f0f7ed;
+  --form-msg: #999999;
+  --form-msg-error: #ee4d4d;
+  --form-msg-success: #4cb450;
+
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-15: 15px;
+  --fs-16: 16px;
+  --fs-17: 17px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-24: 24px;
+  --fs-28: 28px;
+  --fs-32: 32px;
+
+  --fw-400: 400;
+  --fw-500: 500;
+  --fw-600: 600;
+  --fw-700: 700;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --fs-14: 13px;
+    --fs-15: 14px;
+    --fs-16: 14px;
+    --fs-17: 15px;
+    --fs-18: 16px;
+    --fs-20: 17px;
+    --fs-24: 18px;
+    --fs-28: 20px;
+    --fs-32: 24px;
+  }
+}

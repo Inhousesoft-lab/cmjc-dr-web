@@ -1,0 +1,67 @@
+/* 아이콘 */
+.ico_necessary {
+  position: relative;
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin: 0 0 10px 4px;
+  background-color: #f85a5d;
+  border-radius: 50%;
+  font-size: 0;
+  line-height: 0;
+  text-indent: -9999px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.ico_search {
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.ico_reset {
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.ico_clear {
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+}
+
+.btn_delete {
+  display: inline-block;
+  border: 1px solid var(--color_03);
+  border-radius: 20px;
+}
+.ico_delete {
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  text-indent: -99999px;
+  background: url(../img/ico_xmark.png) no-repeat center;
+}
+
+.ico_fixed {
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  width: 20px;
+  height: 18px;
+  vertical-align: middle;
+}

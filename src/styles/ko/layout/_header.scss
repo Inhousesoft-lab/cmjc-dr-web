@@ -1,0 +1,254 @@
+@use "../base/mixins";
+
+// 공통 변수나 믹스인이 있다면 활용하는 것이 좋지만,
+// 우선은 주신 코드를 바탕으로 구조를 최적화했습니다.
+
+.header {
+  position: relative;
+
+  // 정부 배지 영역
+  .gov-badge {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    background-color: #eef2f7;
+
+    .txt {
+      padding-left: 30px;
+      color: var(--color-text-1);
+      background: url(/img/ico_flag_ko.png) no-repeat left center;
+    }
+  }
+
+  // 상단 바
+  .header-topbar {
+    display: flex;
+    align-items: center;
+    height: 41px;
+    background-color: #ffffff;
+    width: 100%;
+
+    .container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0 20px;
+    }
+
+    .top-link {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      button {
+        color: var(--color-text-1);
+      }
+    }
+
+    .timer_box {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+
+      .MuiSvgIcon-root {
+        font-size: 16px;
+        color: var(--color-text-3);
+        flex: 0 0 auto;
+      }
+
+      .time_text {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--color-text-2);
+        margin: 0;
+        padding: 0;
+        line-height: 1;
+      }
+
+      .btn_extend {
+        background: transparent;
+        box-shadow: none;
+        min-width: 0;
+        padding: 0;
+        margin-left: 12px;
+        color: var(--color-text-1);
+        font-size: 16px;
+        font-weight: 700;
+        text-transform: none;
+      }
+
+      .btn_extend:hover {
+        background: transparent;
+        box-shadow: none;
+      }
+    }
+  }
+
+  // 로고, 유틸메뉴
+  .header_menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 82px;
+    background-color: #fff;
+    border-top: 1px solid #d8d8d8;
+    border-bottom: 1px solid #d8d8d8;
+    width: 100%;
+
+    .container {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 0 20px;
+
+      .admin_logo {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        margin-right: 16px;
+        a {
+          display: inline-flex;
+          align-items: center;
+        }
+        img {
+          height: 40px;
+          width: auto;
+          display: block;
+        }
+      }
+
+      .util-menu {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .study-select {
+          min-width: 220px;
+          margin-right: 8px;
+
+          .MuiOutlinedInput-root {
+            height: 36px;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+          }
+
+          .MuiSelect-select {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            color: var(--color-text-1);
+          }
+
+          em {
+            color: var(--placeholder);
+            font-style: normal;
+          }
+
+          .MuiOutlinedInput-notchedOutline {
+            border-color: var(--border-2);
+          }
+
+          &:hover .MuiOutlinedInput-notchedOutline,
+          .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+            border-color: var(--btn-bg-1);
+          }
+
+          .MuiSvgIcon-root {
+            color: var(--color-text-3);
+          }
+        }
+
+        .user-info {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          margin: 0;
+          font-size: 15px;
+          color: var(--color-text-1);
+          line-height: 1.2;
+        }
+
+        .user-icon {
+          font-size: 18px;
+          color: var(--color-text-3);
+        }
+
+        .user-name {
+          font-weight: 600;
+        }
+
+        .user-role {
+          margin: 0;
+          padding: 4px 8px;
+          border-radius: 999px;
+          background: #f2f4f7;
+          color: var(--color-text-3);
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+        }
+
+        .btn-util {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          position: relative;
+          color: #1e2124;
+          font-size: 18px;
+          font-weight: 700;
+        }
+
+        /* 아이콘을 위한 가상 요소 공통 설정 */
+        .btn-util::before {
+          content: "";
+          display: inline-block;
+          width: 20px;
+          height: 20px;
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+
+        .btn-util.search::before {
+          background-image: url("/img/ico_search.svg");
+        }
+
+        .btn-util.signup::before {
+          background-image: url("/img/ico_signup.svg");
+        }
+
+        .btn-util.edit-profile::before {
+          background-image: url("/img/ico_edit_profile.svg");
+        }
+
+        .btn-util.user-reg::before {
+          background-image: url("/img/ico_usrSwtReg.svg");
+        }
+
+        .btn-util.login::before {
+          background-image: url("/img/ico_login.svg");
+        }
+
+        .btn-util.logout::before {
+          background-image: url("/img/ico_login.svg");
+        }
+
+        /* (선택) 호버 시 아이콘 색상 변경이 필요하다면 별도 처리 */
+        .btn-util:hover {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+  .gnb {
+    display: flex;
+    align-items: center;
+    height: 66px;
+    border-bottom: 1px solid #d8d8d8;
+  }
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "rowNo": 1,
+    "docCategory": "피해구제 > 진료기록",
+    "docNo": "KrowNoS-0001",
+    "docTitle": "진료기록",
+    "consentYn": "동의",
+    "collectDate": "20.09.01.",
+    "prevRetentionPeriod": "5년",
+    "prevEndDate": "25.08.31.",
+    "newRetentionPeriod": "8년",
+    "newEndDate": "28.08.31.",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "20.09.01."
+  },
+  {
+    "rowNo": 2,
+    "docCategory": "피해구제 > MRI CD",
+    "docNo": "KrowNoS-0002",
+    "docTitle": "MRI CD",
+    "consentYn": "동의",
+    "collectDate": "25.09.01.",
+    "prevRetentionPeriod": "5년",
+    "prevEndDate": "30.08.31.",
+    "newRetentionPeriod": "8년",
+    "newEndDate": "33.08.31.",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.09.01."
+  },
+  {
+    "rowNo": 3,
+    "docCategory": "피해구제 > 의사소견서",
+    "docNo": "KrowNoS-0003",
+    "docTitle": "의사소견서",
+    "consentYn": "동의",
+    "collectDate": "24.09.03.",
+    "prevRetentionPeriod": "5년",
+    "prevEndDate": "29.09.02.",
+    "newRetentionPeriod": "8년",
+    "newEndDate": "22.09.02.",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "24.09.03."
+  },
+  {
+    "rowNo": 4,
+    "docCategory": "피해구제 > 진료비 상세내역",
+    "docNo": "KrowNoS-0004",
+    "docTitle": "진료비 상세내역",
+    "consentYn": "동의",
+    "collectDate": "25.07.03.",
+    "prevRetentionPeriod": "5년",
+    "prevEndDate": "30.07.02.",
+    "newRetentionPeriod": "8년",
+    "newEndDate": "33.07.02.",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.07.03."
+  },
+  {
+    "rowNo": 5,
+    "docCategory": "피해구제 > 회의 참석자",
+    "docNo": "KrowNoS-0005",
+    "docTitle": "회의 참석자",
+    "consentYn": "동의",
+    "collectDate": "25.03.03.",
+    "prevRetentionPeriod": "5년",
+    "prevEndDate": "30.03.02.",
+    "newRetentionPeriod": "8년",
+    "newEndDate": "33.03.02.",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.03.03."
+  }
+]

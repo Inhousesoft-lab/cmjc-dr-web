@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "docCategory": "피해구제>진료기록",
+    "docNo": "KIDS-001",
+    "docTitle": "진료기록",
+    "hasPersonalInfo": "포함",
+    "collectDateLabel": "25.09.01.\n(반영구)",
+    "endDate": "99.12.31.",
+    "docType": "문서",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.09.26."
+  },
+  {
+    "id": 2,
+    "docCategory": "피해구제>MRI CD",
+    "docNo": "KIDS-002",
+    "docTitle": "MRI CD",
+    "hasPersonalInfo": "포함",
+    "collectDateLabel": "25.09.01.\n(3년)",
+    "endDate": "28.08.31.",
+    "docType": "파일",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.09.26."
+  },
+  {
+    "id": 3,
+    "docCategory": "피해구제>의사소견서",
+    "docNo": "KIDS-003",
+    "docTitle": "의사소견서",
+    "hasPersonalInfo": "포함",
+    "collectDateLabel": "25.09.03.\n(10년)",
+    "endDate": "35.09.02.",
+    "docType": "문서",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.09.26."
+  },
+  {
+    "id": 4,
+    "docCategory": "피해구제>진료비 상세내역",
+    "docNo": "KIDS-004",
+    "docTitle": "진료비 상세내역",
+    "hasPersonalInfo": "미포함",
+    "collectDateLabel": "25.09.05.\n(반영구)",
+    "endDate": "99.12.31.",
+    "docType": "문서",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.09.26."
+  },
+  {
+    "id": 5,
+    "docCategory": "피해구제>회의 참석자",
+    "docNo": "KIDS-005",
+    "docTitle": "회의 참석자",
+    "hasPersonalInfo": "미포함",
+    "collectDateLabel": "25.09.10.\n(6개월)",
+    "endDate": "26.03.09.",
+    "docType": "문서",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.09.26."
+  },
+  {
+    "id": 6,
+    "docCategory": "피해구제>신분증/통장사본",
+    "docNo": "KIDS-006",
+    "docTitle": "신분증/통장사본",
+    "hasPersonalInfo": "포함",
+    "collectDateLabel": "25.09.11.\n(1년)",
+    "endDate": "26.09.10.",
+    "docType": "문서",
+    "registrantDept": "홍길동(정보화팀)",
+    "regDate": "25.09.26."
+  }
+]
