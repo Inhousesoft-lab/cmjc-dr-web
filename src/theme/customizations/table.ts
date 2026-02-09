@@ -20,6 +20,9 @@ const table: Components<Theme> = {
           textAlign: "left",
           wordBreak: "keep-all",
         },
+        "&.tbl_view .tbl_label.MuiTableCell-alignCenter": {
+          textAlign: "center",
+        },
         "&.tbl_view .tbl_label--wide": {
           width: 200,
         },
@@ -39,6 +42,9 @@ const table: Components<Theme> = {
           fontWeight: 600,
           textAlign: "left",
           wordBreak: "keep-all",
+        },
+        "&.tbl_list .tbl_label.MuiTableCell-alignCenter": {
+          textAlign: "center",
         },
         "&.tbl_list .MuiTableCell-root": {
           borderBottom: "1px solid #e7e7e7",
