@@ -1,16 +1,8 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "@/i18n/i18n";
-import {
-  Box,
-  Button,
-  FormControl,
-  IconButton,
-  MenuItem,
-  Select,
-  Stack,
-} from "@mui/material";
+import { Box, Button, IconButton, Stack } from "@mui/material";
 import {
   Menu as MenuIcon,
   Person as PersonIcon,
@@ -80,24 +72,6 @@ export default function SimpledHeader({ menuOpen, onToggleNav }: HeaderProps) {
 
           <div className="util-menu">
             <Stack direction="row" spacing={1} alignItems="center">
-              <FormControl
-                size="small"
-                className="study-select"
-                sx={{ minWidth: 220, mr: 2 }}
-              >
-                <Select
-                  displayEmpty
-                  defaultValue="00"
-                  className="study-select__field"
-                >
-                  <MenuItem value="00">
-                    <em>과제 선택</em>
-                  </MenuItem>
-                  <MenuItem value="01">
-                    KIDS-20260126-X49JCV / 책임연구원이 아닌사람이 등록
-                  </MenuItem>
-                </Select>
-              </FormControl>
               <p className="user-info">
                 <PersonIcon className="user-icon" />
                 <span className="user-name">admin</span>님
