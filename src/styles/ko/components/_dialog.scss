@@ -1,0 +1,36 @@
+/* dialog */
+.dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  cursor: move;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.dialog-title .dialog-close-button {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+}
+
+.dialog-actions-top {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.dialog-actions-bottom {
+  padding: 24px;
+}
+
+.dialog-divider {
+  border-color: #303336;
+}
+
+.dialog-empty {
+  padding-top: 24px;
+  padding-bottom: 24px;
+  text-align: center;
+  color: var(--color-text-1);
+}

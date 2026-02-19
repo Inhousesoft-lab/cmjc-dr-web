@@ -1,12 +1,6 @@
 import { createTheme, PaletteColorOptions } from "@mui/material/styles";
 import palette from "./customizations/palette";
 import buttonCustomizations from "./customizations/button";
-import datepickerCustomizations from "./customizations/datePicker";
-import tableCustomizations from "./customizations/table";
-import inputCustomizations from "./customizations/input";
-import tabCustomizations from "./customizations/tab";
-import dialogCustomizations from "./customizations/dialog";
-import gridCustomizations from "./customizations/grid";
 
 declare module "@mui/material/styles" {
   interface Palette {
@@ -54,19 +48,8 @@ declare module "@mui/material/FormControl" {
 // 2. 테마 생성
 export const muiTheme = createTheme({
   palette,
-  typography: {
-    fontFamily:
-      '"Pretendard GOV","Malgun Gothic","맑은 고딕","돋움",Dotum,Helvetica,"Apple SD Gothic Neo",sans-serif',
-    fontSize: 14,
-  },
   shape: { borderRadius: 4 },
   components: {
     ...buttonCustomizations,
-    ...datepickerCustomizations,
-    ...tableCustomizations,
-    ...inputCustomizations,
-    ...tabCustomizations,
-    ...dialogCustomizations,
-    ...gridCustomizations,
   },
 });

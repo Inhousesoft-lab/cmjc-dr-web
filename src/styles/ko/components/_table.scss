@@ -151,6 +151,75 @@
   vertical-align: middle;
 }
 
+/* MUI table baseline (moved from theme/customizations/table.ts) */
+.MuiTable-root {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.MuiTableCell-root {
+  padding: 6px 10px;
+  height: 42px;
+  background: #fff;
+}
+
+.MuiTable-root.tbl_view .MuiTableCell-root {
+  border-bottom: 1px solid #e7e7e7;
+}
+
+.MuiTable-root.tbl_view .tbl_label {
+  width: 150px;
+  background: #f6f8f9;
+  font-weight: 600;
+  text-align: left;
+  word-break: keep-all;
+}
+
+.MuiTable-root.tbl_view .tbl_label.MuiTableCell-alignCenter {
+  text-align: center;
+}
+
+.MuiTable-root.tbl_view .tbl_label--wide {
+  width: 200px;
+}
+
+.MuiTable-root.tbl_list .MuiTableHead-root {
+  background: #f2f4f6;
+}
+
+.MuiTable-root.tbl_list .tbl_head .MuiTableCell-root {
+  background: #f6f8f9;
+  font-weight: 600;
+  text-align: left;
+  word-break: keep-all;
+  border-top: 1px solid #212124;
+}
+
+.MuiTable-root.tbl_list .tbl_label {
+  width: 150px;
+  background: #f6f8f9;
+  font-weight: 600;
+  text-align: left;
+  word-break: keep-all;
+}
+
+.MuiTable-root.tbl_list .tbl_label.MuiTableCell-alignCenter {
+  text-align: center;
+}
+
+.MuiTable-root.tbl_list .MuiTableCell-root {
+  border-bottom: 1px solid #e7e7e7;
+}
+
+.MuiTable-root.tbl_list .MuiTableRow-root.Mui-selected > .MuiTableCell-root,
+.MuiTable-root.tbl_list .MuiTableRow-root.is-focused > .MuiTableCell-root,
+.MuiTable-root.tbl_list
+  .MuiTableBody-root
+  .MuiTableRow-root:hover
+  > .MuiTableCell-root {
+  background-color: var(--table-focus-bg, #edf8f8);
+}
+
 /* colgroup width utilities */
 col.tbl-col-w-60 {
   width: 60px;
@@ -193,4 +262,7 @@ col.tbl-col-w-16p {
 }
 col.tbl-col-w-24p {
   width: 24%;
+}
+col.tbl-col-w-28p {
+  width: 28%;
 }

@@ -7,7 +7,7 @@ import {
   Select,
   Stack,
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import { columnDefs } from "./col-def";
@@ -82,20 +82,10 @@ export default function DocDestructionReqList() {
           <Grid size={{ xs: 12, sm: 6 }}>
             <div className="filter-field">
               <label className="filter-label">기간</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      slotProps={{ textField: { size: "small" } }}
-                    />
-                    <span>-</span>
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      slotProps={{ textField: { size: "small" } }}
-                    />
-                  </Stack>
-                </FormControl>
+              <div className="filter-range">
+                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <span className="filter-range-sep">-</span>{" "}
+                <MuiDatePickerFt value={""} onChange={() => {}} />
               </div>
             </div>
           </Grid>

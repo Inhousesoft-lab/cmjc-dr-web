@@ -10,9 +10,8 @@ import {
   TextField,
   MenuItem,
   FormHelperText,
+  InputAdornment,
   Select,
-  Table,
-  TableBody,
   TableRow,
   TableCell,
 } from "@mui/material";
@@ -61,7 +60,7 @@ export default function DocClassificationForm() {
         <TableWrapper
           colgroup={
             <colgroup>
-              <col style={{ width: "200px" }} />
+              <col className="tbl-col-w-200" />
               <col />
             </colgroup>
           }
@@ -142,13 +141,26 @@ export default function DocClassificationForm() {
                   helperText={formErrors.docSclsfNm ?? " "}
                   fullWidth
                 />
-                <FormControl>
-                  <FormControlLabel
-                    name="MuiCheckbox"
-                    control={<Checkbox size="small" />}
-                    label="개인정보포함"
-                  />
-                </FormControl>
+                <FormControlLabel
+                  name="MuiCheckbox"
+                  control={<Checkbox size="small" />}
+                  label="개인정보포함"
+                  sx={{
+                    m: 0,
+                    height: 40,
+                    alignItems: "center",
+                    whiteSpace: "nowrap",
+                    "& .MuiCheckbox-root": {
+                      p: "6px",
+                      mr: 0.5,
+                    },
+                    "& .MuiFormControlLabel-label": {
+                      whiteSpace: "nowrap",
+                      fontSize: 14,
+                      lineHeight: 1.2,
+                    },
+                  }}
+                />
               </Stack>
             </TableCell>
           </TableRow>
@@ -159,9 +171,9 @@ export default function DocClassificationForm() {
           tableAriaLabel="디지털 문서 상세 정보"
           colgroup={
             <colgroup>
-              <col style={{ width: "200px" }} />
+              <col className="tbl-col-w-200" />
               <col />
-              <col style={{ width: "200px" }} />
+              <col className="tbl-col-w-200" />
               <col />
             </colgroup>
           }
@@ -240,12 +252,18 @@ export default function DocClassificationForm() {
                 </FormControl>
                 <TextField
                   size="small"
-                  fullWidth
                   name="hldPrdMmCnt"
                   placeholder="월"
                   type="text"
+                  sx={{ width: 80, minWidth: 80 }}
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">개월</InputAdornment>
+                      ),
+                    },
+                  }}
                 />
-                &nbsp;개월
               </Stack>
             </TableCell>
           </TableRow>

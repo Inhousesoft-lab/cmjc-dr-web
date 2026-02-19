@@ -9,23 +9,17 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { useNavigate } from "react-router";
-import { getLangFromPathname, langPath } from "@/routes/lang";
 import { columnDefs } from "./col-def";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import DUMMY_CLASSIFICATION_DATA from "@/mocks/edoc/docClassificationListDummyData.json";
 
 export default function DocClassificationList() {
-  const navigate = useNavigate();
-  const curLang = getLangFromPathname(location.pathname);
-
   const handleCreateClick = () => {
-    navigate(langPath("docClassificationList/create", curLang));
+    console.log({});
   };
 
-  const handleRowClick = (row: { docClsfNo?: string }) => {
-    if (!row?.docClsfNo) return;
-    navigate(langPath(`docClassificationList/${row.docClsfNo}`, curLang));
+  const handleRowClick = () => {
+    console.log({});
   };
 
   return (
@@ -59,14 +53,15 @@ export default function DocClassificationList() {
               </div>
             </div>
           </Grid>
-          <Grid size={{ xs: 12, sm: 3 }} alignContent="flex-end">
-            <FormControl error={false}>
+          <Grid size={{ xs: 12, sm: 3 }} sx={{ display: "flex", alignItems: "center" }}>
+            <div className="filter-field filter-field--checkbox">
               <FormControlLabel
+                className="filter-checkbox"
                 name="holding-check"
                 control={<Checkbox size="small" />}
                 label="개인정보 포함"
               />
-            </FormControl>
+            </div>
           </Grid>
           {/* 2행: 사용유무 / 검색어 / 검색 버튼 */}
           <Grid size={{ xs: 12, sm: 3 }}>
@@ -90,14 +85,12 @@ export default function DocClassificationList() {
             </div>
           </Grid>
         </Grid>
-        <div className="filter-actions">
-          <Button size="small" variant="contained">
-            조회
-          </Button>
-        </div>
+        <Button size="small" variant="contained">
+          조회
+        </Button>
       </div>
+      <Divider sx={{ marginY: 2 }} />
 
-      <Divider sx={{ my: 2 }} />
       <div className="btn_wrapper">
         <Button size="small" variant="contained" onClick={handleCreateClick}>
           등록

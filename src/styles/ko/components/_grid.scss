@@ -1,0 +1,48 @@
+.table-view-grid {
+  border-top: 1px solid #212124;
+  margin: 0;
+  gap: 0;
+  column-gap: 0;
+  row-gap: 0;
+  --Grid-rowSpacing: 0px;
+  --Grid-columnSpacing: 0px;
+}
+
+.table-view-grid > .MuiGrid-item,
+.table-view-grid > .MuiGrid-root {
+  padding: 0;
+}
+
+.guest-card-view__label-cell {
+  background: #f6f8f9;
+  font-weight: 600;
+  text-align: left;
+  word-break: keep-all;
+  border-bottom: 1px solid #e7e7e7;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+}
+
+.guest-card-view__value-cell {
+  background: #fff;
+  border-bottom: 1px solid #e7e7e7;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+}
+
+.guest-card-view__label-cell .MuiTypography-root {
+  margin: 0;
+  color: #212124;
+  display: block;
+  padding: 10px 12px;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.guest-card-view__value-cell .MuiTypography-root {
+  margin: 0;
+  display: block;
+  padding: 6px 10px;
+}

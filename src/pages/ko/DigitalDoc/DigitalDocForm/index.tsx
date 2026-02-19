@@ -1,5 +1,3 @@
-import LabelCell from "@/components/table/LabelCell";
-import TableWrapper from "@/components/table/TableWrapper";
 import {
   Button,
   FormControl,
@@ -15,7 +13,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
+import LabelCell from "@/components/table/LabelCell";
+import TableWrapper from "@/components/table/TableWrapper";
 
 export default function DigitalDocForm() {
   return (
@@ -75,6 +75,7 @@ export default function DigitalDocForm() {
           <LabelCell>문서제목</LabelCell>
           <TableCell colSpan={3}>
             <TextField
+              hiddenLabel
               fullWidth
               id="docTitle"
               name="docTitle"
@@ -86,10 +87,7 @@ export default function DigitalDocForm() {
         <TableRow>
           <LabelCell>수집일자</LabelCell>
           <TableCell>
-            <DatePicker
-              format="YYYY-MM-DD"
-              slotProps={{ textField: { size: "small" } }}
-            />
+            <MuiDatePickerFt value={""} onChange={() => {}} />
           </TableCell>
           <LabelCell>보존연한</LabelCell>
           <TableCell>
@@ -121,10 +119,7 @@ export default function DigitalDocForm() {
           <LabelCell>종료일자</LabelCell>
           <TableCell colSpan={3}>
             <Stack direction="row" spacing={1} alignItems="center">
-              <DatePicker
-                format="YYYY-MM-DD"
-                slotProps={{ textField: { size: "small" } }}
-              />
+              <MuiDatePickerFt value={""} onChange={() => {}} />
               <Typography variant="body1" color="text.secondary">
                 * 보존연한을 직접 입력하신 경우 종료일자를 달력에서 선택하여
                 입력해 주세요.

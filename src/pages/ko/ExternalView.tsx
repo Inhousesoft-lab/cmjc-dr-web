@@ -1,16 +1,8 @@
 import { useState } from "react";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Stack,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import { Button, Stack } from "@mui/material";
 import { ColDef } from "ag-grid-community";
-import AgGridContainer from "@/components/grid/AgGridContainer";
+import DialogTrigger from "@/components/dialog/DialogTrigger";
+import AgGridTable from "@/components/grid/AgGridTable";
 
 const rows = [
   {
@@ -20,6 +12,7 @@ const rows = [
     date: "25.09.01",
     term: "(반영구)",
     type: "문서",
+    width: 60,
   },
   {
     id: 2,
@@ -91,38 +84,24 @@ export default function ExternalView() {
     },
   ]);
 
-  return (
-    <div>
-      <Button variant="contained" onClick={() => setOpen(true)}>
-        문서열람(외부)
-      </Button>
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
 
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box component="span" sx={{ flex: 1 }}>
-            문서번호 : KIDS-001
-          </Box>
-          <IconButton
-            aria-label="닫기"
-            onClick={() => setOpen(false)}
-            edge="end"
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <AgGridContainer
-            colDefs={columnDefs}
-            rowData={rows}
-            count={rows.length}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <DialogTrigger
+      buttonLabel="문서열람(외부)"
+      title="문서번호 : KIDS-001"
+      maxWidth="md"
+      open={open}
+      onOpen={handleClickOpen}
+      onClose={handleClose}
+    >
+      <AgGridTable colDefs={columnDefs} rowData={rows} />
+    </DialogTrigger>
   );
 }

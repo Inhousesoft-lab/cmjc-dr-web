@@ -14,7 +14,7 @@ import useNotifications from "@/hooks/useNotifications";
 import DigitalDocHistoryButton from "@/components/actionButtons/DocClassificationHistoryButton";
 import DigitalDocDownButton from "@/components/actionButtons/DigitalDocDownButton";
 import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
-import GridField from "@/components/grid/GridField";
+import GridField from "@/components/common/GridField";
 import LabelCell from "@/components/table/LabelCell";
 
 export default function DocClassificationDetail() {

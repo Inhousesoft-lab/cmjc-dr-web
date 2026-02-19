@@ -12,13 +12,15 @@
 @use "./ko/components/aggrid";
 @use "./ko/components/aside";
 @use "./ko/components/button";
+@use "./ko/components/dialog";
+@use "./ko/components/field";
 @use "./ko/components/fileUpload";
 @use "./ko/components/filter";
-@use "./ko/components/form";
+@use "./ko/components/grid";
 @use "./ko/components/input";
 @use "./ko/components/modal";
 @use "./ko/components/paging";
-@use "./ko/components/spinner";
+@use "./ko/components/tab";
 @use "./ko/components/table";
 
 // layout

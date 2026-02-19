@@ -1,19 +1,11 @@
 import * as React from "react";
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Typography,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import { Box, Button, Typography } from "@mui/material";
 import type { DocDestruction, SearchValues } from "@/types/docDestruction";
 import AgGridContainer from "../grid/AgGridContainer";
 import DESTRUCTION_LIST_DUMMY_DATA from "@/mocks/edoc/edocDestructionListDummyData.json";
 import { columnDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
+import DialogTrigger from "../dialog/DialogTrigger";
+import AgGridTable from "../grid/AgGridTable";
 
 type DisposalRow = {
   no: string;
@@ -90,7 +82,7 @@ const rows: DisposalRow[] = [
   },
 ];
 
-export default function DocDestructionManagementPrintButton({
+export default function DocDestructionManagementPrintDialog({
   searchValues,
 }: {
   searchValues: SearchValues;
@@ -188,38 +180,31 @@ export default function DocDestructionManagementPrintButton({
   };
 
   return (
-    <>
-      <Button variant="outlined" color="secondary" onClick={handleClickOpen}>
-        파기관리대장 출력
-      </Button>
-
-      <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-        <DialogTitle>
-          파기관리대장 출력
-          <IconButton onClick={handleClose}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogActions>
+    <DialogTrigger
+      buttonLabel="파기관리대장 출력"
+      title="파기관리대장 출력"
+      maxWidth="md"
+      actionsPosition="top"
+      open={open}
+      onOpen={handleClickOpen}
+      onClose={handleClose}
+      actions={
+        <>
           <Typography variant="subtitle2">[별지 제 5호 서식]</Typography>
           <Typography variant="h6">개인정보파일 파기 관리대장</Typography>
-          <Button variant="outlined" onClick={handlePrint}>
+          <Button variant="contained" onClick={handlePrint}>
             출력
           </Button>
-        </DialogActions>
-
-        <DialogContent>
-          <Box ref={printAreaRef2} id="print-area" sx={{ width: "100%" }}>
-            <AgGridContainer
-              isLoading={isLoading}
-              enableRowSelection={false}
-              colDefs={columnDefs}
-              rowData={rowData.rows}
-            />
-          </Box>
-        </DialogContent>
-      </Dialog>
-    </>
+        </>
+      }
+    >
+      <Box ref={printAreaRef2} id="print-area" sx={{ width: "100%" }}>
+        <AgGridTable
+          isLoading={isLoading}
+          colDefs={columnDefs}
+          rowData={rowData.rows}
+        />
+      </Box>
+    </DialogTrigger>
   );
 }

@@ -17,6 +17,32 @@
 .filter-field > :not(.filter-label) {
   flex: 1 1 auto;
 }
+
+.filter-field--checkbox {
+  height: 40px;
+}
+
+.filter-field--checkbox .filter-label {
+  visibility: hidden;
+}
+
+.filter-field--checkbox .filter-checkbox {
+  margin: 0;
+  height: 40px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.filter-field--checkbox .filter-checkbox .MuiCheckbox-root {
+  padding: 6px;
+  margin-right: 4px;
+}
+
+.filter-field--checkbox .filter-checkbox .MuiFormControlLabel-label {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
 @media (max-width: 767.98px) {
   .filter-field {
     flex-direction: column;
@@ -25,6 +51,18 @@
   }
   .filter-label {
     flex-basis: auto;
+  }
+
+  .filter-field--checkbox {
+    height: auto;
+  }
+
+  .filter-field--checkbox .filter-label {
+    display: none;
+  }
+
+  .filter-field--checkbox .filter-checkbox {
+    height: auto;
   }
 }
 .filter-range {

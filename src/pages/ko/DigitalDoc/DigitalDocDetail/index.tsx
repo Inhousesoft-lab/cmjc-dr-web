@@ -18,7 +18,7 @@ import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerB
 import DigitalDocDownButton from "@/components/actionButtons/DigitalDocDownButton";
 
 import { AuthrtTable } from "@/components/table/AuthrtTable";
-import GridField from "@/components/grid/GridField";
+import GridField from "@/components/common/GridField";
 import TableWrapper from "@/components/table/TableWrapper";
 import LabelCell from "@/components/table/LabelCell";
 

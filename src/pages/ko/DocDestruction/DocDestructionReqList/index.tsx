@@ -1,20 +1,13 @@
-import {
-  Button,
-  Divider,
-  FormControl,
-  Grid,
-  MenuItem,
-  Select,
-  Stack,
-} from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
+import { useCallback, useState } from "react";
+import { Button, Divider, FormControl, Grid, MenuItem } from "@mui/material";
+import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import { columnDefs } from "./col-def";
 
 import DocDestructionReqButton from "@/components/actionButtons/DocDestructionReqButton";
 import DESTRUCTION_LIST_DUMMY_DATA from "@/mocks/edoc/edocDestructionListDummyData.json";
-import { useCallback, useState } from "react";
+import MuiSelect from "@/components/elements/MuiSelect";
 
 export default function DocDestructionReqList() {
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
@@ -25,23 +18,26 @@ export default function DocDestructionReqList() {
 
   return (
     <div>
-      <div className="filter">
+      <div className="filter" style={{ marginBottom: 16 }}>
         <Grid container spacing={2}>
           {/* 1행 */}
           <Grid size={{ xs: 12, sm: 4 }}>
             <div className="filter-field">
               <label className="filter-label">대분류</label>
               <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select
-                    id="largeCategory"
-                    name="largeCategory"
-                    defaultValue="00"
-                  >
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
+                <MuiSelect
+                  id="largeCategory"
+                  items={[
+                    {
+                      name: "전체",
+                      code: "",
+                    },
+                    {
+                      name: "피해구제",
+                      code: "01",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </Grid>
@@ -49,14 +45,27 @@ export default function DocDestructionReqList() {
             <div className="filter-field">
               <label className="filter-label">중분류</label>
               <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="midCategory" name="midCategory" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">접수서류</MenuItem>
-                    <MenuItem value="02">신청자 제출서류</MenuItem>
-                    <MenuItem value="03">직원보완자료</MenuItem>
-                  </Select>
-                </FormControl>
+                <MuiSelect
+                  id="midCategory"
+                  items={[
+                    {
+                      name: "전체",
+                      code: "",
+                    },
+                    {
+                      name: "접수서류",
+                      code: "01",
+                    },
+                    {
+                      name: "신청자 제출서류",
+                      code: "02",
+                    },
+                    {
+                      name: "직원보완자료",
+                      code: "03",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </Grid>
@@ -65,17 +74,31 @@ export default function DocDestructionReqList() {
               <label className="filter-label">소분류</label>
               <div className="field_select">
                 <FormControl size="small" fullWidth>
-                  <Select
+                  <MuiSelect
                     id="smallCategory"
-                    name="smallCategory"
-                    defaultValue="00"
-                  >
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">사망 신청</MenuItem>
-                    <MenuItem value="02">미성년자 신청</MenuItem>
-                    <MenuItem value="03">이전문서</MenuItem>
-                    <MenuItem value="04">의무기록</MenuItem>
-                  </Select>
+                    items={[
+                      {
+                        name: "전체",
+                        code: "",
+                      },
+                      {
+                        name: "사망 신청",
+                        code: "01",
+                      },
+                      {
+                        name: "미성년자 신청",
+                        code: "02",
+                      },
+                      {
+                        name: "이전문서",
+                        code: "03",
+                      },
+                      {
+                        name: "의무기록",
+                        code: "04",
+                      },
+                    ]}
+                  />
                 </FormControl>
               </div>
             </div>
@@ -84,20 +107,10 @@ export default function DocDestructionReqList() {
           <Grid size={{ xs: 12, sm: 6 }}>
             <div className="filter-field">
               <label className="filter-label">기간</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      slotProps={{ textField: { size: "small" } }}
-                    />
-                    <span>-</span>
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      slotProps={{ textField: { size: "small" } }}
-                    />
-                  </Stack>
-                </FormControl>
+              <div className="filter-range">
+                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <span className="filter-range-sep">-</span>{" "}
+                <MuiDatePickerFt value={""} onChange={() => {}} />
               </div>
             </div>
           </Grid>
@@ -110,7 +123,6 @@ export default function DocDestructionReqList() {
       </div>
 
       <Divider sx={{ my: 2 }} />
-
       <div className="btn_wrapper">
         <DocDestructionReqButton selectedRows={selectedRows} />
       </div>

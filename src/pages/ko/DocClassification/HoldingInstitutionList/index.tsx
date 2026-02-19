@@ -8,15 +8,15 @@ import {
   Grid,
   MenuItem,
   Select,
-  Stack,
   TextField,
 } from "@mui/material";
 import { columnDefs } from "./col-def";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
-import { DatePicker } from "@mui/x-date-pickers";
+import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import HOLDING_INSTITUTION_LIST_DUMMY_DATA from "@/mocks/edoc/holdingInstitutionDummyData.json";
+import MuiSelect from "@/components/elements/MuiSelect";
 
 export default function HoldingInstitutionList() {
   const notifications = useNotifications();
@@ -70,42 +70,43 @@ export default function HoldingInstitutionList() {
         <Grid container spacing={2}>
           {/* 1행 */}
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <DatePicker
-                format="YYYY-MM-DD"
-                slotProps={{ textField: { size: "small" } }}
-              />
-              <span>-</span>
-              <DatePicker
-                format="YYYY-MM-DD"
-                slotProps={{ textField: { size: "small" } }}
-              />
-            </Stack>
+            <div className="filter-field">
+              <label className="filter-label">수집일자</label>
+              <div className="filter-range">
+                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <span className="filter-range-sep">-</span>{" "}
+                <MuiDatePickerFt value={""} onChange={() => {}} />
+              </div>
+            </div>
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <DatePicker
-                format="YYYY-MM-DD"
-                slotProps={{ textField: { size: "small" } }}
-              />
-              <span>-</span>
-              <DatePicker
-                format="YYYY-MM-DD"
-                slotProps={{ textField: { size: "small" } }}
-              />
-            </Stack>
+            <div className="filter-field">
+              <label className="filter-label">종료일자</label>
+              <div className="filter-range">
+                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <span className="filter-range-sep">-</span>{" "}
+                <MuiDatePickerFt value={""} onChange={() => {}} />
+              </div>
+            </div>
           </Grid>
           {/* 2행 */}
           <Grid size={{ xs: 12, sm: 3 }}>
             <div className="filter-field">
               <label className="filter-label">대분류</label>
               <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
+                <MuiSelect
+                  id="largeCategory"
+                  items={[
+                    {
+                      name: "전체",
+                      code: "",
+                    },
+                    {
+                      name: "피해구제",
+                      code: "01",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </Grid>
@@ -113,12 +114,27 @@ export default function HoldingInstitutionList() {
             <div className="filter-field">
               <label className="filter-label">중분류</label>
               <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
+                <MuiSelect
+                  id="midCategory"
+                  items={[
+                    {
+                      name: "전체",
+                      code: "",
+                    },
+                    {
+                      name: "접수서류",
+                      code: "01",
+                    },
+                    {
+                      name: "신청자 제출서류",
+                      code: "02",
+                    },
+                    {
+                      name: "직원보완자료",
+                      code: "03",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </Grid>
@@ -126,12 +142,31 @@ export default function HoldingInstitutionList() {
             <div className="filter-field">
               <label className="filter-label">소분류</label>
               <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
+                <MuiSelect
+                  id="smallCategory"
+                  items={[
+                    {
+                      name: "전체",
+                      code: "",
+                    },
+                    {
+                      name: "사망 신청",
+                      code: "01",
+                    },
+                    {
+                      name: "미성년자 신청",
+                      code: "02",
+                    },
+                    {
+                      name: "이전문서",
+                      code: "03",
+                    },
+                    {
+                      name: "의무기록",
+                      code: "04",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </Grid>
@@ -139,14 +174,27 @@ export default function HoldingInstitutionList() {
             <div className="filter-field">
               <label className="filter-label">기간</label>
               <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="hldPrdDfyrs" name="hldPrdDfyrs" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="1">1년</MenuItem>
-                    <MenuItem value="3">3년</MenuItem>
-                    <MenuItem value="5">5년</MenuItem>
-                  </Select>
-                </FormControl>
+                <MuiSelect
+                  id="smallCategory"
+                  items={[
+                    {
+                      name: "전체",
+                      code: "",
+                    },
+                    {
+                      name: "1년",
+                      code: "01",
+                    },
+                    {
+                      name: "3년",
+                      code: "03",
+                    },
+                    {
+                      name: "5년",
+                      code: "05",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </Grid>
@@ -155,12 +203,31 @@ export default function HoldingInstitutionList() {
             <div className="filter-field">
               <label className="filter-label">문서번호</label>
               <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docNo" name="docNo" defaultValue="00">
-                    <MenuItem value="00">asdfsfa</MenuItem>
-                    <MenuItem value="01">asdfsdf</MenuItem>
-                  </Select>
-                </FormControl>
+                <MuiSelect
+                  id="docNo"
+                  items={[
+                    {
+                      name: "전체",
+                      code: "",
+                    },
+                    {
+                      name: "사망 신청",
+                      code: "01",
+                    },
+                    {
+                      name: "미성년자 신청",
+                      code: "02",
+                    },
+                    {
+                      name: "이전문서",
+                      code: "03",
+                    },
+                    {
+                      name: "의무기록",
+                      code: "04",
+                    },
+                  ]}
+                />
               </div>
             </div>
           </Grid>
@@ -172,7 +239,6 @@ export default function HoldingInstitutionList() {
                 fullWidth
                 size="small"
                 placeholder="문서제목"
-                label="문서제목"
               />
             </div>
           </Grid>
