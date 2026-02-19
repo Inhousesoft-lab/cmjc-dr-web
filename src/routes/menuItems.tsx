@@ -48,7 +48,7 @@ const menuItems: Menu[] = [
       },
       {
         path: "digitalDoc/list",
-        label: "문서고 관리",
+        label: "문서고 조회",
         menuType: "MENU",
         element: {
           ko: "DigitalDocList",
