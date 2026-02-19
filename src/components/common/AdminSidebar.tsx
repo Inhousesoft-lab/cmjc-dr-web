@@ -1,9 +1,8 @@
 import * as React from "react";
 
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { getLangFromPathname, langPath, SupportedLang } from "@/routes/lang";
 import { Link, useNavigate } from "react-router";
-import Drawer from "./Drawer.module";
+import { useAppDispatch } from "@/app/hooks";
 
 type MenuItem = {
   key: string;
@@ -23,6 +22,7 @@ export interface AdminSidebarProps {
   expanded?: boolean;
   defaultOpenKeys?: string[];
   items: MenuItem[];
+  onToggle: () => void;
   onSelectLeaf?: (item: MenuItem) => void;
 }
 
@@ -34,9 +34,11 @@ export default function AdminSidebar({
   expanded = true,
   defaultOpenKeys,
   items,
+  onToggle,
   onSelectLeaf,
 }: AdminSidebarProps) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   // ✅ 1depth(루트)는 항상 1개만 열리도록(아코디언)
   const [openRootKey, setOpenRootKey] = React.useState<string | null>(() => {
@@ -82,7 +84,7 @@ export default function AdminSidebar({
     curLang: SupportedLang,
   ): MenuPath => {
     for (const root of items) {
-      const rootRaw = root.path ?? "";
+      const rootRaw = root.path?.startsWith("/") ? root.path : "";
       const rootPath = rootRaw ? langPath(rootRaw, curLang) : "";
 
       // ✅ 1depth leaf or hidden route under root
@@ -101,7 +103,7 @@ export default function AdminSidebar({
       if (!root.children) continue;
 
       for (const child of root.children) {
-        const raw = child.path ?? "";
+        const raw = child.path?.startsWith("/") ? child.path : "";
         const fullPath = raw ? langPath(raw, curLang) : "";
 
         // ✅ 2depth leaf OR 하위 숨김 라우트
@@ -115,7 +117,7 @@ export default function AdminSidebar({
 
         if (child.children) {
           for (const grand of child.children) {
-            const raw2 = grand.path ?? "";
+            const raw2 = grand.path?.startsWith("/") ? grand.path : "";
             const fullPath2 = raw2 ? langPath(raw2, curLang) : "";
 
             // ✅ 3depth leaf OR 하위 숨김 라우트
@@ -150,7 +152,7 @@ export default function AdminSidebar({
     (item: { path: string }, hasChildren: boolean) => {
       if (hasChildren) return "#";
 
-      const raw = item.path ?? "";
+      const raw = item.path?.startsWith("/") ? item.path : "";
       if (!raw) return "#";
 
       return langPath(raw, curLang); // ✅ /ko prefix 붙음
@@ -169,15 +171,16 @@ export default function AdminSidebar({
         return;
       }
 
-      const raw = item.path ?? "";
+      const raw = item.path?.startsWith("/") ? item.path : "";
       if (!raw) return;
 
       navigate(langPath(raw, curLang), { replace: false });
     },
-    [navigate, onSelectLeaf, curLang],
+    [navigate, onSelectLeaf, curLang, dispatch],
   );
 
-  const renderNode = (item: MenuItem, depth: number) => {
+  const renderNode = (item: MenuItem, depth: number): React.ReactElement => {
+    const depthLevel = depth + 1;
     const hasChildren = !!item.children?.length;
     const opened = hasChildren && isOpen(item.key, depth);
     const isActive = item.key === activeKey;
@@ -211,7 +214,7 @@ export default function AdminSidebar({
       <li
         key={item.key}
         className={[
-          `depth-${depth}`,
+          `depth-${depthLevel}`,
           hasChildren ? "hasDepth" : "",
           opened ? "on" : "",
           isActive ? "active" : "",
@@ -223,46 +226,53 @@ export default function AdminSidebar({
           to={to}
           onClick={onClickNavLink}
           aria-expanded={hasChildren ? opened : undefined}
-          data-depth={depth}
+          data-depth={depthLevel}
         >
-          <span className="lnb_label">{item.label}</span>
-          {hasChildren && (
-            <ChevronRightIcon
-              className={["lnb_chevron", opened ? "is-open" : ""]
-                .filter(Boolean)
-                .join(" ")}
-              aria-hidden
-            />
-          )}
+          {item.label}
         </Link>
 
         {hasChildren && (
-          <div
-            className={["lnb_subwrap", opened ? "is-open" : ""]
-              .filter(Boolean)
-              .join(" ")}
-            aria-hidden={!opened}
-          >
-            <ul className="lnb_sub">
-              {item.children!.map((child) => renderNode(child, depth + 1))}
-            </ul>
-          </div>
+          <ul>{item.children!.map((child) => renderNode(child, depth + 1))}</ul>
         )}
       </li>
     );
   };
 
   return (
-    <Drawer variant="permanent" open={expanded}>
+    <div className="sidebar_wrap">
+      {/* 로고 + 버튼 */}
+      <div className="sidebar_top">
+        <h1 className={`logo ${expanded ? "" : "collapsed"}`.trim()}>
+          <a href="/">
+            <img src="/img/logo.png" alt="한국의약품안전관리원" />
+            <span className="logo_text">통합관리시스템</span>
+          </a>
+        </h1>
+
+        <div className="sidebar_controller">
+          <button type="button" className="btn_sidebar" onClick={onToggle}>
+            <span className="blind">메뉴바</span>
+          </button>
+        </div>
+      </div>
+
+      {/* aside */}
       <div className={`aside ${expanded ? "" : "collapsed"}`.trim()}>
         <div className="aside_inner">
           <div id="lnb">
-            <ul className="lnb_list">
-              {items.map((item) => renderNode(item, 0))}
-            </ul>
+            {items.map((item, index) => (
+              <React.Fragment key={index}>
+                <h2 className="lnb_tit">{item.label}</h2>
+                {item.children && (
+                  <ul className="lnb_list">
+                    {item.children.map((item) => renderNode(item, 0))}
+                  </ul>
+                )}
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </div>
-    </Drawer>
+    </div>
   );
 }

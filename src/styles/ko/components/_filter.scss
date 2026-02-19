@@ -158,62 +158,58 @@
   min-height: 35px;
 }
 
-.sub_title {
+.filter_finder {
   position: relative;
-  margin: 0px 0 10px 0;
-  display: flex;
-  flex-wrap: wrap;
+  margin: 0 0 40px 0;
+  padding: 10px;
+  background: #f2f4f6;
+  border: 1px solid rgb(26 16 82 / 14%);
+  border-radius: var(--border-radius01);
 }
-.sub_title::after {
+.filter_finder .search_wrap {
+  position: relative;
+}
+.filter_finder .search_wrap .tbl_filter {
+  table-layout: fixed;
+  width: 100%;
+}
+.filter_finder .search_wrap .tbl_filter tbody th {
+  position: relative;
+  min-height: 40px;
+  padding: 5px 15px;
+  text-align: left;
+  font-weight: 600;
+  word-break: keep-all;
+}
+.filter_finder .search_wrap .tbl_filter tbody th::before {
   content: "";
-  display: block;
-  clear: both;
-}
-.sub_title .tit {
-  display: flex;
-  align-items: center;
-  min-height: 28px;
-  font-size: 18px;
-  color: #000;
-  font-weight: 700;
-  padding: 0px 0 0 18px;
-}
-.sub_title .tit::before {
-  content: "";
-  display: block;
   position: absolute;
+  top: 50%;
   left: 0;
-  top: 10px;
-  width: 8px;
-  height: 8px;
-  background: var(--color_01);
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  margin-top: -1px;
+  border-radius: 4px;
+  background-color: var(--color_01);
 }
-.sub_title .tit::after {
-  content: "";
-  display: block;
-  position: absolute;
-  left: 2px;
-  top: 8px;
-  width: 8px;
-  height: 8px;
-  background: var(--color_02);
+.filter_finder .search_wrap .tbl_filter tbody td {
+  min-height: 40px;
+  padding: 5px 15px;
 }
-.sub_title .controller {
-  margin-left: auto;
-  display: flex;
+.filter_finder .btn_area {
+  margin: 5px 0 0px 0;
+  padding: 10px 0 0 0;
+  border-top: 1px solid #e5e5e5;
 }
-.sub_title .controller button {
-  margin-left: 1px;
-  min-height: 28px;
-  height: 28px;
+.filter_finder .btn_area button {
+  width: 120px;
 }
-.sub_title .controller select {
-  margin-left: 1px;
-  min-height: 28px;
-  height: 28px;
+
+.modal .filter_finder {
+  padding: 5px;
 }
-.sub_title .controller input {
-  margin-left: 1px;
-  min-height: 28px;
-  height: 28px;
+.modal .filter_finder .search_wrap .tbl_filter tbody th,
+.modal .filter_finder .search_wrap .tbl_filter tbody td {
+  min-height: 35px;
 }

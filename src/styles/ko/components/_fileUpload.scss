@@ -1,0 +1,100 @@
+
+.file_upload .btn_add {
+  margin: 0 0 5px 0;
+}
+.file_upload .file_row {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.file_upload .file_row ~ .file_row {
+  margin-top: 5px;
+}
+.file_upload .added_file_row {
+  margin-top: 5px;
+}
+.file_upload .field_file {
+  position: relative;
+  width: 100%;
+}
+.file_upload .field_file input[type="file"] {
+  width: 100%;
+  padding: 2px 35px 2px 5px;
+}
+.file_upload .field_file .btn_clear {
+  overflow: hidden;
+  position: absolute;
+  right: 5px;
+  top: 7px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  text-indent: -99999px;
+  background: url(../img/ico_xmark.png) no-repeat center;
+  border: 1px solid #666;
+  border-radius: 20px;
+}
+.file_upload .btn_del {
+  flex: 0 0 40px;
+  display: inline-block;
+  position: relative;
+  width: 40px;
+  height: 30px;
+  margin: 0 0 0 1px;
+  vertical-align: middle;
+  background-color: var(--btn_color_05);
+  border: 1px solid var(--btn_color_05);
+}
+/* .file_upload .btn_del::before{content:"";display:block;position:absolute;left:50%;top:50%;width:10px;height:2px;margin-left:-5px;background:#fff;} */
+.file_upload .btn_del {
+  flex: 0 0 60px;
+  height: 36px;
+  border: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  color: #666;
+  line-height: 120%;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.file_upload .btn_del:hover {
+  background: #ff5c5c;
+  color: #fff;
+  border-color: #ff5c5c;
+}
+.file_upload .btn_del span {
+  display: inline;
+}
+
+.file_guide {
+  text-align: right;
+  font-size: 12px;
+  color: #888;
+  margin-top: 6px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+.file_item {
+  position: relative;
+  padding: 0 0 0 20px;
+}
+.file_item ~ .file_item {
+  margin-top: 5px;
+}
+.file_item .file_name {
+  text-decoration: underline;
+}
+.file_item .file_name::before {
+  content: "\f0c6";
+  font-family: var(--font-Awesome);
+  font-weight: 900;
+  color: var(--color_01);
+  font-size: 14px;
+  position: absolute;
+  left: 0;
+  top: 0;
+}

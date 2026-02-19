@@ -88,194 +88,190 @@ export default function DocClassificationDetail() {
   const handleBack = () => {};
 
   return (
-    <div className="content_wrap">
-      <div className="content">
-        <div className="btn_wrapper">
-          <DigitalDocHistoryButton />
-          <Button variant="contained" onClick={handleBack}>
-            목록
-          </Button>
-        </div>
+    <div>
+      <div className="btn_wrapper">
+        <DigitalDocHistoryButton />
+        <Button variant="contained" onClick={handleBack}>
+          목록
+        </Button>
+      </div>
 
-        {/* 문서분류 */}
-        <Grid container spacing={0} className="table-view-grid">
-          <GridField label="문서분류" value="대분류" />
-          <GridField label="문서번호" value="KIDS-0001" />
-          <GridField label="기본권한" value="피해구제팀 / 전체" />
-          <GridField label="문서제목" value="333" />
-          <GridField label="수집일자" value="sddsdf" />
-          <GridField label="종료일자" value="22" />
-          <GridField label="개인정보" value="Y" />
-          <GridField label="반환여부" value="미반환" />
-          <GridField label="비고" value="333" />
-          <GridField
-            label="첨부파일"
-            value={
-              <Stack
-                direction="row"
-                gap={1}
-                justifyContent="flex-start"
-                alignItems="center"
-              >
-                피해구제 접수서류.pdf
-                <DigitalDocViewerButton />
-                <DigitalDocDownButton />
-              </Stack>
-            }
-          />
-        </Grid>
+      {/* 문서분류 */}
+      <Grid container spacing={0} className="table-view-grid">
+        <GridField label="문서분류" value="대분류" />
+        <GridField label="문서번호" value="KIDS-0001" />
+        <GridField label="기본권한" value="피해구제팀 / 전체" />
+        <GridField label="문서제목" value="333" />
+        <GridField label="수집일자" value="sddsdf" />
+        <GridField label="종료일자" value="22" />
+        <GridField label="개인정보" value="Y" />
+        <GridField label="반환여부" value="미반환" />
+        <GridField label="비고" value="333" />
+        <GridField
+          label="첨부파일"
+          value={
+            <Stack
+              direction="row"
+              gap={1}
+              justifyContent="flex-start"
+              alignItems="center"
+            >
+              피해구제 접수서류.pdf
+              <DigitalDocViewerButton />
+              <DigitalDocDownButton />
+            </Stack>
+          }
+        />
+      </Grid>
 
-        <Grid container spacing={3} gap={2} mt={2}>
-          <Grid size={{ xs: 12, lg: 6 }}>
-            <div className="tbl_wrap">
-              <TableWrapper
-                tableAriaLabel="디지털 문서 상세 정보"
-                colgroup={
-                  <colgroup>
-                    <col />
-                    <col />
-                    <col />
-                    <col style={{ width: "80px" }} />
-                  </colgroup>
-                }
-              >
-                <TableRow>
-                  <LabelCell>공람</LabelCell>
-                  <LabelCell>부서</LabelCell>
-                  <LabelCell>이름</LabelCell>
-                  <LabelCell>삭제</LabelCell>
-                </TableRow>
-                {approvalRows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.dept}</TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell sx={{ width: 60 }}>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        color="error"
-                        onClick={() => handleDeleteApprovalRow(row.id)}
-                      >
-                        삭제
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow>
-                  <TableCell>
-                    <FormControl fullWidth>
-                      <Select size="small" displayEmpty value={newDept}>
-                        <MenuItem value="">
-                          <em>부서</em>
-                        </MenuItem>
-                        <MenuItem value="정보화팀">정보화팀</MenuItem>
-                        <MenuItem value="경영팀">경영팀</MenuItem>
-                        <MenuItem value="기획팀">기획팀</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </TableCell>
-                  <TableCell>
-                    <FormControl fullWidth>
-                      <Select size="small" displayEmpty value={newName}>
-                        <MenuItem value="">
-                          <em>대상</em>
-                        </MenuItem>
-                        <MenuItem value="전체">전체</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </TableCell>
-                  <TableCell>
-                    <FormControl fullWidth>
-                      <Select size="small" displayEmpty value={newName}>
-                        <MenuItem value="">
-                          <em>이름</em>
-                        </MenuItem>
-                        <MenuItem value="전체">전체</MenuItem>
-                        <MenuItem value="김길동">김길동</MenuItem>
-                        <MenuItem value="홍길동">홍길동</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </TableCell>
+      <Grid container spacing={3} gap={2} mt={2}>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <div className="tbl_wrap">
+            <TableWrapper
+              tableAriaLabel="디지털 문서 상세 정보"
+              colgroup={
+                <colgroup>
+                  <col />
+                  <col />
+                  <col />
+                  <col style={{ width: "80px" }} />
+                </colgroup>
+              }
+            >
+              <TableRow>
+                <LabelCell>공람</LabelCell>
+                <LabelCell>부서</LabelCell>
+                <LabelCell>이름</LabelCell>
+                <LabelCell>삭제</LabelCell>
+              </TableRow>
+              {approvalRows.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.dept}</TableCell>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.name}</TableCell>
                   <TableCell sx={{ width: 60 }}>
                     <Button
                       variant="contained"
                       size="small"
-                      color="primary"
-                      onClick={handleAddApprovalRow}
+                      color="error"
+                      onClick={() => handleDeleteApprovalRow(row.id)}
                     >
-                      등록
+                      삭제
                     </Button>
                   </TableCell>
                 </TableRow>
-              </TableWrapper>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, lg: 6 }}>
-            <div className="tbl_wrap">
-              <TableWrapper tableAriaLabel="문서분류 및 반환여부">
-                <TableRow>
-                  <LabelCell>문서분류</LabelCell>
-                  <TableCell>
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      sx={{ width: "100%" }}
-                    >
-                      <Select size="small" fullWidth displayEmpty value="">
-                        <MenuItem value="">
-                          <em>대분류</em>
-                        </MenuItem>
-                      </Select>
-                      <Select size="small" fullWidth displayEmpty value="">
-                        <MenuItem value="">
-                          <em>중분류</em>
-                        </MenuItem>
-                      </Select>
-                      <Select size="small" fullWidth displayEmpty value="">
-                        <MenuItem value="">
-                          <em>소분류</em>
-                        </MenuItem>
-                      </Select>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <LabelCell>반환여부</LabelCell>
-                  <TableCell>
-                    <FormControl component="fieldset">
-                      <RadioGroup
-                        row
-                        value={returnStatus}
-                        onChange={(event) =>
-                          setReturnStatus(event.target.value)
-                        }
-                      >
-                        <FormControlLabel
-                          value="Y"
-                          control={<Radio size="small" />}
-                          label="반환"
-                        />
-                        <FormControlLabel
-                          value="N"
-                          control={<Radio size="small" />}
-                          label="미반환"
-                        />
-                      </RadioGroup>
-                    </FormControl>
-                  </TableCell>
-                </TableRow>
-              </TableWrapper>
-            </div>
-            <div className="btn_wrapper" style={{ marginTop: 12 }}>
-              <Button variant="contained" size="small" color="primary">
-                수정
-              </Button>
-            </div>
-          </Grid>
+              ))}
+              <TableRow>
+                <TableCell>
+                  <FormControl fullWidth>
+                    <Select size="small" displayEmpty value={newDept}>
+                      <MenuItem value="">
+                        <em>부서</em>
+                      </MenuItem>
+                      <MenuItem value="정보화팀">정보화팀</MenuItem>
+                      <MenuItem value="경영팀">경영팀</MenuItem>
+                      <MenuItem value="기획팀">기획팀</MenuItem>
+                    </Select>
+                  </FormControl>
+                </TableCell>
+                <TableCell>
+                  <FormControl fullWidth>
+                    <Select size="small" displayEmpty value={newName}>
+                      <MenuItem value="">
+                        <em>대상</em>
+                      </MenuItem>
+                      <MenuItem value="전체">전체</MenuItem>
+                    </Select>
+                  </FormControl>
+                </TableCell>
+                <TableCell>
+                  <FormControl fullWidth>
+                    <Select size="small" displayEmpty value={newName}>
+                      <MenuItem value="">
+                        <em>이름</em>
+                      </MenuItem>
+                      <MenuItem value="전체">전체</MenuItem>
+                      <MenuItem value="김길동">김길동</MenuItem>
+                      <MenuItem value="홍길동">홍길동</MenuItem>
+                    </Select>
+                  </FormControl>
+                </TableCell>
+                <TableCell sx={{ width: 60 }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    color="primary"
+                    onClick={handleAddApprovalRow}
+                  >
+                    등록
+                  </Button>
+                </TableCell>
+              </TableRow>
+            </TableWrapper>
+          </div>
         </Grid>
-      </div>
+        <Grid size={{ xs: 12, lg: 6 }}>
+          <div className="tbl_wrap">
+            <TableWrapper tableAriaLabel="문서분류 및 반환여부">
+              <TableRow>
+                <LabelCell>문서분류</LabelCell>
+                <TableCell>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ width: "100%" }}
+                  >
+                    <Select size="small" fullWidth displayEmpty value="">
+                      <MenuItem value="">
+                        <em>대분류</em>
+                      </MenuItem>
+                    </Select>
+                    <Select size="small" fullWidth displayEmpty value="">
+                      <MenuItem value="">
+                        <em>중분류</em>
+                      </MenuItem>
+                    </Select>
+                    <Select size="small" fullWidth displayEmpty value="">
+                      <MenuItem value="">
+                        <em>소분류</em>
+                      </MenuItem>
+                    </Select>
+                  </Stack>
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <LabelCell>반환여부</LabelCell>
+                <TableCell>
+                  <FormControl component="fieldset">
+                    <RadioGroup
+                      row
+                      value={returnStatus}
+                      onChange={(event) => setReturnStatus(event.target.value)}
+                    >
+                      <FormControlLabel
+                        value="Y"
+                        control={<Radio size="small" />}
+                        label="반환"
+                      />
+                      <FormControlLabel
+                        value="N"
+                        control={<Radio size="small" />}
+                        label="미반환"
+                      />
+                    </RadioGroup>
+                  </FormControl>
+                </TableCell>
+              </TableRow>
+            </TableWrapper>
+          </div>
+          <div className="btn_wrapper" style={{ marginTop: 12 }}>
+            <Button variant="contained" size="small" color="primary">
+              수정
+            </Button>
+          </div>
+        </Grid>
+      </Grid>
     </div>
   );
 }

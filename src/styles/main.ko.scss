@@ -1,68 +1,33 @@
+@use "@fortawesome/fontawesome-free/css/all.min.css";
+
+// base
+@use "./ko/base/common";
+@use "./ko/base/icon";
+@use "./ko/base/layout";
+@use "./ko/base/mixins";
 @use "./ko/base/reset";
 @use "./ko/base/variables";
-@use "./ko/base/mixins";
 
-@use "./ko/layout/common";
+// components
+@use "./ko/components/aggrid";
+@use "./ko/components/aside";
+@use "./ko/components/button";
+@use "./ko/components/fileUpload";
+@use "./ko/components/filter";
+@use "./ko/components/form";
+@use "./ko/components/input";
+@use "./ko/components/modal";
+@use "./ko/components/paging";
+@use "./ko/components/spinner";
+@use "./ko/components/table";
+
+// layout
+@use "./ko/layout/content";
+@use "./ko/layout/footer";
 @use "./ko/layout/header";
 @use "./ko/layout/sub";
-@use "./ko/layout/sub-full";
 
-@use "./ko/components/grid";
-@use "./ko/components/paging";
-@use "./ko/components/form";
-@use "./ko/components/spinner";
-@use "./ko/components/modal";
-@use "./ko/components/nav";
-@use "./ko/components/button";
-@use "./ko/components/icon";
-@use "./ko/components/list";
-
-@use "./ko/pages/board";
-@use "./ko/pages/content";
-@use "./ko/pages/notice";
+// pages
 @use "./ko/pages/drugsafe";
 @use "./ko/pages/error";
-
-// .app-main {
-//   @include mixins.container;
-//   padding: 18px 0 28px;
-// }
-
-// .container {
-//   @include mixins.container;
-// }
-
-// .container-full {
-//   @include mixins.container(var(--container-full));
-// }
-
-.page-title h1 {
-  margin: 0 0 6px;
-  font-size: 24px;
-}
-.page-title p {
-  margin: 0 0 14px;
-  color: var(--muted);
-}
-
-.card {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-}
-
-.alert {
-  padding: 10px 12px;
-  border-radius: 10px;
-  margin: 10px 0;
-  background: #fff1f2;
-  border: 1px solid #fecdd3;
-}
-.alert--error {
-  color: var(--danger);
-}
-
-.ds-container {
-  @include mixins.container;
-}
+@use "./ko/pages/notice";

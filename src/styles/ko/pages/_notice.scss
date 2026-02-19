@@ -1,65 +1,120 @@
 .notice-detail {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
-.notice-header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.notice-surface {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcfd 100%);
+  border: 1px solid #e5e9ee;
+  border-radius: 12px;
+  padding: 20px 24px;
 }
 
 .notice-title {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   margin: 0;
-  color: #1a1a1a;
-  line-height: 1.4;
+  color: #1f2937;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
 }
 
 .notice-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  font-size: 14px;
-  color: #4b5563;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid #dbe4ee;
+    border-radius: 4px;
+    background: #f8fbfe;
+    color: #5b6777;
+    font-size: 13px;
+  }
+
+  strong {
+    color: #1f2937;
+    font-weight: 700;
+  }
 }
 
 .notice-body {
   white-space: pre-line;
-  line-height: 1.8;
-  color: #111827;
-  padding: 8px 0 16px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.notice-files .MuiTypography-root {
-  font-weight: 700;
-  margin-bottom: 8px;
+  line-height: 1.9;
+  color: #374151;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e5e9ef;
+  font-size: 15px;
 }
 
 .notice-files {
-  margin-top: 10px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e9ef;
+
+  .notice-files-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 10px;
+  }
+
+  .notice-file-item + .notice-file-item {
+    margin-top: 8px;
+  }
+
+  .notice-file-item .MuiListItemButton-root {
+    height: 44px;
+    border: 1px solid #e3e8ef;
+    border-radius: 8px;
+    padding: 0 12px;
+    gap: 10px;
+    background: #fff;
+  }
+
+  .notice-file-item .MuiTypography-root {
+    flex: 1;
+    text-align: left;
+    font-size: 14px;
+    color: #334155;
+  }
+
+  .notice-file-item .MuiSvgIcon-root {
+    color: #64748b;
+  }
+
+  .notice-file-item .MuiListItemButton-root:hover {
+    border-color: #c6d4e4;
+    background: #f8fbff;
+  }
 }
 
-.notice-files .MuiList-root {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+@media (max-width: 768px) {
+  .notice-surface {
+    padding: 16px;
+    border-radius: 10px;
+  }
 
-.notice-files .notice-file-item {
-  padding: 2px 8px;
-  background: #f8fafc;
-  border: 1px solid #eef2f7;
-  border-radius: 6px;
-}
+  .notice-title {
+    font-size: 18px;
+  }
 
-.notice-files .MuiListItemText-primary {
-  font-weight: 400;
-  text-decoration: underline;
-  cursor: pointer;
+  .notice-meta {
+    gap: 8px;
+  }
+
+  .notice-meta li {
+    width: 100%;
+    justify-content: space-between;
+  }
 }

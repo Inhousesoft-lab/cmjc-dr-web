@@ -1,6 +1,16 @@
 import type { Components, Theme } from "@mui/material/styles";
 
 const button: Components<Theme> = {
+  MuiButtonBase: {
+    defaultProps: {
+      disableRipple: true,
+    },
+  },
+  MuiIconButton: {
+    defaultProps: {
+      disableRipple: true,
+    },
+  },
   MuiButton: {
     defaultProps: { disableElevation: true },
     styleOverrides: {

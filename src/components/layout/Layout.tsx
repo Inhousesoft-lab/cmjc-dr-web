@@ -1,22 +1,46 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { Outlet } from "react-router-dom";
-import SimpledHeader from "@/components/layout/SimpledHeader";
+import SimpledHeader from "@/components/common/SimpleHeader";
 import AdminSidebar from "@/components/common/AdminSidebar";
 import ecrfMenuItems from "../../routes/menuItems";
 import PageHeader from "@/components/common/PageHeader";
+import { Menu } from "@/features/menu/MenuSlice";
+import SimpleHeader from "@/components/common/SimpleHeader";
+
+type SidebarMenuItem = {
+  key: string;
+  path: string;
+  label: string;
+  children?: SidebarMenuItem[];
+};
+
+const convertToMenuItems = (
+  routes: Menu[],
+  path: number[] = [],
+): SidebarMenuItem[] =>
+  routes
+    .filter((r) => r.menu !== false && !!r.label)
+    .map((r, idx) => {
+      const currentPath = [...path, idx];
+      const pathValue =
+        typeof r.path === "string"
+          ? r.path.startsWith("/")
+            ? r.path
+            : `/${r.path}`
+          : "";
+
+      return {
+        key: r.menuId?.trim() || `idx-${currentPath.join("-")}`,
+        path: pathValue,
+        label: r.label!.trim(),
+        children: r.children
+          ? convertToMenuItems(r.children, currentPath)
+          : undefined,
+      };
+    });
 
 export default function Layout() {
-  const convertToMenuItems = (routes: any) =>
-    routes
-      .filter((r: any) => r.label && r.menu)
-      .map((r: any) => ({
-        key: r.path?.startsWith("/") ? r.path : `/${r.path}`,
-        path: r.path,
-        label: r.label,
-        children: r.children ? convertToMenuItems(r.children) : undefined,
-      }));
-
   const menuItems = convertToMenuItems(ecrfMenuItems);
 
   const [isNavigationExpanded, setIsNavigationExpanded] = useState(true);
@@ -24,43 +48,43 @@ export default function Layout() {
   const navigationExpandedRef = useRef(isNavigationExpanded);
   const isNarrowViewport = useMediaQuery("(max-width:700px)");
 
-  useEffect(() => {
-    navigationExpandedRef.current = isNavigationExpanded;
-  }, [isNavigationExpanded]);
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 900px)");
 
-  useEffect(() => {
-    if (isNarrowViewport) {
-      desktopExpandedRef.current = navigationExpandedRef.current;
-      setIsNavigationExpanded(false);
-      return;
-    }
+    const applySidebarMode = (isMobile: boolean) => {
+      // 900 이하: 기본 닫힘 / 900 초과: 기본 열림
+      setIsNavigationExpanded(!isMobile);
+    };
 
-    setIsNavigationExpanded(desktopExpandedRef.current);
-  }, [isNarrowViewport]);
+    applySidebarMode(mediaQuery.matches);
 
-  const handleToggleHeaderMenu = useCallback(
-    (isExpanded: boolean) => {
-      setIsNavigationExpanded(isExpanded);
-      if (!isNarrowViewport) {
-        desktopExpandedRef.current = isExpanded;
-      }
-    },
-    [isNarrowViewport, setIsNavigationExpanded],
-  );
+    const handleChange = (e: MediaQueryListEvent) => {
+      applySidebarMode(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  const handleToggleSidebar = () => {
+    setIsNavigationExpanded((prev) => !prev);
+  };
 
   return (
-    <div className="ecrf_layout">
-      <SimpledHeader
-        menuOpen={isNavigationExpanded}
-        onToggleNav={handleToggleHeaderMenu}
+    <div id="wrap" className={isNavigationExpanded ? "" : "collapsed"}>
+      <AdminSidebar
+        expanded={isNavigationExpanded}
+        items={menuItems}
+        onToggle={handleToggleSidebar}
       />
-      <div className="layout_container">
-        <AdminSidebar expanded={isNavigationExpanded} items={menuItems} />
-        <div className="contents_container">
-          <PageHeader>
-            <Outlet />
-          </PageHeader>
-        </div>
+      <SimpleHeader />
+      <div
+        id="container"
+        className={`${isNavigationExpanded ? "" : "collapsed"}`.trim()}
+      >
+        <PageHeader>
+          <Outlet />
+        </PageHeader>
       </div>
     </div>
   );

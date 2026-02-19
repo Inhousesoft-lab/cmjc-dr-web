@@ -46,17 +46,27 @@ const menuItems: Menu[] = [
         },
         menu: true,
       },
+      {
+        path: "digitalDoc/list",
+        label: "문서고 관리",
+        menuType: "MENU",
+        element: {
+          ko: "DigitalDocList",
+          en: "DigitalDocList",
+        },
+        menu: true,
+      },
+      {
+        path: "exteralView",
+        label: "문서열람(외부)",
+        menuType: "MENU",
+        element: {
+          ko: "ExternalView",
+          en: "ExternalView",
+        },
+        menu: true,
+      },
     ],
-    menu: true,
-  },
-  {
-    path: "digitalDoc/list",
-    label: "문서고 관리",
-    menuType: "MENU",
-    element: {
-      ko: "DigitalDocList",
-      en: "DigitalDocList",
-    },
     menu: true,
   },
   {
@@ -125,16 +135,6 @@ const menuItems: Menu[] = [
         menu: false,
       },
     ],
-    menu: true,
-  },
-  {
-    path: "exteralView",
-    label: "문서열람(외부)",
-    menuType: "MENU",
-    element: {
-      ko: "ExternalView",
-      en: "ExternalView",
-    },
     menu: true,
   },
 ];

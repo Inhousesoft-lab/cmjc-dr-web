@@ -1,8 +1,10 @@
 :root {
-  --font-main: "Pretendard", sans-serif;
+  --main-font: "Pretendard GOV";
+  --font-Awesome: "Font Awesome 7 Free";
   --main-font-color: #1e2124;
 
-  --container: 1400px;
+  --minwidth-content: 900px;
+  --maxwidth-content: 1500px;
   --container-full: 100%;
 
   --border: #e5e7eb;
@@ -12,7 +14,7 @@
   --danger: #bd2c0f;
 
   --color_01: #087c80;
-  --color_02: #043335;
+  --color_02: #0d4f52;
   --color_03: #58616a;
   --color_04: #de3412;
 
@@ -53,7 +55,7 @@
   --btn-bg-4-hover: #cdd1d5;
 
   --btn_border_color_01: #087c80;
-  --btn-disabled-bg: #e5e5e5;
+  --btn-disabled-bg: #ededed;
   --btn-disabled-text: #bfbfbf;
 
   /* 테이블 */
@@ -65,7 +67,11 @@
   --table-row-hover: rgba(0, 51, 38, 0.05);
 
   /* 인풋 */
+  --input-bg: #fff;
   --inp-border: #58616a;
+  --inputbtn-height: 35px;
+
+  --disabled_bg: #ededed;
 
   /* 체크박스 */
   --chk-active-bg: var(--btn-bg-1);

@@ -55,7 +55,9 @@ declare module "@mui/material/FormControl" {
 export const muiTheme = createTheme({
   palette,
   typography: {
-    fontFamily: "'Pretendard', sans-serif",
+    fontFamily:
+      '"Pretendard GOV","Malgun Gothic","맑은 고딕","돋움",Dotum,Helvetica,"Apple SD Gothic Neo",sans-serif',
+    fontSize: 14,
   },
   shape: { borderRadius: 4 },
   components: {
@@ -66,15 +68,5 @@ export const muiTheme = createTheme({
     ...tabCustomizations,
     ...dialogCustomizations,
     ...gridCustomizations,
-    MuiButtonBase: {
-      defaultProps: {
-        disableRipple: true,
-      },
-    },
-    MuiIconButton: {
-      defaultProps: {
-        disableRipple: true,
-      },
-    },
   },
 });

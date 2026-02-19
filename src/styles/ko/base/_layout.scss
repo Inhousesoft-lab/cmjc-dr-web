@@ -1,0 +1,36 @@
+@use "../base/variables";
+
+/* html, body height */
+body,
+html {
+  min-height: 100%;
+  height: 100%;
+}
+body {
+  overflow-y: scroll;
+}
+
+/* wrap */
+#wrap {
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  min-width: var(--minwidth-content);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* container */
+#container {
+  position: relative;
+  width: 100%;
+  padding: 0 0 0 250px;
+  transition: 0.5s ease-in-out;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+#container.collapsed {
+  padding: 0 0 0 40px;
+  transition: 0.5s ease-in-out;
+}

@@ -1,79 +1,103 @@
+
 .error_page {
   position: absolute;
   top: 50%;
   left: 0;
   width: 100%;
   text-align: center;
-  -webkit-transform: translateY(-50%);
-  -ms-transform: translateY(-50%);
   transform: translateY(-50%);
+  font-family: sans-serif;
 }
 .error_page .error_code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
+  animation: fadeIn 0.8s ease-out;
 }
 .error_page .error_code .icon {
   position: relative;
   display: inline-block;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: var(--color_01);
+  width: 0;
+  height: 0;
+  margin: 0 30px 0 0;
+  border-left: 45px solid transparent;
+  border-right: 45px solid transparent;
+  border-bottom: 80px solid var(--color_01);
+  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.1));
+  animation: float 3s ease-in-out infinite;
 }
-.error_page .error_code .icon:before,
+.error_page .error_code .icon:before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 25px;
+  width: 5px;
+  height: 24px;
+  background-color: #fff;
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
 .error_page .error_code .icon:after {
   content: "";
   position: absolute;
   left: 50%;
+  top: 60px;
+  width: 6px;
+  height: 6px;
   background-color: #fff;
+  border-radius: 50%;
   transform: translateX(-50%);
 }
-.error_page .error_code .icon:before {
-  top: 27px;
-  width: 3px;
-  height: 0;
-  border-radius: 2px;
-  animation: warnCheck1 0.4s forwards ease-out;
-}
-.error_page .error_code .icon:after {
-  top: 51px;
-  width: 4px;
-  height: 0;
-  border-radius: 50%;
-  animation: 0.2s warnCheck2 0.5s forwards ease-out;
-}
-@keyframes warnCheck1 {
-  0% {
-    height: 0;
-  }
-  100% {
-    height: 21px;
-  }
-}
-@keyframes warnCheck2 {
-  0% {
-    height: 0;
-  }
-  100% {
-    height: 4px;
-  }
+.error_page .error_code .desc {
+  text-align: left;
+  border-left: 2px solid #eee;
+  padding-left: 30px;
 }
 .error_page .error_code .txt_01 {
-  font-size: 118px;
-  font-weight: 700;
-  line-height: 1;
+  font-size: 110px;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -5px;
 }
 .error_page .error_code .txt_02 {
-  font-size: 36px;
-  font-weight: 600;
-  line-height: 1;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  text-transform: uppercase;
 }
 .error_page .error_msg {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 400;
-  line-height: 140%;
+  line-height: 1.6;
+  margin-top: 25px;
+  word-break: keep-all;
 }
-.error_page .error_msg .txt_01 {
-  margin: 0 0 20px 0;
-  font-size: 20px;
-  font-weight: 500;
+.error_page .btn_area {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* 애니메이션 효과 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }

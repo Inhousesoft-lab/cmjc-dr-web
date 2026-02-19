@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { ThemeOptions } from "@mui/material/styles";
 import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline } from "@mui/material";
 import { muiTheme } from "./muiTheme";
 
 interface AppThemeProps {
@@ -26,7 +25,6 @@ export default function AppTheme(props: AppThemeProps) {
 
   return (
     <ThemeProvider theme={theme} disableTransitionOnChange>
-      <CssBaseline />
       {children}
     </ThemeProvider>
   );

@@ -18,14 +18,14 @@ import Layout from "@/components/layout/Layout";
 import menuItems from "./menuItems";
 
 type LangElementProps = {
-  byLang: Record<string, ComponentKey | null>;
+  byLang: Record<string, ComponentKey | null | undefined>;
 };
 
 function NotFoundRedirect() {
   const { lang } = useParams<{ lang?: string }>();
   const normalized = normalizeLang(lang) ?? detectBrowserLang();
 
-  return <Navigate to={`/${normalized}/docClassificationList/list`} replace />;
+  return <Navigate to={`/${normalized}/home`} replace />;
 }
 
 function LangElement({ byLang }: LangElementProps) {
@@ -33,12 +33,10 @@ function LangElement({ byLang }: LangElementProps) {
   const normalized = normalizeLang(lang) ?? FALLBACK_LANG;
 
   const componentKey = byLang[normalized] ?? byLang[FALLBACK_LANG];
-
-  if (!componentKey) {
-    return null;
-  }
+  if (!componentKey) return <NotFoundRedirect />;
 
   const Component = componentMap[componentKey];
+  if (!Component) return <NotFoundRedirect />;
 
   return <Component />;
 }
@@ -170,7 +168,6 @@ export default function Router() {
           />
 
           {renderRoutes(menuItems)}
-
           {/* lang 포함 NotFound */}
           <Route path="/:lang/*" element={<NotFoundRedirect />} />
         </Route>

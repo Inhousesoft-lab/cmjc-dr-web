@@ -27,84 +27,82 @@ export default function DigitalDocList() {
   };
 
   return (
-    <div className="content_wrap">
-      <div className="content">
-        {/* <!-- 검색조건 --> */}
-        <div className="filter">
-          <Grid container spacing={2} width="100%">
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <div className="filter-field">
-                <label className="filter-label">대분류</label>
-                <div className="field_select">
-                  <FormControl size="small" fullWidth>
-                    <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
-                      <MenuItem value="00">전체</MenuItem>
-                      <MenuItem value="01">피해구제</MenuItem>
-                    </Select>
-                  </FormControl>
-                </div>
+    <div>
+      {/* <!-- 검색조건 --> */}
+      <div className="filter">
+        <Grid container spacing={2} width="100%">
+          <Grid size={{ xs: 12, sm: 3 }}>
+            <div className="filter-field">
+              <label className="filter-label">대분류</label>
+              <div className="field_select">
+                <FormControl size="small" fullWidth>
+                  <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
+                    <MenuItem value="00">전체</MenuItem>
+                    <MenuItem value="01">피해구제</MenuItem>
+                  </Select>
+                </FormControl>
               </div>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <div className="filter-field">
-                <label className="filter-label">중분류</label>
-                <div className="field_select">
-                  <FormControl size="small" fullWidth>
-                    <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
-                      <MenuItem value="00">전체</MenuItem>
-                      <MenuItem value="01">피해구제</MenuItem>
-                    </Select>
-                  </FormControl>
-                </div>
-              </div>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <div className="filter-field">
-                <label className="filter-label">소분류</label>
-                <div className="field_select">
-                  <FormControl size="small" fullWidth>
-                    <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
-                      <MenuItem value="00">전체</MenuItem>
-                      <MenuItem value="01">피해구제</MenuItem>
-                    </Select>
-                  </FormControl>
-                </div>
-              </div>
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <div className="filter-field">
-                <label className="filter-label">검색어</label>
-                <TextField fullWidth size="small" placeholder="문서번호" />
-              </div>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="문서제목"
-                label="문서제목"
-              />
-            </Grid>
+            </div>
           </Grid>
-          <Button variant="contained">검색</Button>
-        </div>
+          <Grid size={{ xs: 12, sm: 3 }}>
+            <div className="filter-field">
+              <label className="filter-label">중분류</label>
+              <div className="field_select">
+                <FormControl size="small" fullWidth>
+                  <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
+                    <MenuItem value="00">전체</MenuItem>
+                    <MenuItem value="01">피해구제</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+            </div>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 3 }}>
+            <div className="filter-field">
+              <label className="filter-label">소분류</label>
+              <div className="field_select">
+                <FormControl size="small" fullWidth>
+                  <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
+                    <MenuItem value="00">전체</MenuItem>
+                    <MenuItem value="01">피해구제</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+            </div>
+          </Grid>
 
-        <Divider sx={{ my: 2 }} />
-        <div className="btn_wrapper">
-          <Button size="small" variant="contained" onClick={handleCreateClick}>
-            등록
-          </Button>
-        </div>
-
-        <AgGridContainer
-          enableRowSelection={false}
-          colDefs={columnDefs}
-          rowData={DIGITAL_DOC_LIST_MOCK_DATA}
-          count={DIGITAL_DOC_LIST_MOCK_DATA.length}
-          onRowClick={handleRowClick}
-        />
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <div className="filter-field">
+              <label className="filter-label">검색어</label>
+              <TextField fullWidth size="small" placeholder="문서번호" />
+            </div>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="문서제목"
+              label="문서제목"
+            />
+          </Grid>
+        </Grid>
+        <Button variant="contained">검색</Button>
       </div>
+
+      <Divider sx={{ my: 2 }} />
+      <div className="btn_wrapper">
+        <Button size="small" variant="contained" onClick={handleCreateClick}>
+          등록
+        </Button>
+      </div>
+
+      <AgGridContainer
+        enableRowSelection={false}
+        colDefs={columnDefs}
+        rowData={DIGITAL_DOC_LIST_MOCK_DATA}
+        count={DIGITAL_DOC_LIST_MOCK_DATA.length}
+        onRowClick={handleRowClick}
+      />
     </div>
   );
 }

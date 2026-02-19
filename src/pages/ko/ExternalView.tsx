@@ -92,38 +92,37 @@ export default function ExternalView() {
   ]);
 
   return (
-    <div className="content_wrap">
-      <div className="content">
-        <Button variant="contained" onClick={() => setOpen(true)}>
-          문서열람(외부)
-        </Button>
+    <div>
+      <Button variant="contained" onClick={() => setOpen(true)}>
+        문서열람(외부)
+      </Button>
 
-        <Dialog
-          open={open}
-          onClose={() => setOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle>
-            <Box component="span" sx={{ flex: 1 }}>
-              문서번호 : KIDS-001
-            </Box>
-            <IconButton
-              aria-label="닫기"
-              onClick={() => setOpen(false)}
-              edge="end"
-            >
-              <CloseIcon />
-            </IconButton></DialogTitle>
-          <DialogContent>
-            <AgGridContainer
-              colDefs={columnDefs}
-              rowData={rows}
-              count={rows.length}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box component="span" sx={{ flex: 1 }}>
+            문서번호 : KIDS-001
+          </Box>
+          <IconButton
+            aria-label="닫기"
+            onClick={() => setOpen(false)}
+            edge="end"
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <AgGridContainer
+            colDefs={columnDefs}
+            rowData={rows}
+            count={rows.length}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,0 +1,16 @@
+.board_info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .board_count {
+    font-size: 14px !important;
+
+    .count {
+      margin: 0 5px;
+      color: var(--color-text-2);
+      font-weight: 700;
+    }
+  }
+}

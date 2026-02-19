@@ -1,26 +1,15 @@
-@use "../base/mixins";
+@use "../base/variables";
 
-// 공통 변수나 믹스인이 있다면 활용하는 것이 좋지만,
-// 우선은 주신 코드를 바탕으로 구조를 최적화했습니다.
-
-.header {
+/* header */
+#header {
   position: relative;
+  width: 100%;
+  height: 70px;
+  background: #fff;
+  box-shadow: 3px 0px 5px rgba(27, 23, 30, 0.1);
+  z-index: 10;
 
-  // 정부 배지 영역
-  .gov-badge {
-    display: flex;
-    align-items: center;
-    height: 32px;
-    background-color: #eef2f7;
-
-    .txt {
-      padding-left: 30px;
-      color: var(--color-text-1);
-      background: url(/img/ico_flag_ko.png) no-repeat left center;
-    }
-  }
-
-  // 상단 바
+  // 상단 바(timeout)
   .header-topbar {
     display: flex;
     align-items: center;
@@ -85,170 +74,197 @@
     }
   }
 
-  // 로고, 유틸메뉴
-  .header_menu {
-    position: relative;
+  .inner {
     display: flex;
     align-items: center;
-    height: 82px;
-    background-color: #fff;
-    border-top: 1px solid #d8d8d8;
-    border-bottom: 1px solid #d8d8d8;
-    width: 100%;
+    position: relative;
+    height: 100%;
+  }
 
-    .container {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      max-width: none;
-      margin: 0;
-      padding: 0 20px;
+  .util_group {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 14px 0 0;
 
-      .admin_logo {
+    // 과제 선택
+    .study-select {
+      min-width: 180px;
+      margin-right: 0;
+
+      .MuiOutlinedInput-root {
+        height: 32px;
+        border-radius: 4px;
+        background: #fff;
+        font-size: 14px;
+      }
+
+      .MuiSelect-select {
         display: flex;
         align-items: center;
-        margin: 0;
-        margin-right: 16px;
-        a {
-          display: inline-flex;
-          align-items: center;
-        }
-        img {
-          height: 40px;
-          width: auto;
+        padding: 0 30px 0 10px;
+        color: var(--color-text-1);
+      }
+
+      em {
+        color: var(--placeholder);
+        font-style: normal;
+        font-size: 14px;
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--border-2);
+      }
+
+      &:hover .MuiOutlinedInput-notchedOutline,
+      .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: var(--btn-bg-1);
+      }
+
+      .MuiSvgIcon-root {
+        color: var(--color-text-3);
+      }
+    }
+
+    .user_info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .user_name {
+        display: inline-block;
+        position: relative;
+        padding: 0 0 0 20px;
+        font-size: 16px;
+        font-weight: 500;
+
+        &::before {
+          font-family: var(--font-Awesome);
+          font-weight: 900;
+          content: "\f007";
           display: block;
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 15px;
+          height: 15px;
+          color: var(--color_02);
+        }
+
+        span {
+          display: inline-block;
+          margin: 0 5px 0 0;
+          color: var(--color_02);
         }
       }
 
-      .util-menu {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+      // 접속 시간
+      .access {
+        display: inline-block;
+        position: relative;
+        padding: 0 0 0 20px;
+        font-size: 16px;
+        font-weight: 500;
+      }
 
-        .study-select {
-          min-width: 220px;
-          margin-right: 8px;
+      // 유저 권한
+      .user-role {
+        margin: 0;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: #f2f4f7;
+        color: var(--color-text-3);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
 
-          .MuiOutlinedInput-root {
-            height: 36px;
-            border-radius: 4px;
-            background: #fff;
-            font-size: 14px;
-          }
-
-          .MuiSelect-select {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            color: var(--color-text-1);
-          }
-
-          em {
-            color: var(--placeholder);
-            font-style: normal;
-          }
-
-          .MuiOutlinedInput-notchedOutline {
-            border-color: var(--border-2);
-          }
-
-          &:hover .MuiOutlinedInput-notchedOutline,
-          .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-            border-color: var(--btn-bg-1);
-          }
-
-          .MuiSvgIcon-root {
-            color: var(--color-text-3);
-          }
-        }
-
-        .user-info {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          margin: 0;
-          font-size: 15px;
-          color: var(--color-text-1);
-          line-height: 1.2;
-        }
-
-        .user-icon {
-          font-size: 18px;
-          color: var(--color-text-3);
-        }
-
-        .user-name {
-          font-weight: 600;
-        }
-
-        .user-role {
-          margin: 0;
-          padding: 4px 8px;
-          border-radius: 999px;
-          background: #f2f4f7;
-          color: var(--color-text-3);
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.02em;
-        }
-
-        .btn-util {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          position: relative;
-          color: #1e2124;
-          font-size: 18px;
-          font-weight: 700;
-        }
-
-        /* 아이콘을 위한 가상 요소 공통 설정 */
-        .btn-util::before {
-          content: "";
-          display: inline-block;
-          width: 20px;
-          height: 20px;
-          background-size: contain;
-          background-repeat: no-repeat;
-          background-position: center;
-        }
-
-        .btn-util.search::before {
-          background-image: url("/img/ico_search.svg");
-        }
-
-        .btn-util.signup::before {
-          background-image: url("/img/ico_signup.svg");
-        }
-
-        .btn-util.edit-profile::before {
-          background-image: url("/img/ico_edit_profile.svg");
-        }
-
-        .btn-util.user-reg::before {
-          background-image: url("/img/ico_usrSwtReg.svg");
-        }
-
-        .btn-util.login::before {
-          background-image: url("/img/ico_login.svg");
-        }
-
-        .btn-util.logout::before {
-          background-image: url("/img/ico_login.svg");
-        }
-
-        /* (선택) 호버 시 아이콘 색상 변경이 필요하다면 별도 처리 */
-        .btn-util:hover {
-          background-color: transparent;
-        }
+      .btn_logout {
+        margin: 0 0 0 4px;
+        display: inline-block;
+        font-size: 14px;
+        text-align: center;
+        padding: 4px 10px;
+        background: #fff;
+        color: var(--color_01);
+        border: 1px solid var(--color_01);
+        border-radius: 4px;
       }
     }
   }
-  .gnb {
-    display: flex;
-    align-items: center;
-    height: 66px;
-    border-bottom: 1px solid #d8d8d8;
+
+  // 알림
+  .notification {
+    position: relative;
+    display: inline-block;
+    margin: 0 15px;
+
+    .notify_count {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: red;
+      color: white;
+      font-size: 12px;
+      width: 18px;
+      height: 18px;
+      line-height: 18px;
+      text-align: center;
+      border-radius: 50%;
+      font-weight: bold;
+    }
+  }
+
+  .notify_box {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    width: 200px;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 100;
+
+    p {
+      margin: 0;
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .notify_box.is-open {
+    display: block;
+  }
+}
+
+.ico_bell {
+  display: inline-block;
+  font-size: 16px;
+  vertical-align: middle;
+  position: relative;
+
+  &::before {
+    content: "\f0f3";
+    font-family: var(--font-Awesome);
+    font-weight: 900;
+    font-size: 24px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+// 과제 선택 메뉴
+.study-select-menu {
+  .MuiMenuItem-root {
+    font-size: 14px;
+    min-height: 32px;
   }
 }

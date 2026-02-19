@@ -1,0 +1,420 @@
+
+/* 모든 필드 컨테이너 공통 */
+[class^="field_"] {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* 폼 요소 기본 디자인 */
+[class^="field_"] input[type="text"],
+[class^="field_"] select {
+  width: 100%;
+}
+
+/* ==========================================================================
+    2. 핵심 레이아웃 컴포넌트 (Combo & Group)
+    ========================================================================== */
+.field_combo,
+.field_group {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* [Case 1] 꽉 차는 스타일 (기본 또는 .type_fill) */
+.field_combo.type_fill > *,
+.field_group > .field_input {
+  flex: 1;
+  min-width: 0;
+}
+.field_combo.type_fill .field_input input,
+.field_combo.type_fill .field_select select {
+  width: 100%;
+}
+
+/* [Case 2] 나열되는 스타일 (.type_auto) */
+.field_combo.type_auto {
+  justify-content: flex-start;
+}
+.field_combo.type_auto > * {
+  flex: 0 0 auto;
+  width: auto;
+}
+
+/* 나열형에서 인풋/셀렉트가 너무 작아지지 않게 기본값 지정 */
+.field_combo.type_auto select {
+  width: 120px;
+}
+.field_combo.type_auto input[type="text"] {
+  width: 150px;
+}
+
+/* ==========================================================================
+    3. 특수 조합 및 버튼 컴포넌트
+    ========================================================================== */
+
+/* 인풋 + 버튼 조합 */
+.field_input_btn {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+  position: relative;
+}
+.field_input_btn .field_input {
+  flex: 1;
+  min-width: 0;
+}
+.field_input_btn .btn {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 12px;
+}
+
+/* 검색유형 (셀렉트 + 인풋+버튼) */
+.field_sort_search {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+}
+.field_sort_search .field_select {
+  flex: 0 0 120px;
+}
+.field_sort_search .field_select.type_02 {
+  flex: 0 0 180px;
+}
+.field_sort_search .field_input_btn {
+  flex: 1;
+}
+
+.field_tel {
+  display: flex;
+  align-items: center;
+}
+.field_tel [class^="field_"] {
+  flex: 1;
+  width: 100%;
+}
+.field_tel .hyphen {
+  width: 15px;
+  text-align: center;
+  display: block;
+  padding: 0 2px;
+}
+
+.field_email {
+  display: flex;
+  align-items: center;
+}
+.field_email .at {
+  width: 25px;
+  text-align: center;
+  display: block;
+  padding: 0 2px;
+}
+.field_email .email_id {
+  flex: 1 1 auto;
+}
+.field_email .email_domain {
+  flex: 40%;
+}
+.field_email .email_domain_sel {
+  flex: 40%;
+  margin: 0 0 0 5px;
+}
+
+.field_addr .post_num {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.field_addr .post_num {
+  width: 100%;
+}
+.field_addr .post_num .btn {
+  flex: 0 0 auto;
+  margin: 0 0 0 5px;
+}
+.field_addr .field_input ~ .field_input {
+  margin-top: 5px;
+}
+
+.field_date {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.field_date input[type="text"] {
+  width: 140px;
+  height: 32px;
+  padding: 0 35px 0 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+}
+.field_date .btn_calendar,
+.field_date .btn_monthpicker {
+  z-index: 1;
+  position: absolute;
+  left: 108px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: url(../img/ico_calendar.png) no-repeat center;
+  background-size: 18px;
+  border: none;
+  cursor: pointer;
+}
+
+.field_period {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+}
+.field_period .field_date .time_group {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+  gap: 4px;
+}
+.field_period .field_date .time_group .select_time {
+  height: 32px;
+  padding: 0 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 14px;
+}
+.field_period .field_date .time_group .time_sep {
+  font-weight: bold;
+  padding: 0 2px;
+}
+.field_period .field_date .time_group .field_time {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.field_period .field_date .time_group .field_time input[type="text"] {
+  width: 90px;
+  height: 32px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  text-align: center;
+}
+.field_period .symbol {
+  display: inline-block;
+  min-width: 15px;
+  text-align: center;
+  color: #333;
+  font-weight: bold;
+}
+.field_datetime {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  vertical-align: middle;
+}
+.field_datetime input[type="text"] {
+  width: 170px;
+  height: 32px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  background: #fff url(../img/ico_calendar.png) no-repeat right 8px center;
+  background-size: 16px;
+}
+.field_datetime .symbol {
+  display: inline-block;
+  min-width: 15px;
+  text-align: center;
+  color: #333;
+  font-weight: bold;
+}
+
+.field_search {
+  position: relative;
+  width: 100%;
+}
+.field_search .search_ {
+  display: inline-block;
+  width: 100%;
+  max-width: 120px;
+  background: #fff;
+}
+.field_search .search_text {
+  width: 100%;
+  background: #fff;
+}
+
+.field_label_group ~ .field_label_group {
+  margin-top: 10px;
+}
+
+/* 필드 사이즈 제어: 너비를 고정함과 동시에 내부 요소를 가로로 배치 */
+.field_w_xs {
+  width: 150px !important;
+  flex: 0 0 150px !important;
+  display: inline-flex !important;
+  gap: 4px;
+  vertical-align: middle;
+}
+.field_w_sm {
+  width: 250px !important;
+  flex: 0 0 250px !important;
+  display: inline-flex !important;
+  gap: 4px;
+  vertical-align: middle;
+}
+.field_w_mid {
+  width: 400px !important;
+  flex: 0 0 400px !important;
+  display: inline-flex !important;
+  gap: 4px;
+  vertical-align: middle;
+}
+.field_w_la {
+  width: 500px !important;
+  flex: 0 0 500px !important;
+  display: inline-flex !important;
+  gap: 4px;
+  vertical-align: middle;
+}
+
+/* 사이즈 클래스 내부의 인풋 영역은 남은 너비를 꽉 채우도록 설정 */
+[class*="field_w_"] .field_input {
+  flex: 1;
+  min-width: 0;
+}
+[class*="field_w_"] .field_input input {
+  width: 100%;
+}
+
+.field_textarea textarea {
+  width: 100%;
+  height: 200px;
+  padding: 10px;
+}
+
+.byteInfo {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+.byteInfo .current {
+  color: #111827;
+  font-weight: 500;
+}
+.byteInfo .current.limit {
+  color: #ef4444;
+}
+
+.label_field {
+  width: 100%;
+}
+.label_field .label {
+  display: block;
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+.label_field .field_input {
+  width: 100%;
+}
+
+.label_field_col {
+  display: flex;
+  width: 100%;
+}
+.label_field_col .label {
+  flex: 0 0 100px;
+  display: flex;
+  align-items: center;
+  margin: 0 0 5px 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.label_field_col .field_input {
+  width: 100%;
+}
+
+.field_label_input {
+  display: flex;
+  align-items: center;
+}
+.field_label_input .field_label {
+  margin-right: 10px;
+}
+.field_input_unit {
+  display: flex;
+  align-items: center;
+}
+.field_input_unit input[type="text"] {
+  width: 100px;
+  text-align: right;
+}
+
+.inp_error {
+  border: 1px solid #e0392d !important;
+  background-color: #fcedeb !important;
+}
+.inp_error:focus {
+  outline-color: #e0392d !important;
+  border: 1px solid #e0392d !important;
+  background-color: #fcedeb !important;
+}
+.inp_success {
+  border: 1px solid #2b9e1e !important;
+  background-color: #f0f7ed !important;
+}
+.inp_success:focus {
+  outline-color: #2b9e1e !important;
+  border: 1px solid #2b9e1e !important;
+  background-color: #f0f7ed !important;
+}
+.inp_msg {
+  color: #999999;
+  font-size: 13px;
+  margin: 5px 0 0 0;
+}
+.inp_msg .error {
+  color: #ee4d4d;
+}
+.inp_msg .success {
+  color: #4cb450;
+}
+
+/* 인풋에 클리어버튼 */
+input.clearable {
+  padding-right: 35px !important;
+  background-repeat: no-repeat;
+  background-position: right -30px center;
+  background-image: url("../img/ico_xmark.png");
+  background-size: 16px;
+}
+input.clearable.x {
+  background-position: right 10px center !important;
+  cursor: pointer;
+}
+input.clearable.onX {
+  cursor: pointer;
+}
+
+/* monthpicker */
+.ui-monthpicker .ui-datepicker-prev,
+.ui-monthpicker .ui-datepicker-next {
+  top: 10px;
+}

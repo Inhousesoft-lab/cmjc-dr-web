@@ -1,0 +1,377 @@
+// 사이드바 전체 래퍼
+.sidebar_wrap {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 20;
+  transition: width 0.5s ease-in-out;
+
+  // 상단 로고 + 토글 버튼 영역
+  .sidebar_top {
+    display: flex;
+    align-items: center;
+    flex: 0 0 70px;
+    position: relative;
+    height: 70px;
+    width: 290px;
+    transition: width 0.5s ease-in-out;
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 250px;
+      text-align: center;
+      height: 70px;
+      background: var(--color_01);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+      overflow: hidden;
+      transition: width 0.5s ease-in-out;
+
+      a {
+        display: flex;
+        align-items: end;
+        justify-content: center;
+        opacity: 1;
+        transform: translateX(0);
+        transition:
+          opacity 0.3s ease-in-out,
+          transform 0.5s ease-in-out;
+      }
+
+      img {
+        height: 40px;
+      }
+
+      .logo_text {
+        width: 100px;
+        display: inline-block;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 10px;
+        color: #fff;
+      }
+
+      &.collapsed {
+        width: 40px;
+        background: var(--color_01);
+
+        a {
+          opacity: 0;
+          transform: translateX(-8px);
+          pointer-events: none;
+        }
+      }
+    }
+    .sidebar_controller {
+      position: relative;
+      z-index: 2;
+
+      button {
+        width: 40px;
+        height: 40px;
+        background: var(--color_01);
+
+        &::before {
+          content: "\f03a";
+          font-family: var(--font-Awesome);
+          font-weight: 900;
+          font-size: 24px;
+          color: #fff;
+          display: inline-block;
+          vertical-align: middle;
+        }
+      }
+    }
+  }
+}
+
+.aside {
+  position: relative;
+  left: auto;
+  top: auto;
+  z-index: 20;
+  width: 250px;
+  background: var(--color_01);
+  height: auto;
+  min-height: calc(100% - 70px);
+  flex: 1 1 auto;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  transition: width 0.5s ease-in-out;
+
+  #lnb {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    transition:
+      opacity 0.2s ease-in-out 0.28s,
+      transform 0.3s ease-in-out 0.28s,
+      visibility 0s linear 0.28s;
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #087c80;
+    border-radius: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #1d6466;
+    border-radius: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #0d4749;
+  }
+
+  &.collapsed {
+    width: 40px;
+    overflow: hidden;
+
+    #lnb {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-8px);
+      pointer-events: none;
+      transition:
+        opacity 0.12s ease-in-out 0s,
+        transform 0.12s ease-in-out 0s,
+        visibility 0s linear 0.12s;
+    }
+  }
+
+  .aside_inner {
+    flex: 1;
+  }
+}
+
+.lnb_tit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 50px;
+  padding: 0 15px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: #057175;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 4px 4px 0 0;
+}
+
+.lnb_list {
+  padding: 10px;
+}
+
+#lnb {
+  ul {
+    li {
+      position: relative;
+      width: 100%;
+
+      &::before {
+        pointer-events: none;
+      }
+
+      a {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 1;
+        pointer-events: auto;
+        color: #49526b;
+      }
+
+      ul {
+        display: none;
+      }
+
+      &.hasDepth {
+        &.on {
+          > ul {
+            display: block;
+          }
+
+          > a::before {
+            transform: rotate(0deg);
+          }
+        }
+      }
+    }
+  }
+
+  > ul {
+    > li {
+      > a {
+        display: block;
+        width: 100%;
+        padding: 10px 30px 10px 10px;
+        color: #fff;
+        font-size: 15px;
+        word-break: keep-all;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:hover {
+          background: var(--color_02);
+        }
+      }
+
+      &.on {
+        background: #0c6b6f;
+        margin-bottom: 5px;
+        border-radius: 4px;
+      }
+
+      &.hasDepth > a::before {
+        font-family: var(--font-Awesome);
+        font-weight: 900;
+        font-size: 10px;
+        content: "\f078";
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 12px;
+        right: 10px;
+        width: 15px;
+        height: 15px;
+        transform: rotate(-90deg);
+        pointer-events: none;
+      }
+
+      > ul {
+        display: none;
+        margin: 0 auto;
+        padding: 0 10px 10px;
+
+        > li::before {
+          content: "";
+          display: block;
+          position: absolute;
+          left: 5px;
+          top: 14px;
+          width: 3px;
+          height: 3px;
+          background: #fff;
+          border-radius: 50%;
+        }
+
+        a {
+          display: block;
+          padding: 5px 20px 5px 15px;
+          font-size: 14px;
+          color: #fff;
+          border-radius: 4px;
+
+          &:hover {
+            text-decoration: underline;
+            background: rgba(255, 255, 255, 0.05);
+          }
+        }
+      }
+
+      ul {
+        padding: 0 0 0 10px;
+
+        li {
+          &.hasDepth > a::before {
+            content: "\f078";
+            font-family: var(--font-Awesome);
+            font-weight: 900;
+            font-size: 10px;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            top: 8px;
+            right: 10px;
+            transform: rotate(-90deg);
+            pointer-events: none;
+          }
+
+          &.hasDepth.on > a::before {
+            right: 10px;
+            transform: rotate(0deg);
+          }
+
+          &::before {
+            content: "";
+            display: block;
+            position: absolute;
+            left: 5px;
+            top: 14px;
+            width: 3px;
+            height: 3px;
+            background: #fff;
+            border-radius: 50%;
+          }
+        }
+      }
+    }
+  }
+}
+
+// 3depth: 불릿을 '-'로 표시하고 텍스트 밑줄 적용
+#lnb .lnb_list li.depth-3 {
+  &::before {
+    content: "-";
+    left: 4px;
+    top: 7px;
+    width: auto;
+    height: auto;
+    background: none;
+    border-radius: 0;
+    color: #fff;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  > a {
+    text-decoration: none;
+  }
+
+  > a:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+// 링크 전체 hover 강제 적용
+#lnb li > a:hover,
+#lnb li:hover > a {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+#lnb li.depth-1 > a:hover,
+#lnb li.depth-1:hover > a {
+  background: var(--color_02) !important;
+}
+
+#lnb li.depth-2 > a:hover,
+#lnb li.depth-2:hover > a,
+#lnb li.depth-3 > a:hover,
+#lnb li.depth-3:hover > a {
+  text-decoration: underline !important;
+}

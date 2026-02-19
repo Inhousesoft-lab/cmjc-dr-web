@@ -4,6 +4,7 @@ import type {
   ColDef,
   GridApi,
   GridReadyEvent,
+  GridSizeChangedEvent,
   RowClassParams,
   RowClickedEvent,
   RowDragEndEvent,
@@ -144,6 +145,10 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
     if (onGridReady) onGridReady(event);
   };
 
+  const handleGridSizeChanged = (params: GridSizeChangedEvent) => {
+    params.api.sizeColumnsToFit();
+  };
+
   const handleRowClicked = (event: RowClickedEvent<TData>) => {
     if (!onRowClick) return;
     if (!event.data) return;
@@ -261,6 +266,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
           rowHeight={32}
           headerHeight={32}
           rowSelection={enableRowSelection ? rowSelection : undefined}
+          onGridSizeChanged={handleGridSizeChanged}
           pagination={enablePagination}
           paginationPageSize={pageSize}
           getRowStyle={getRowStyle}

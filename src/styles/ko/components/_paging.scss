@@ -1,107 +1,39 @@
-
-/* paging */
+/* 페이징 */
 .paing_container {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 0;
+  position: relative;
+  margin-top: 16px;
 }
+
+.paing_container .paging-count {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.paing_container .paging-count__label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.paing_container .paging-count__select {
+  width: 52px;
+}
+
+.paing_container .paging-count__select .MuiInputBase-root {
+  width: 52px;
+}
+
+.paing_container .paging-count .MuiInputLabel-root {
+  margin-bottom: 0;
+}
+
 .paing_container .paging_wrapper {
-  grid-column: 2;
-  justify-self: center;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.paging_wrapper {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 40px;
-}
-.paging_wrapper .MuiPaginationItem-root {
-  min-width: 32px;
-  height: 32px;
-  margin: 0 2px;
-  border-radius: 6px;
-  color: #1e2124;
-  border: 1px solid transparent;
-  box-shadow: none !important;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease;
-}
-.paging_wrapper .MuiPaginationItem-root.Mui-selected,
-.paging_wrapper .MuiPaginationItem-page.Mui-selected,
-.paging_wrapper .MuiPaginationItem-outlined.Mui-selected {
-  background-color: transparent !important;
-  color: #087c80 !important;
-  font-weight: 600;
-  border-color: #087c80 !important;
-}
-.paging_wrapper .MuiPaginationItem-root.Mui-selected:hover {
-  background-color: transparent !important;
-}
-.paging_wrapper .MuiPaginationItem-root.Mui-disabled {
-  background-color: transparent !important;
-}
-.paging_wrapper .MuiPaginationItem-root:not(.Mui-selected):hover {
-  background-color: transparent;
-  border-color: #e0e0e0;
-}
-
-.paging {
-  clear: both;
-  position: relative;
-  width: 100%;
-  margin: 20px 0 20px 0;
-  text-align: center;
-}
-.paging a {
-  display: inline-block;
-  font-size: 12px;
-  text-align: center;
-  vertical-align: middle;
-}
-.paging a span.skip {
-  display: inline-block;
-  text-indent: -9999em;
-}
-.paging a.num {
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
-  margin: 0 1px;
-  padding: 0px 0px;
-  box-sizing: border-box;
-  border: 1px solid transparent;
-}
-.paging a.num:hover,
-.paging a.num.current {
-  border: 1px solid var(--color_01);
-  border-radius: 7px;
-}
-.paging a.prev,
-.paging a.next,
-.paging a.first,
-.paging a.last {
-  position: relative;
-  width: 29px;
-  height: 29px;
-}
-.paging a.first {
-  background: url(../img/ico_paging_first.png) no-repeat center;
-}
-.paging a.prev {
-  background: url(../img/ico_paging_prev.png) no-repeat center;
-}
-.paging a.next {
-  background: url(../img/ico_paging_next.png) no-repeat center;
-}
-.paging a.last {
-  background: url(../img/ico_paging_last.png) no-repeat center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
