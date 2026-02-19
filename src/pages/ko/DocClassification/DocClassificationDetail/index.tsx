@@ -5,7 +5,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import { Grid, TableCell, TableRow } from "@mui/material";
+import { Box, Grid, TableCell, TableRow } from "@mui/material";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import TableWrapper from "@/components/table/TableWrapper";
@@ -131,10 +131,10 @@ export default function DocClassificationDetail() {
               tableAriaLabel="디지털 문서 상세 정보"
               colgroup={
                 <colgroup>
-                  <col />
-                  <col />
-                  <col />
-                  <col style={{ width: "80px" }} />
+                  <col className="tbl-col-w-28p" />
+                  <col className="tbl-col-w-28p" />
+                  <col className="tbl-col-w-28p" />
+                  <col className="tbl-col-w-16p" />
                 </colgroup>
               }
             >
@@ -265,11 +265,11 @@ export default function DocClassificationDetail() {
               </TableRow>
             </TableWrapper>
           </div>
-          <div className="btn_wrapper" style={{ marginTop: 12 }}>
+          <Box className="btn_wrapper" style={{ marginTop: 12 }}>
             <Button variant="contained" size="small" color="primary">
               수정
             </Button>
-          </div>
+          </Box>
         </Grid>
       </Grid>
     </div>
