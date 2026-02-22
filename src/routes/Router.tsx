@@ -25,7 +25,7 @@ function NotFoundRedirect() {
   const { lang } = useParams<{ lang?: string }>();
   const normalized = normalizeLang(lang) ?? detectBrowserLang();
 
-  return <Navigate to={`/${normalized}/docClassificationList/list`} replace />;
+  return <Navigate to={`/${normalized}/docClassification/list`} replace />;
 }
 
 function LangElement({ byLang }: LangElementProps) {

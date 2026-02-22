@@ -7,7 +7,7 @@ const menuItems: Menu[] = [
     menuType: "SCN",
     children: [
       {
-        path: "docClassificationList/list",
+        path: "docClassification/list",
         label: "문서분류 관리",
         menuType: "MENU",
         element: {
@@ -17,7 +17,7 @@ const menuItems: Menu[] = [
         menu: true,
       },
       {
-        path: "docClassificationList/:id",
+        path: "docClassification/:id",
         label: "문서분류 상세",
         menuType: "MENU",
         element: {
@@ -27,7 +27,7 @@ const menuItems: Menu[] = [
         menu: false,
       },
       {
-        path: "docClassificationList/create",
+        path: "docClassification/create",
         label: "문서분류 등록/수정",
         menuType: "MENU",
         element: {
