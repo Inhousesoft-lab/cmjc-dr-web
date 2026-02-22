@@ -13,10 +13,11 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@shared/*": ["shared/*"]
     },
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "src/vite-env.d.ts"],
+  "include": ["src", "shared", "src/vite-env.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
