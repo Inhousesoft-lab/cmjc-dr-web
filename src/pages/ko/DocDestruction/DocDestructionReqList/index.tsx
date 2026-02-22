@@ -1,15 +1,31 @@
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Button, Divider, FormControl, Grid, MenuItem } from "@mui/material";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
-import { columnDefs } from "./col-def";
+import { listDefs } from "./col-def";
 
 import DocDestructionReqButton from "@/components/actionButtons/DocDestructionReqButton";
-import DESTRUCTION_LIST_DUMMY_DATA from "@/mocks/edoc/edocDestructionListDummyData.json";
 import MuiSelect from "@/components/elements/MuiSelect";
+import useNotifications from "@/hooks/useNotifications";
+import { ColDef } from "ag-grid-community";
+import { DocDestruction } from "@/types/docDestruction";
 
 export default function DocDestructionReqList() {
+  const notifications = useNotifications();
+
+  const [columnDefs] = React.useState<ColDef<any>[]>(listDefs);
+
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const [rowData, setRowsData] = React.useState<{
+    rows: DocDestruction[];
+    rowCount: number;
+  }>({
+    rows: [],
+    rowCount: 0,
+  });
+
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
 
   const handleSelectionChange = useCallback((rows: any[]) => {
@@ -128,10 +144,11 @@ export default function DocDestructionReqList() {
       </div>
 
       <AgGridContainer
+        isLoading={isLoading}
         enableRowSelection={true}
         colDefs={columnDefs}
-        rowData={DESTRUCTION_LIST_DUMMY_DATA}
-        count={DESTRUCTION_LIST_DUMMY_DATA.length}
+        rowData={rowData.rows}
+        count={rowData.rowCount}
         onSelectionChange={handleSelectionChange}
       />
     </div>

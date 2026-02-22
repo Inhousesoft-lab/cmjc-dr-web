@@ -4,7 +4,6 @@ import type {
   ColDef,
   GridApi,
   GridReadyEvent,
-  GridSizeChangedEvent,
   RowClassParams,
   RowClickedEvent,
   RowDragEndEvent,
@@ -34,12 +33,12 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 type AgGridProps<TData> = {
   isLoading?: boolean;
-  isSimpleView?: boolean;
   printOn?: boolean;
   enableRowSelection?: boolean;
   rowSelectionMode?: "single" | "multiple";
   selectionCheckboxes?: boolean;
   selectionHeaderCheckbox?: boolean;
+  enableClickSelection?: boolean;
   colDefs: ColDef<TData>[];
   rowData: TData[];
   getRowStyle?: (params: RowClassParams<TData>) => RowStyle | undefined;
@@ -47,7 +46,6 @@ type AgGridProps<TData> = {
   rowDragManaged?: boolean;
   animateRows?: boolean;
   suppressMoveWhenRowDragging?: boolean;
-  singleClickEdit?: boolean;
   enablePagination?: boolean;
   getRowId?: (params: any) => string;
   actionButtons?: { label: string; onClick: () => void; disabled?: boolean }[];
@@ -65,28 +63,27 @@ type AgGridProps<TData> = {
 export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
   const {
     isLoading,
-    isSimpleView,
     printOn,
     enableRowSelection,
     rowSelectionMode = "multiple",
     selectionCheckboxes = true,
     selectionHeaderCheckbox = true,
+    enableClickSelection = false,
     colDefs,
     rowData = [],
     getRowStyle,
     onRowDragEnd,
     rowDragManaged,
-    getRowId,
     animateRows,
     suppressMoveWhenRowDragging,
-    singleClickEdit = false,
     enablePagination = true,
+    getRowId,
     actionButtons,
     isPaging = true,
     pageNum = 1,
     pageSize = 10,
     count = 0,
-    height = 355,
+    height = 400,
     onPageChange,
     onRowClick,
     onSelectionChange,
@@ -95,6 +92,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
 
   const defaultColDef = useMemo<ColDef<TData>>(
     () => ({
+      flex: 1,
       resizable: true,
       sortable: false,
       filter: false,
@@ -114,9 +112,14 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
             mode: "multiRow",
             checkboxes: selectionCheckboxes,
             headerCheckbox: selectionHeaderCheckbox && selectionCheckboxes,
-            enableClickSelection: false,
+            enableClickSelection,
           },
-    [rowSelectionMode, selectionCheckboxes, selectionHeaderCheckbox],
+    [
+      rowSelectionMode,
+      selectionCheckboxes,
+      selectionHeaderCheckbox,
+      enableClickSelection,
+    ],
   );
 
   // Select options
@@ -126,6 +129,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
     { label: "50", value: 50 },
   ];
 
+  const defaultPageSize = 10;
   const gridApiRef = useRef<GridApi<TData> | null>(null);
 
   const [pageNo, setPageNo] = useState(pageNum);
@@ -141,12 +145,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
 
   const handleGridReady = (event: GridReadyEvent<TData>) => {
     gridApiRef.current = event.api;
-    event.api.sizeColumnsToFit();
     if (onGridReady) onGridReady(event);
-  };
-
-  const handleGridSizeChanged = (params: GridSizeChangedEvent) => {
-    params.api.sizeColumnsToFit();
   };
 
   const handleRowClicked = (event: RowClickedEvent<TData>) => {
@@ -209,6 +208,39 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
     }
   };
 
+  const styleGroup = {
+    container: {
+      mt: 2,
+    },
+    headerRow: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 1,
+    },
+    paginationWrapper: {
+      position: "relative",
+      display: "flex",
+      mt: 2,
+    },
+    count: {
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+      justfyContents: "flex-start",
+      gap: 1,
+      "& .MuiInputLabel-root": {
+        marginBottom: "0",
+      },
+    },
+    pagination: {
+      position: "absolute",
+      left: "50%",
+      top: "50%",
+      transform: "translate(-50%, -50%)",
+    },
+  };
+
   return (
     <React.Fragment>
       {/* Aggrid Container만 출력하도록 스타일 추가 */}
@@ -233,12 +265,10 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
 
       {/* Page Info */}
       <Box className="board_info">
-        {!isSimpleView && (
-          <p className="board_count">
-            전체
-            <span className="count">{count}</span>건
-          </p>
-        )}
+        <p className="board_count">
+          전체
+          <span className="count">{count}</span>건
+        </p>
 
         {actionButtons && actionButtons.length > 0 ? (
           <Stack direction="row" spacing={1} alignItems="center">
@@ -266,7 +296,6 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
           rowHeight={32}
           headerHeight={32}
           rowSelection={enableRowSelection ? rowSelection : undefined}
-          onGridSizeChanged={handleGridSizeChanged}
           pagination={enablePagination}
           paginationPageSize={pageSize}
           getRowStyle={getRowStyle}
@@ -274,7 +303,6 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
           rowDragManaged={rowDragManaged}
           animateRows={animateRows}
           suppressMoveWhenRowDragging={suppressMoveWhenRowDragging}
-          singleClickEdit={singleClickEdit}
           suppressPaginationPanel={true} // 기본 하단 페이징 숨김
           onGridReady={handleGridReady}
           onRowClicked={handleRowClicked}

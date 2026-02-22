@@ -1,17 +1,31 @@
+import React from "react";
 import LabelCell from "@/components/table/LabelCell";
 import TableWrapper from "@/components/table/TableWrapper";
 import { Box, Button, TableCell, TableRow } from "@mui/material";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import DigitalDocHistoryButton from "@/components/actionButtons/DigitalDocHistoryButton";
+import useNotifications from "@/hooks/useNotifications";
+import { DocDestruction } from "@/types/docDestruction";
+import PageStatus from "@/components/common/PageStatus";
 
 export default function DocDestructionDetail() {
   const navigate = useNavigate();
+  const notifications = useNotifications();
   const curLang = getLangFromPathname(location.pathname);
 
-  const handleBackToList = () => {
+  const { eldocNo } = useParams();
+
+  const [viewData, setViewData] = React.useState<DocDestruction | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const handleBack = () => {
     navigate(langPath("docDestruction/list", curLang));
   };
+
+  if (isLoading) {
+    return <PageStatus isLoading={isLoading} />;
+  }
 
   return (
     <div>
@@ -43,7 +57,7 @@ export default function DocDestructionDetail() {
       </TableWrapper>
 
       <Box className="btn_wrapper" mt={2}>
-        <Button size="large" variant="contained" onClick={handleBackToList}>
+        <Button size="large" variant="contained" onClick={handleBack}>
           목록
         </Button>
         <DigitalDocHistoryButton eldocNo="k2" />

@@ -1,14 +1,26 @@
-export const columnDefs: any[] = [
+import type { ColDef } from "ag-grid-community";
+import type { DigitalDoc } from "@/types/digitalDoc";
+
+export const listDefs: ColDef<DigitalDoc>[] = [
   {
     headerName: "번호",
-    field: "id",
-    width: 60,
+    field: "rowNo",
+    width: 90,
     cellStyle: { textAlign: "center" },
   },
   {
     headerName: "문서분류",
-    field: "docCategory",
+    field: "docSclsfNm",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      return (
+        params.data.docLclsfNm +
+        ">" +
+        params.data.docMclsfNm +
+        ">" +
+        params.data.docSclsfNm
+      );
+    },
   },
   {
     headerName: "문서번호",
@@ -17,14 +29,20 @@ export const columnDefs: any[] = [
   },
   {
     headerName: "문서제목",
-    field: "docTitle",
+    field: "docTtl",
     cellStyle: { textAlign: "center" },
   },
   {
     headerName: "개인정보",
-    field: "hasPersonalInfo",
+    field: "prvcInclYn",
+    valueFormatter: (params: any) => {
+      const v = params.value;
+      if (v === "Y") return "포함";
+      if (v === "N") return "미포함";
+      return ""; // null/undefined 대비
+    },
     cellStyle: (params: any) => {
-      const isIncluded = params.value === "포함";
+      const isIncluded = params.value === "Y";
       return {
         textAlign: "center",
         color: isIncluded ? "red" : "",
@@ -33,28 +51,58 @@ export const columnDefs: any[] = [
     },
   },
   {
-    headerName: "수집일자(보존연한)",
-    field: "collectDateLabel",
+    headerName: "수집일자\n(보존연한)",
+    field: "clctYmd",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      const v = formatYYMMDD(params.value);
+
+      let nextVal = "\n";
+      if (params.data.hldPrdDfyrs === "0") {
+        nextVal += "(" + params.data.hldPrdMmCnt + "개월)";
+      } else if (
+        params.data.hldPrdDfyrs === "90" ||
+        params.data.hldPrdDfyrs === "99"
+      ) {
+        nextVal += params.data.hldPrdDfyrs === "90" ? "(반영구)" : "(영구)";
+      } else {
+        nextVal += "(" + params.data.hldPrdDfyrs + "년)";
+      }
+
+      return v + nextVal;
+    },
   },
   {
     headerName: "종료일자",
-    field: "endDate",
+    field: "endYmd",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      return formatYYMMDD(params.value);
+    },
   },
   {
     headerName: "종류",
-    field: "docType",
+    field: "eldocYn",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      return params.value === "Y" ? "문서" : "파일";
+    },
   },
   {
     headerName: "등록자(부서)",
-    field: "registrantDept",
+    field: "rgtrId",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      return params.value + "(" + params.data.deptId + ")";
+    },
   },
   {
     headerName: "등록일자",
-    field: "regDate",
+    field: "regDt",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      return formatYYMMDD(params.value.split("T")[0].replaceAll("-", ""));
+      //console.log(params.value.split("T")[0]);
+    },
   },
 ];

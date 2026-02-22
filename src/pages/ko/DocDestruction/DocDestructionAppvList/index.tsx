@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Button,
   FormControl,
@@ -10,20 +10,37 @@ import {
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
-import { columnDefs } from "./col-def";
+import { listDefs } from "./col-def";
 
 import DocDestructionAppvButton from "@/components/actionButtons/DocDestructionAppvButton";
-import DESTRUCTION_LIST_DUMMY_DATA from "@/mocks/edoc/edocDestructionListDummyData.json";
+import useNotifications from "@/hooks/useNotifications";
+import { DocDestruction } from "@/types/docDestruction";
+import { ColDef } from "ag-grid-community";
 
 export default function DocDestructionReqList() {
+  const notifications = useNotifications();
+
+  const [columnDefs] = React.useState<ColDef<any>[]>(listDefs);
+
+  const [rowData, setRowsData] = React.useState<{
+    rows: DocDestruction[];
+    rowCount: number;
+  }>({
+    rows: [],
+    rowCount: 0,
+  });
+
+  const [isLoading, setIsLoading] = React.useState(true);
+
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
 
   const handleSelectionChange = useCallback((rows: any[]) => {
     setSelectedRows(rows);
   }, []);
+
   return (
     <div>
-      <div className="filter" style={{ marginBottom: 16 }}>
+      <div className="filter">
         <Grid container spacing={2}>
           {/* 1행 */}
           <Grid size={{ xs: 12, sm: 4 }}>
@@ -97,14 +114,16 @@ export default function DocDestructionReqList() {
         </div>
       </div>
 
-      <Stack direction="row" spacing={1} justifyContent="right">
+      <Stack direction="row" spacing={1} justifyContent="right" mt={2}>
         <DocDestructionAppvButton selectedRows={selectedRows} />
       </Stack>
+
       <AgGridContainer
+        isLoading={isLoading}
         enableRowSelection={true}
         colDefs={columnDefs}
-        rowData={DESTRUCTION_LIST_DUMMY_DATA}
-        count={DESTRUCTION_LIST_DUMMY_DATA.length}
+        rowData={rowData.rows}
+        count={rowData.rowCount}
         onSelectionChange={handleSelectionChange}
       />
     </div>

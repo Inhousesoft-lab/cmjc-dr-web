@@ -1,8 +1,12 @@
-export const columnDefs: any[] = [
+import type { ColDef } from "ag-grid-community";
+import type { DocDestruction } from "@/types/docDestruction";
+
+export const listDefs: ColDef<DocDestruction>[] = [
   {
     headerName: "번호",
     field: "rowNo",
-    width: 90,
+    flex: 0,
+    width: 100,
     cellStyle: { textAlign: "center" },
   },
   {
@@ -33,7 +37,7 @@ export const columnDefs: any[] = [
     },
   },
   {
-    headerName: "수집일자(보존연한)",
+    headerName: "수집일자\n(보존연한)",
     field: "collectDateLabel",
     cellStyle: { textAlign: "center" },
   },

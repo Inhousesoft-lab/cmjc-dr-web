@@ -5,21 +5,37 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import { Box, Grid, TableCell, TableRow } from "@mui/material";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
+import {
+  Box,
+  Grid,
+  Radio,
+  RadioGroup,
+  TableCell,
+  TableRow,
+} from "@mui/material";
 import TableWrapper from "@/components/table/TableWrapper";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
-import DigitalDocHistoryButton from "@/components/actionButtons/DocClassificationHistoryButton";
+import DocClassificationHistoryButton from "@/components/actionButtons/DocClassificationHistoryButton";
 import DigitalDocDownButton from "@/components/actionButtons/DigitalDocDownButton";
 import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
 import GridField from "@/components/common/GridField";
 import LabelCell from "@/components/table/LabelCell";
+import { useNavigate, useParams } from "react-router-dom";
+import { DocClassDetail } from "@/types/docClassification";
+import PageStatus from "@/components/common/PageStatus";
 
 export default function DocClassificationDetail() {
   const dialogs = useDialogs();
+  const navigate = useNavigate();
   const notifications = useNotifications();
+
+  const { docClsfNo } = useParams();
+
+  const [detailData, setDetailData] = React.useState<DocClassDetail | null>(
+    null,
+  );
+  const [isLoading, setIsLoading] = React.useState(true);
 
   const [returnStatus, setReturnStatus] = React.useState("");
 
@@ -61,15 +77,12 @@ export default function DocClassificationDetail() {
         return;
       }
 
-      const confirmed = await dialogs.confirm(
-        `${targetRow.dept} / ${targetRow.name} 공람 이력을 삭제 할까요?`,
-        {
-          title: "삭제 확인",
-          severity: "error",
-          okText: "삭제",
-          cancelText: "취소",
-        },
-      );
+      const confirmed = await dialogs.confirm("삭제하시겠습니까?", {
+        title: `삭제 확인`,
+        severity: "error",
+        okText: "확인",
+        cancelText: "취소",
+      });
 
       if (!confirmed) {
         return;
@@ -85,15 +98,23 @@ export default function DocClassificationDetail() {
     [approvalRows, dialogs, notifications],
   );
 
-  const handleBack = () => {};
+  const handleBack = () => {
+    navigate("/docClassification/list");
+  };
+
+  if (isLoading) {
+    return <PageStatus isLoading={isLoading} />;
+  }
 
   return (
     <div>
       <div className="btn_wrapper">
-        <DigitalDocHistoryButton />
         <Button variant="contained" onClick={handleBack}>
           목록
         </Button>
+        <DocClassificationHistoryButton
+          docClsfNo={detailData?.docClsfNo ?? ""}
+        />
       </div>
 
       {/* 문서분류 */}

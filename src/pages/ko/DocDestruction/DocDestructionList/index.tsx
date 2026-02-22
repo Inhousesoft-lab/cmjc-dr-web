@@ -1,27 +1,38 @@
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  Grid,
-  MenuItem,
-  Select,
-} from "@mui/material";
+import { Box, Button, Divider, Grid } from "@mui/material";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
-import { columnDefs } from "./col-def";
+import { listDefs } from "./col-def";
 
-import DESTRUCTION_LIST_DUMMY_DATA from "@/mocks/edoc/edocDestructionListDummyData.json";
 import DocDestructionManagementPrintButton from "@/components/biz/DocDestructionManagementPrintDialog";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import dayjs from "dayjs";
 import MuiSelect from "@/components/elements/MuiSelect";
+import { useNavigate } from "react-router-dom";
+import useNotifications from "@/hooks/useNotifications";
+import { DocDestruction } from "@/types/docDestruction";
+import { ColDef } from "ag-grid-community";
 
 export default function DocDestructionReqList() {
+  const navigate = useNavigate();
+  const notifications = useNotifications();
+
   const printAreaRef = useRef<HTMLDivElement | null>(null);
 
   const [printOn, setPrintOn] = useState(false);
+
+  const [columnDefs] = React.useState<ColDef<DocDestruction>[]>(listDefs);
+
+  const [rowData, setRowsData] = React.useState<{
+    rows: DocDestruction[];
+    rowCount: number;
+  }>({
+    rows: [],
+    rowCount: 0,
+  });
+
+  const [isLoading, setIsLoading] = React.useState(true);
+
   const searchValues = {
     docLclsfNo: "",
     docMclsfNo: "",
@@ -234,9 +245,11 @@ export default function DocDestructionReqList() {
 
       <Box ref={printAreaRef} sx={{ width: "100%" }}>
         <AgGridContainer
+          isLoading={isLoading}
+          enableRowSelection={false}
           colDefs={columnDefs}
-          rowData={DESTRUCTION_LIST_DUMMY_DATA}
-          count={DESTRUCTION_LIST_DUMMY_DATA.length}
+          rowData={rowData.rows}
+          count={rowData.rowCount}
         />
       </Box>
     </div>

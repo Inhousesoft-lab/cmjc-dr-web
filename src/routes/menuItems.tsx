@@ -17,7 +17,7 @@ const menuItems: Menu[] = [
         menu: true,
       },
       {
-        path: "docClassification/:id",
+        path: "docClassification/:docClsfNo",
         label: "문서분류 상세",
         menuType: "MENU",
         element: {
@@ -115,7 +115,7 @@ const menuItems: Menu[] = [
         menu: true,
       },
       {
-        path: "docDestruction/:id",
+        path: "docDestruction/:eldocNo",
         label: "전자문서 파기상세",
         menuType: "MENU",
         element: {

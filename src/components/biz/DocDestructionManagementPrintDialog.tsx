@@ -1,13 +1,12 @@
 import * as React from "react";
 import { Box, Button, Typography } from "@mui/material";
-import type { DocDestruction, SearchValues } from "@/types/docDestruction";
-import AgGridContainer from "../grid/AgGridContainer";
-import DESTRUCTION_LIST_DUMMY_DATA from "@/mocks/edoc/edocDestructionListDummyData.json";
-import { columnDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
+import type { SearchValues } from "@/types/docDestruction";
+import { listDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
 import DialogTrigger from "../dialog/DialogTrigger";
 import AgGridTable from "../grid/AgGridTable";
+import { ColDef } from "ag-grid-community";
 
-type DisposalRow = {
+type Destruction = {
   no: string;
   fileName: string;
   dataType: string;
@@ -18,79 +17,26 @@ type DisposalRow = {
   manager: string;
 };
 
-const rows: DisposalRow[] = [
-  {
-    no: "1",
-    fileName: "회원정보_2023.xlsx",
-    dataType: "회원관리",
-    createdDate: "2023-01-01",
-    disposeDate: "2025-01-01",
-    reason: "보유기간 만료",
-    handler: "홍길동",
-    manager: "김부장",
-  },
-  // 나머지 빈 행들 (인쇄용 템플릿)
-  {
-    no: "",
-    fileName: "",
-    dataType: "",
-    createdDate: "",
-    disposeDate: "",
-    reason: "",
-    handler: "",
-    manager: "",
-  },
-  {
-    no: "",
-    fileName: "",
-    dataType: "",
-    createdDate: "",
-    disposeDate: "",
-    reason: "",
-    handler: "",
-    manager: "",
-  },
-  {
-    no: "",
-    fileName: "",
-    dataType: "",
-    createdDate: "",
-    disposeDate: "",
-    reason: "",
-    handler: "",
-    manager: "",
-  },
-  {
-    no: "",
-    fileName: "",
-    dataType: "",
-    createdDate: "",
-    disposeDate: "",
-    reason: "",
-    handler: "",
-    manager: "",
-  },
-  {
-    no: "",
-    fileName: "",
-    dataType: "",
-    createdDate: "",
-    disposeDate: "",
-    reason: "",
-    handler: "",
-    manager: "",
-  },
-];
-
 export default function DocDestructionManagementPrintDialog({
   searchValues,
 }: {
   searchValues: SearchValues;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
-
   const printAreaRef2 = React.useRef<HTMLDivElement | null>(null);
+
+  const [open, setOpen] = React.useState(false);
+
+  const [columnDefs] = React.useState<ColDef<any>[]>(listDefs);
+
+  const [rowData, setRowsData] = React.useState<{
+    rows: Destruction[];
+    rowCount: number;
+  }>({
+    rows: [],
+    rowCount: 0,
+  });
+
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -100,27 +46,17 @@ export default function DocDestructionManagementPrintDialog({
     setOpen(false);
   };
 
-  const [rowData, setRowsData] = React.useState<{
-    rows: DocDestruction[];
-    rowCount: number;
-  }>({
-    rows: [],
-    rowCount: 0,
-  });
-
   const loadData = React.useCallback(async () => {
     // 데이터 로드 로직 작성
     const data = { ...searchValues, reqCd: "CMPLT", prvcInclYn: "Y" };
 
     try {
       setIsLoading(true);
-      const res = DESTRUCTION_LIST_DUMMY_DATA;
-      const mappedRows: DocDestruction[] = res.map(
-        (item: any, index: number) => ({
-          ...item,
-          eldocNo: item.eldocNo || `${index}`,
-        }),
-      );
+      const res = rowData.rows;
+      const mappedRows: Destruction[] = res.map((item: any, index: number) => ({
+        ...item,
+        eldocNo: item.eldocNo || `${index}`,
+      }));
       setRowsData({
         rows: mappedRows,
         rowCount: mappedRows.length,

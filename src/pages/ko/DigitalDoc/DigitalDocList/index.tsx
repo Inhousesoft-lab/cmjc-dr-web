@@ -9,17 +9,30 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import { getLangFromPathname, langPath } from "@/routes/lang";
-import { columnDefs } from "./col-def";
+import { listDefs } from "./col-def";
 import AgGridContainer from "@/components/grid/AgGridContainer";
-import DIGITAL_DOC_LIST_MOCK_DATA from "@/mocks/edoc/digitalDocDummyData.json";
+import React from "react";
+import { ColDef } from "ag-grid-community";
+import { DigitalDoc } from "@/types/digitalDoc";
 
 export default function DigitalDocList() {
   const navigate = useNavigate();
   const curLang = getLangFromPathname(location.pathname);
 
-  const handleRowClick = (row: { id?: number | string }) => {
-    if (row?.id == null) return;
-    navigate(langPath(`digitalDoc/${row.id}`, curLang));
+  const [columnDefs] = React.useState<ColDef<DigitalDoc>[]>(listDefs);
+
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [rowData, setRowsData] = React.useState<{
+    rows: DigitalDoc[];
+    rowCount: number;
+  }>({
+    rows: [],
+    rowCount: 0,
+  });
+
+  const handleRowClick = (row: DigitalDoc) => {
+    if (!row.eldocNo) return;
+    navigate(langPath(`digitalDoc/${row.eldocNo}`, curLang));
   };
 
   const handleCreateClick = () => {
@@ -96,11 +109,12 @@ export default function DigitalDocList() {
         </Button>
       </div>
 
-      <AgGridContainer
+      <AgGridContainer<DigitalDoc>
+        isLoading={isLoading}
         enableRowSelection={false}
         colDefs={columnDefs}
-        rowData={DIGITAL_DOC_LIST_MOCK_DATA}
-        count={DIGITAL_DOC_LIST_MOCK_DATA.length}
+        rowData={rowData.rows}
+        count={rowData.rowCount}
         onRowClick={handleRowClick}
       />
     </div>

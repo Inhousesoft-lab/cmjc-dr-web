@@ -6,21 +6,31 @@ import {
   FormControl,
   FormControlLabel,
   Grid,
-  MenuItem,
-  Select,
   TextField,
 } from "@mui/material";
-import { columnDefs } from "./col-def";
+import { listDefs } from "./col-def";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import AgGridContainer from "@/components/grid/AgGridContainer";
-import HOLDING_INSTITUTION_LIST_DUMMY_DATA from "@/mocks/edoc/holdingInstitutionDummyData.json";
 import MuiSelect from "@/components/elements/MuiSelect";
+import { ColDef } from "ag-grid-community";
+import { HoldingInstitution } from "@/types/holdingInstitution";
 
 export default function HoldingInstitutionList() {
   const notifications = useNotifications();
   const dialogs = useDialogs();
+
+  const [columnDefs] = React.useState<ColDef[]>(listDefs);
+
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [rowData, setRowsData] = React.useState<{
+    rows: HoldingInstitution[];
+    rowCount: number;
+  }>({
+    rows: [],
+    rowCount: 0,
+  });
 
   const [selectedRows, setSelectedRows] = React.useState<any[]>([]);
 
@@ -270,10 +280,11 @@ export default function HoldingInstitutionList() {
       </div>
 
       <AgGridContainer<any>
+        isLoading={isLoading}
         enableRowSelection={true}
         colDefs={columnDefs}
-        count={HOLDING_INSTITUTION_LIST_DUMMY_DATA.length}
-        rowData={HOLDING_INSTITUTION_LIST_DUMMY_DATA}
+        rowData={rowData.rows}
+        count={rowData.rowCount}
         onSelectionChange={handleSelectionChange}
       />
     </div>

@@ -9,17 +9,35 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { columnDefs } from "./col-def";
+import { listDefs } from "./col-def";
 import AgGridContainer from "@/components/grid/AgGridContainer";
-import DUMMY_CLASSIFICATION_DATA from "@/mocks/edoc/docClassificationListDummyData.json";
+import React from "react";
+import { ColDef } from "ag-grid-community";
+import useNotifications from "@/hooks/useNotifications";
+import { useNavigate } from "react-router-dom";
+import { DocClassification } from "@/types/docClassification";
 
 export default function DocClassificationList() {
+  const navigate = useNavigate();
+  const notifications = useNotifications();
+
+  const [columnDefs] = React.useState<ColDef[]>(listDefs);
+
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [rowData, setRowsData] = React.useState<{
+    rows: DocClassification[];
+    rowCount: number;
+  }>({
+    rows: [],
+    rowCount: 0,
+  });
+
   const handleCreateClick = () => {
-    console.log({});
+    navigate(`/docClassification/create`);
   };
 
-  const handleRowClick = () => {
-    console.log({});
+  const handleRowClick = (row: DocClassification) => {
+    navigate(`/docClassification/${row.docClsfNo}`);
   };
 
   return (
@@ -53,7 +71,10 @@ export default function DocClassificationList() {
               </div>
             </div>
           </Grid>
-          <Grid size={{ xs: 12, sm: 3 }} sx={{ display: "flex", alignItems: "center" }}>
+          <Grid
+            size={{ xs: 12, sm: 3 }}
+            sx={{ display: "flex", alignItems: "center" }}
+          >
             <div className="filter-field filter-field--checkbox">
               <FormControlLabel
                 className="filter-checkbox"
@@ -99,9 +120,10 @@ export default function DocClassificationList() {
 
       {/* <!-- 본문 --> */}
       <AgGridContainer
+        isLoading={isLoading}
         colDefs={columnDefs}
-        rowData={DUMMY_CLASSIFICATION_DATA}
-        count={DUMMY_CLASSIFICATION_DATA.length}
+        rowData={rowData.rows}
+        count={rowData.rowCount}
         onRowClick={handleRowClick}
       />
     </div>

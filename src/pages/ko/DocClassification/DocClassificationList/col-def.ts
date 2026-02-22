@@ -1,7 +1,7 @@
-export const columnDefs: any[] = [
+export const listDefs = [
   {
     headerName: "번호",
-    field: "docClsfNo",
+    field: "rowNo",
     width: 90,
     cellStyle: { textAlign: "center" },
   },
@@ -23,13 +23,13 @@ export const columnDefs: any[] = [
   {
     headerName: "개인정보 포함유무",
     field: "prvcInclYn",
-    valueFormatter: (params: { value: any; }) => {
+    valueFormatter: (params: { value: any }) => {
       const v = params.value;
       if (v === "Y") return "포함";
       if (v === "N") return "미포함";
       return ""; // null/undefined 대비
     },
-    cellStyle: (params: { value: string; }) => {
+    cellStyle: (params: { value: string }) => {
       const isIncluded = params.value === "Y";
       return {
         textAlign: "center",
@@ -41,13 +41,13 @@ export const columnDefs: any[] = [
   {
     headerName: "사용유무",
     field: "useEn",
-    valueFormatter: (params: { value: any; }) => {
+    valueFormatter: (params: { value: any }) => {
       const v = params.value;
       if (v === "Y") return "사용";
       if (v === "N") return "사용안함";
       return ""; // null/undefined 대비
     },
-    cellStyle: (params: { value: string; }) => {
+    cellStyle: (params: { value: string }) => {
       const isNotUsed = params.value === "N";
       return {
         textAlign: "center",
@@ -63,9 +63,9 @@ export const columnDefs: any[] = [
   },
   {
     headerName: "등록일자",
-    field: "regYmd",
-    valueFormatter: (params: { value: string; }) => {
-      return formatDate(params.value); // null/undefined 대비
+    field: "regDt",
+    valueFormatter: (params: { value: string }) => {
+      return formatDate(params.value.replaceAll("-", "")); // null/undefined 대비
     },
 
     cellStyle: { textAlign: "center" },
