@@ -151,6 +151,15 @@
   vertical-align: middle;
 }
 
+.tbl-body {
+  white-space: pre-line;
+  line-height: 1.9;
+  color: #374151;
+  margin-top: 18px;
+  padding-top: 18px;
+  font-size: 15px;
+}
+
 /* MUI table baseline (moved from theme/customizations/table.ts) */
 .MuiTable-root {
   width: 100%;
@@ -192,7 +201,6 @@
   font-weight: 600;
   text-align: left;
   word-break: keep-all;
-  border-top: 1px solid #212124;
 }
 
 .MuiTable-root.tbl_list .tbl_label {
@@ -265,4 +273,8 @@ col.tbl-col-w-24p {
 }
 col.tbl-col-w-28p {
   width: 28%;
+}
+
+col.tbl-col-w-38p {
+  width: 38%;
 }

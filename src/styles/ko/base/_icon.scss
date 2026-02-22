@@ -10855,3 +10855,21 @@
   color: var(--color_01);
   font-size: 14px;
 }
+
+.ico_paperclip {
+  overflow: hidden;
+  position: relative;
+  display: inline-block;
+  width: 17px;
+  height: 17px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.ico_paperclip:after {
+  content: "\f0c6";
+  font-family: var(--font-Awesome);
+  font-weight: 900;
+  color: var(--color_01);
+  font-size: 14px;
+}
