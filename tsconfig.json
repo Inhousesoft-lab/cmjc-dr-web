@@ -9,26 +9,14 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
-    // ✅ strict ON
     "strict": true,
-
-    // ✅ strict와 함께 추천
     "forceConsistentCasingInFileNames": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-
-    // (선택) 점진 강화 - 처음엔 꺼두는 걸 권장(에러 폭탄 가능)
-    // "noUncheckedIndexedAccess": true,
-    // "exactOptionalPropertyTypes": true,
-
-    "skipLibCheck": true,
-
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@shared/*": ["shared/*"]
-    }
+      "@/*": ["src/*"]
+    },
+    "types": ["vite/client", "node"]
   },
-  "include": ["src", "shared", "vite.config.ts"]
+  "include": ["src", "src/vite-env.d.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
