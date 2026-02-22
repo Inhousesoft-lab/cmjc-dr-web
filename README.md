@@ -1,4 +1,4 @@
-# DSIMIS DR Frontend
+# DSIMS DR Frontend
 
 Vite + React 기반의 행정/업무용 프론트엔드 프로젝트입니다. 한국어 UI를 기본으로 다국어 라우팅 프리픽스(`/:lang`)를 지원합니다.
 
