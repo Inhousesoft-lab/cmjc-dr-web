@@ -1,11 +1,9 @@
-import React, { useRef, useState } from "react";
-import useMediaQuery from "@mui/material/useMediaQuery";
+import React from "react";
 import { Outlet } from "react-router-dom";
-import SimpledHeader from "@/components/common/SimpleHeader";
 import AdminSidebar from "@/components/common/AdminSidebar";
-import ecrfMenuItems from "../../routes/menuItems";
+import menuItems from "@/routes/menuItems";
 import PageHeader from "@/components/common/PageHeader";
-import { Menu } from "@/features/menu/MenuSlice";
+import type { Menu } from "@/features/menu/MenuSlice";
 import SimpleHeader from "@/components/common/SimpleHeader";
 
 type SidebarMenuItem = {
@@ -41,12 +39,7 @@ const convertToMenuItems = (
     });
 
 export default function Layout() {
-  const menuItems = convertToMenuItems(ecrfMenuItems);
-
-  const [isNavigationExpanded, setIsNavigationExpanded] = useState(true);
-  const desktopExpandedRef = useRef(isNavigationExpanded);
-  const navigationExpandedRef = useRef(isNavigationExpanded);
-  const isNarrowViewport = useMediaQuery("(max-width:700px)");
+  const [isNavigationExpanded, setIsNavigationExpanded] = React.useState(true);
 
   React.useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 900px)");
@@ -70,11 +63,13 @@ export default function Layout() {
     setIsNavigationExpanded((prev) => !prev);
   };
 
+  const _menuItems = convertToMenuItems(menuItems);
+
   return (
     <div id="wrap" className={isNavigationExpanded ? "" : "collapsed"}>
       <AdminSidebar
         expanded={isNavigationExpanded}
-        items={menuItems}
+        items={_menuItems}
         onToggle={handleToggleSidebar}
       />
       <SimpleHeader />

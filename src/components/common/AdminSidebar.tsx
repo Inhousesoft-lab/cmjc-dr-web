@@ -1,8 +1,7 @@
 import * as React from "react";
 
 import { getLangFromPathname, langPath, SupportedLang } from "@/routes/lang";
-import { Link, useNavigate } from "react-router";
-import { useAppDispatch } from "@/app/hooks";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 type MenuItem = {
   key: string;
@@ -13,6 +12,7 @@ type MenuItem = {
 };
 
 type MenuPath = {
+  sectionKey: string | null;
   rootKey: string | null;
   openKeys: string[];
   activeKey: string | null;
@@ -38,7 +38,10 @@ export default function AdminSidebar({
   onSelectLeaf,
 }: AdminSidebarProps) {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+  const location = useLocation();
+  const [openSectionKeys, setOpenSectionKeys] = React.useState<Set<string>>(
+    () => new Set(),
+  );
 
   // ✅ 1depth(루트)는 항상 1개만 열리도록(아코디언)
   const [openRootKey, setOpenRootKey] = React.useState<string | null>(() => {
@@ -52,14 +55,6 @@ export default function AdminSidebar({
     // root는 openRootKey로 관리하므로 여기서는 제외
     return new Set(keys.slice(1));
   });
-
-  const toggle = React.useCallback((key: string) => {
-    setOpenKeys((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  }, []);
 
   const isOpen = React.useCallback(
     (key: string, depth: number) => {
@@ -94,6 +89,7 @@ export default function AdminSidebar({
         !root.children?.length
       ) {
         return {
+          sectionKey: root.key,
           rootKey: null,
           openKeys: [],
           activeKey: root.key,
@@ -109,7 +105,8 @@ export default function AdminSidebar({
         // ✅ 2depth leaf OR 하위 숨김 라우트
         if (fullPath && matchPathPrefix(pathname, fullPath)) {
           return {
-            rootKey: root.key,
+            sectionKey: root.key,
+            rootKey: child.key,
             openKeys: [],
             activeKey: child.key,
           };
@@ -123,8 +120,9 @@ export default function AdminSidebar({
             // ✅ 3depth leaf OR 하위 숨김 라우트
             if (fullPath2 && matchPathPrefix(pathname, fullPath2)) {
               return {
-                rootKey: root.key,
-                openKeys: [child.key],
+                sectionKey: root.key,
+                rootKey: child.key,
+                openKeys: [],
                 activeKey: grand.key,
               };
             }
@@ -133,12 +131,12 @@ export default function AdminSidebar({
       }
     }
 
-    return { rootKey: null, openKeys: [], activeKey: null };
+    return { sectionKey: null, rootKey: null, openKeys: [], activeKey: null };
   };
   const [activeKey, setActiveKey] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    const { rootKey, openKeys, activeKey } = findMenuPath(
+    const { sectionKey, rootKey, openKeys, activeKey } = findMenuPath(
       items,
       location.pathname,
       curLang,
@@ -146,6 +144,7 @@ export default function AdminSidebar({
     setOpenRootKey(rootKey);
     setOpenKeys(new Set(openKeys));
     setActiveKey(activeKey);
+    setOpenSectionKeys(new Set(sectionKey ? [sectionKey] : []));
   }, [location.pathname, items, curLang]);
 
   const resolveTo = React.useCallback(
@@ -176,7 +175,7 @@ export default function AdminSidebar({
 
       navigate(langPath(raw, curLang), { replace: false });
     },
-    [navigate, onSelectLeaf, curLang, dispatch],
+    [navigate, onSelectLeaf, curLang],
   );
 
   const renderNode = (item: MenuItem, depth: number): React.ReactElement => {
@@ -201,8 +200,11 @@ export default function AdminSidebar({
           return;
         }
 
-        // ✅ 2depth/3depth는 기존 방식대로 토글
-        toggle(item.key);
+        // 2depth+ 는 클릭한 메뉴만 열고 나머지는 닫기
+        setOpenKeys((prev) => {
+          if (prev.has(item.key)) return new Set();
+          return new Set([item.key]);
+        });
         return;
       }
       goLeaf(item);
@@ -260,16 +262,35 @@ export default function AdminSidebar({
       <div className={`aside ${expanded ? "" : "collapsed"}`.trim()}>
         <div className="aside_inner">
           <div id="lnb">
-            {items.map((item, index) => (
-              <React.Fragment key={index}>
-                <h2 className="lnb_tit">{item.label}</h2>
-                {item.children && (
-                  <ul className="lnb_list">
-                    {item.children.map((item) => renderNode(item, 0))}
-                  </ul>
-                )}
-              </React.Fragment>
-            ))}
+            {items.map((item) => {
+              const hasChildren = !!item.children?.length;
+              const isSectionOpen = openSectionKeys.has(item.key);
+
+              return (
+                <React.Fragment key={item.key}>
+                  <h2
+                    className={`lnb_tit ${hasChildren ? "hasDepth" : ""} ${isSectionOpen ? "on" : ""}`.trim()}
+                    onClick={() => {
+                      if (!hasChildren) {
+                        goLeaf(item);
+                        return;
+                      }
+                      setOpenSectionKeys((prev) => {
+                        if (prev.has(item.key)) return new Set();
+                        return new Set([item.key]);
+                      });
+                    }}
+                  >
+                    {item.label}
+                  </h2>
+                  {hasChildren && isSectionOpen && (
+                    <ul className="lnb_list">
+                      {item.children?.map((item) => renderNode(item, 0))}
+                    </ul>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
       </div>
