@@ -16,7 +16,6 @@ import { ComponentKey, componentMap } from "./ComponentMap";
 import Layout from "@/components/layout/Layout";
 
 import menuItems from "./menuItems";
-import AuthGuard from "./AuthGuard";
 
 type LangElementProps = {
   byLang: Record<string, ComponentKey | null | undefined>;
@@ -154,18 +153,16 @@ export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
+        {/* <Route
           path="/:lang/login"
           element={<LangElement byLang={{ ko: "Login", en: "Login" }} />}
-        />
+        /> */}
         {/* 공통 레이아웃 */}
         <Route
           element={
-            <AuthGuard>
-              <LangGuard>
-                <Layout />
-              </LangGuard>
-            </AuthGuard>
+            <LangGuard>
+              <Layout />
+            </LangGuard>
           }
         >
           {/* ✅ 루트(/)로 들어오면 브라우저 언어 기반으로 /ko 또는 /en로 보내기 */}

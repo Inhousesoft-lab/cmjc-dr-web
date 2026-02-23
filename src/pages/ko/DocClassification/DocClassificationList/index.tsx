@@ -26,7 +26,6 @@ import {
   useDocClsfChildrenLive,
   useLclsfListLive,
 } from "@/hooks/query/useDocClsfTree";
-import { initSelectItem } from "@/types/common";
 
 export default function DocClassificationList() {
   const navigate = useNavigate();
@@ -91,33 +90,33 @@ export default function DocClassificationList() {
   const { data: mclsfDocs } = useDocClsfChildrenLive(docLclsfNo);
   const { data: sclsfDocs } = useDocClsfChildrenLive(docMclsfNo);
 
-  const lclsfList = lclsfDocs
-    ? [
-        ...initSelectItem,
-        ...lclsfDocs.map((vo) => ({
-          label: vo.docClsfNm,
-          value: vo.docClsfNo,
-        })),
-      ]
-    : initSelectItem;
-  const mclsfList = mclsfDocs
-    ? [
-        ...initSelectItem,
-        ...mclsfDocs.map((vo) => ({
-          label: vo.docClsfNm,
-          value: vo.docClsfNo,
-        })),
-      ]
-    : initSelectItem;
-  const sclsfList = sclsfDocs
-    ? [
-        ...initSelectItem,
-        ...sclsfDocs.map((vo) => ({
-          label: vo.docClsfNm,
-          value: vo.docClsfNo,
-        })),
-      ]
-    : initSelectItem;
+  // const lclsfList = lclsfDocs
+  //   ? [
+  //       ...initSelectItem,
+  //       ...lclsfDocs.map((vo) => ({
+  //         label: vo.docClsfNm,
+  //         value: vo.docClsfNo,
+  //       })),
+  //     ]
+  //   : initSelectItem;
+  // const mclsfList = mclsfDocs
+  //   ? [
+  //       ...initSelectItem,
+  //       ...mclsfDocs.map((vo) => ({
+  //         label: vo.docClsfNm,
+  //         value: vo.docClsfNo,
+  //       })),
+  //     ]
+  //   : initSelectItem;
+  // const sclsfList = sclsfDocs
+  //   ? [
+  //       ...initSelectItem,
+  //       ...sclsfDocs.map((vo) => ({
+  //         label: vo.docClsfNm,
+  //         value: vo.docClsfNo,
+  //       })),
+  //     ]
+  //   : initSelectItem;
 
   const handleCreateClick = () => {
     navigate(`/docClassification/create`);

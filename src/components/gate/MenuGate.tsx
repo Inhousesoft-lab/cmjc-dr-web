@@ -1,7 +1,5 @@
-import i18n from "@/i18n/i18n";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { selectMenuList } from "@/features/auth/MenuThunks"; // 경로는 프로젝트에 맞게
 
 export default function MenuGate({
   children,
@@ -27,7 +25,7 @@ export default function MenuGate({
 
       try {
         // thunk 완료까지 기다림 (unwrap 사용 가능하면 더 좋음)
-        await dispatch(selectMenuList({ langSeCd: i18n.language })).unwrap?.();
+        //await dispatch(selectMenuList({ langSeCd: i18n.language })).unwrap?.();
       } catch (e) {
         // 실패해도 앱이 아예 안 뜨면 곤란하니,
         // 여기서 정책을 정하세요:

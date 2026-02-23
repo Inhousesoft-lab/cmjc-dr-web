@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const proxyTarget = env.VITE_PROXY_TARGET || "http://127.0.0.1:8080";
+  const proxyTarget = "http://localhost:8080";
 
   return {
     plugins: [react()],
@@ -22,18 +22,6 @@ export default defineConfig(({ mode }) => {
           cookiePathRewrite: {
             "*": "/",
           },
-        },
-        "/drugsafe_pp": {
-          target: proxyTarget,
-          changeOrigin: true,
-          secure: false,
-          cookieDomainRewrite: {
-            "*": "localhost",
-          },
-          cookiePathRewrite: {
-            "*": "/",
-          },
-          // rewrite: (path) => path.replace(/^\/api/dr/, ""),
         },
       },
     },
