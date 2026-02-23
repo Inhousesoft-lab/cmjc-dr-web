@@ -1,3 +1,5 @@
+import Login from "@/pages/ko/Login";
+
 import DocClassificationList from "@/pages/ko/DocClassification/DocClassificationList";
 import DocClassificationDetail from "@/pages/ko/DocClassification/DocClassificationDetail";
 import DocClassificationForm from "@/pages/ko/DocClassification/DocClassificationForm";
@@ -14,6 +16,7 @@ import DocDestructionList from "@/pages/ko/DocDestruction/DocDestructionList";
 import ExternalView from "@/pages/ko/ExternalView";
 
 export const componentMap = {
+  Login,
   DocClassificationList,
   DocClassificationForm,
   DocClassificationDetail,
@@ -25,7 +28,7 @@ export const componentMap = {
   DocDestructionAppvList,
   DocDestructionList,
   DocDestructionDetail,
-  ExternalView
+  ExternalView,
 };
 
 export type ComponentKey = keyof typeof componentMap;
