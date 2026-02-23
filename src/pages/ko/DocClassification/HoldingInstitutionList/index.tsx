@@ -23,7 +23,6 @@ export default function HoldingInstitutionList() {
 
   const [columnDefs] = React.useState<ColDef[]>(listDefs);
 
-  const [isLoading, setIsLoading] = React.useState(true);
   const [rowData, setRowsData] = React.useState<{
     rows: HoldingInstitution[];
     rowCount: number;
@@ -31,6 +30,26 @@ export default function HoldingInstitutionList() {
     rows: [],
     rowCount: 0,
   });
+
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: load data
+    } catch (e) {
+      notifications.show(getErrorMessage(e), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
 
   const [selectedRows, setSelectedRows] = React.useState<any[]>([]);
 

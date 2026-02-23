@@ -1,6 +1,6 @@
 import type { Paging } from "./common";
 
-export interface SearchValues extends Paging {
+export interface DocClassificationSearch extends Paging {
   docLclsfNo: string;
   docMclsfNo: string;
   docSclsfNo: string;
@@ -24,11 +24,7 @@ export interface DocClsf {
   prvcFileHldPrst: DocClassSubDetail;
 }
 
-export interface DocClassificationSearchState {
-  values: SearchValues;
-}
-
-export interface DocClassification {
+export interface DocClassificationVO {
   docClsfNo: string;
   docClsfSeCd: string;
   docClsfNm: string;

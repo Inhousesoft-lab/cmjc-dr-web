@@ -32,6 +32,24 @@ export default function DocDestructionReqList() {
 
   const [isLoading, setIsLoading] = React.useState(true);
 
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: load data
+    } catch (e) {
+      notifications.show(getErrorMessage(e), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
+
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
 
   const handleSelectionChange = useCallback((rows: any[]) => {

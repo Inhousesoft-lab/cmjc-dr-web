@@ -17,7 +17,26 @@ export default function DocDestructionDetail() {
   const { eldocNo } = useParams();
 
   const [viewData, setViewData] = React.useState<DocDestruction | null>(null);
+
   const [isLoading, setIsLoading] = React.useState(true);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: load data
+    } catch (e) {
+      notifications.show(getErrorMessage(e), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
 
   const handleBack = () => {
     navigate(langPath("docDestruction/list", curLang));

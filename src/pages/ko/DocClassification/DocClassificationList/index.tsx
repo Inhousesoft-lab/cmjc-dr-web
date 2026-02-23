@@ -9,13 +9,24 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { listDefs } from "./col-def";
+import { useForm, useWatch } from "react-hook-form";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import React from "react";
 import { ColDef } from "ag-grid-community";
 import useNotifications from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
-import { DocClassification } from "@/types/docClassification";
+import {
+  DocClassificationSearch,
+  DocClassificationVO,
+} from "@/types/docClassification";
+import { https } from "@shared/utils/https";
+import { listDefs } from "./col-def";
+import { selectDocClassificationListApiPath } from "@/api/docClassification/DocClassificationApiPaths";
+import {
+  useDocClsfChildrenLive,
+  useLclsfListLive,
+} from "@/hooks/query/useDocClsfTree";
+import { initSelectItem } from "@/types/common";
 
 export default function DocClassificationList() {
   const navigate = useNavigate();
@@ -23,20 +34,96 @@ export default function DocClassificationList() {
 
   const [columnDefs] = React.useState<ColDef[]>(listDefs);
 
-  const [isLoading, setIsLoading] = React.useState(true);
   const [rowData, setRowsData] = React.useState<{
-    rows: DocClassification[];
+    rows: DocClassificationVO[];
     rowCount: number;
   }>({
     rows: [],
     rowCount: 0,
   });
 
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const { control, handleSubmit, setValue, getValues } =
+    useForm<DocClassificationSearch>({
+      defaultValues: {
+        docLclsfNo: "",
+        docMclsfNo: "",
+        docSclsfNo: "",
+        prvcInclYn: "",
+        useEn: "",
+        docClsfNm: "",
+        pageNum: 1,
+        pageSize: 10,
+      },
+    });
+
+  const loadData = async () => {
+    setIsLoading(true);
+    const data = { ...getValues() };
+    try {
+      const res = await https.get(selectDocClassificationListApiPath(), {
+        params: data,
+      });
+
+      setRowsData({
+        rows: res.data.list,
+        rowCount: res.data.total,
+      });
+    } catch (e) {
+      notifications.show(getErrorMessage(e), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
+
+  const docLclsfNo = useWatch({ control, name: "docLclsfNo" });
+  const docMclsfNo = useWatch({ control, name: "docMclsfNo" });
+
+  const { data: lclsfDocs } = useLclsfListLive();
+  const { data: mclsfDocs } = useDocClsfChildrenLive(docLclsfNo);
+  const { data: sclsfDocs } = useDocClsfChildrenLive(docMclsfNo);
+
+  const lclsfList = lclsfDocs
+    ? [
+        ...initSelectItem,
+        ...lclsfDocs.map((vo) => ({
+          label: vo.docClsfNm,
+          value: vo.docClsfNo,
+        })),
+      ]
+    : initSelectItem;
+  const mclsfList = mclsfDocs
+    ? [
+        ...initSelectItem,
+        ...mclsfDocs.map((vo) => ({
+          label: vo.docClsfNm,
+          value: vo.docClsfNo,
+        })),
+      ]
+    : initSelectItem;
+  const sclsfList = sclsfDocs
+    ? [
+        ...initSelectItem,
+        ...sclsfDocs.map((vo) => ({
+          label: vo.docClsfNm,
+          value: vo.docClsfNo,
+        })),
+      ]
+    : initSelectItem;
+
   const handleCreateClick = () => {
     navigate(`/docClassification/create`);
   };
 
-  const handleRowClick = (row: DocClassification) => {
+  const handleRowClick = (row: DocClassificationVO) => {
     navigate(`/docClassification/${row.docClsfNo}`);
   };
 

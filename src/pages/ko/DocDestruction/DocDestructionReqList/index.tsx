@@ -16,8 +16,6 @@ export default function DocDestructionReqList() {
 
   const [columnDefs] = React.useState<ColDef<any>[]>(listDefs);
 
-  const [isLoading, setIsLoading] = React.useState(true);
-
   const [rowData, setRowsData] = React.useState<{
     rows: DocDestruction[];
     rowCount: number;
@@ -25,6 +23,26 @@ export default function DocDestructionReqList() {
     rows: [],
     rowCount: 0,
   });
+
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: load data
+    } catch (e) {
+      notifications.show(getErrorMessage(e), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
 
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
 

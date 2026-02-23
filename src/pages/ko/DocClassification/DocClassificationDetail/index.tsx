@@ -35,8 +35,27 @@ export default function DocClassificationDetail() {
   const [detailData, setDetailData] = React.useState<DocClassDetail | null>(
     null,
   );
+
   const [isLoading, setIsLoading] = React.useState(true);
 
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: load data
+    } catch (e) {
+      notifications.show(getErrorMessage(e), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
+  
   const [returnStatus, setReturnStatus] = React.useState("");
 
   const [approvalRows, setApprovalRows] = React.useState<

@@ -13,8 +13,8 @@ export interface SelectItem {
 }
 
 export interface Paging {
-  page: number;
-  recordCountPerPage: number;
+  pageNum: number;
+  pageSize: number;
 }
 
 export const initSelectItem: SelectItem[] = [
