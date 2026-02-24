@@ -13,21 +13,23 @@ import { useForm, useWatch } from "react-hook-form";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import React from "react";
 import { ColDef } from "ag-grid-community";
+import { useAppDispatch } from "@/app/hooks";
+import type { RootState } from "@/app/store";
+import { useSelector } from "react-redux";
 import useNotifications from "@/hooks/useNotifications";
 import { useNavigate } from "react-router-dom";
 import {
   DocClassificationSearch,
   DocClassificationVO,
 } from "@/types/docClassification";
+import { selectDocClsfByParent } from "@/features/clsf/DocClsfSelectors";
+import { fetchDocClsfList } from "@/features/clsf/DocClsfThunk";
 import { https } from "@shared/utils/https";
 import { listDefs } from "./col-def";
 import { selectDocClassificationListApiPath } from "@/api/docClassification/DocClassificationApiPaths";
-import {
-  useDocClsfChildrenLive,
-  useLclsfListLive,
-} from "@/hooks/query/useDocClsfTree";
 
 export default function DocClassificationList() {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const notifications = useNotifications();
 
@@ -86,9 +88,29 @@ export default function DocClassificationList() {
   const docLclsfNo = useWatch({ control, name: "docLclsfNo" });
   const docMclsfNo = useWatch({ control, name: "docMclsfNo" });
 
-  const { data: lclsfDocs } = useLclsfListLive();
-  const { data: mclsfDocs } = useDocClsfChildrenLive(docLclsfNo);
-  const { data: sclsfDocs } = useDocClsfChildrenLive(docMclsfNo);
+  const lclsfDocs = useSelector((state: RootState) =>
+    selectDocClsfByParent(state),
+  );
+  const mclsfDocs = useSelector((state: RootState) =>
+    selectDocClsfByParent(state, docLclsfNo),
+  );
+  const sclsfDocs = useSelector((state: RootState) =>
+    selectDocClsfByParent(state, docMclsfNo),
+  );
+
+  React.useEffect(() => {
+    dispatch(fetchDocClsfList());
+  }, [dispatch]);
+
+  React.useEffect(() => {
+    if (!docLclsfNo) return;
+    dispatch(fetchDocClsfList({ parentDocClsfNo: docLclsfNo }));
+  }, [dispatch, docLclsfNo]);
+
+  React.useEffect(() => {
+    if (!docMclsfNo) return;
+    dispatch(fetchDocClsfList({ parentDocClsfNo: docMclsfNo }));
+  }, [dispatch, docMclsfNo]);
 
   // const lclsfList = lclsfDocs
   //   ? [
