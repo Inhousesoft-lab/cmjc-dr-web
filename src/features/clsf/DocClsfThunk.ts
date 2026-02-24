@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import https from "@/api/axiosInstance";
-import { selectDocClsfList, selectLclsfList } from "@/api/com/BizCommon";
+import { selectDocClsfList, selectLclsfList } from "@/api/clsf/DocClsf";
 import type { DocClsf } from "@/types/docClassification";
 
 export interface FetchDocClsfArg {
