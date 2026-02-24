@@ -2,6 +2,8 @@
 .filter {
   display: grid;
   gap: 12px;
+  grid-template-columns: 1fr auto;
+  align-items: end;
 }
 .filter-field {
   display: flex;
@@ -45,12 +47,12 @@
 
 @media (max-width: 767.98px) {
   .filter-field {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
   }
   .filter-label {
-    flex-basis: auto;
+    flex: 0 0 60px;
   }
 
   .filter-field--checkbox {
@@ -91,10 +93,6 @@
   justify-content: flex-end;
 }
 @media (min-width: 1200px) {
-  .filter {
-    grid-template-columns: 1fr auto;
-    align-items: end;
-  }
   .filter-actions {
     flex-direction: column;
   }
