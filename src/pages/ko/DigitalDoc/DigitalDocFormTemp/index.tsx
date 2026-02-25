@@ -153,7 +153,7 @@ export default function DigitalDocForm() {
                     <FormControlLabel
                       value="MODC2025122900000008"
                       control={<Radio size="small" />}
-                      label="선택4"
+                      label="보관서류체크리스트"
                     />
                   </RadioGroup>
                   <FormHelperText>
@@ -164,25 +164,47 @@ export default function DigitalDocForm() {
             />
           </TableCell>
         </TableRow>
-        <TableRow>
-          <LabelCell>문서번호</LabelCell>
-          <TableCell colSpan={3}>
-            <Controller
-              name="docNo"
-              control={control}
-              rules={{ required: "문서번호는 필수입니다." }}
-              render={({ field }) => (
-                <TextField
-                  fullWidth
-                  placeholder="문서번호"
-                  {...field}
-                  error={!!errors.docNo}
-                  helperText={errors.docNo?.message}
-                />
-              )}
-            />
-          </TableCell>
-        </TableRow>
+
+    <TableRow>
+    <LabelCell>문서제목</LabelCell>
+    <TableCell colSpan={3}>
+      <Controller
+        name="docTtl"
+        control={control}
+        rules={{ required: "문서제목은 필수입니다." }}
+        render={({ field }) => (
+          <TextField
+            fullWidth
+            placeholder="문서제목"
+            {...field}
+            error={!!errors.docTtl}
+            helperText={errors.docTtl?.message}
+          />
+        )}
+      />
+    </TableCell>
+  </TableRow>
+
+  <TableRow>
+    <LabelCell>문서번호</LabelCell>
+    <TableCell colSpan={3}>
+      <Controller
+        name="docNo"
+        control={control}
+        rules={{ required: "문서번호는 필수입니다." }}
+        render={({ field }) => (
+          <TextField
+            fullWidth
+            placeholder="문서번호"
+            {...field}
+            error={!!errors.docNo}
+            helperText={errors.docNo?.message}
+          />
+        )}
+      />
+    </TableCell>
+  </TableRow>
+
         <TableRow>
           <LabelCell>수집일자</LabelCell>
           <TableCell colSpan={3}>
