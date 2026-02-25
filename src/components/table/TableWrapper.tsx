@@ -5,15 +5,17 @@ export interface TableWrapperProp {
   tableAriaLabel?: string;
   colgroup?: React.ReactNode;
   children?: React.ReactNode;
+  sx?: any;
 }
 
 export default function TableWrapper({
   tableAriaLabel,
   colgroup,
   children,
+  sx,
 }: TableWrapperProp) {
   return (
-    <Table aria-label={tableAriaLabel} className="tbl_view">
+    <Table aria-label={tableAriaLabel} className="tbl_view" sx={sx}>
       {colgroup && colgroup}
       <TableBody>{children}</TableBody>
     </Table>

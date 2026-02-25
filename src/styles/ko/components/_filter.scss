@@ -45,6 +45,24 @@
   line-height: 1.2;
 }
 
+.doc-clsf-prvc-checkbox {
+  margin: 0;
+  height: 40px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.doc-clsf-prvc-checkbox .MuiCheckbox-root {
+  padding: 6px;
+  margin-right: 4px;
+}
+
+.doc-clsf-prvc-checkbox .MuiFormControlLabel-label {
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
 @media (max-width: 767.98px) {
   .filter-field {
     flex-direction: row;

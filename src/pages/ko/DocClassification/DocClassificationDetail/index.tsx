@@ -1,22 +1,21 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import {
-  Box,
+  Button,
+  FormControl,
+  FormControlLabel,
   Grid,
+  MenuItem,
   Radio,
   RadioGroup,
+  Select,
+  Stack,
   TableCell,
   TableRow,
 } from "@mui/material";
 import TableWrapper from "@/components/table/TableWrapper";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
-import DocClassificationHistoryButton from "@/components/actionButtons/DocClassificationHistoryButton";
+import DocClassificationHistoryButton from "@/components/biz/DocClassificationHistoryDialog";
 import DigitalDocDownButton from "@/components/actionButtons/DigitalDocDownButton";
 import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
 import GridField from "@/components/common/GridField";
@@ -24,13 +23,18 @@ import LabelCell from "@/components/table/LabelCell";
 import { useNavigate, useParams } from "react-router-dom";
 import { DocClassDetail } from "@/types/docClassification";
 import PageStatus from "@/components/common/PageStatus";
+import {
+  deleteDocClassificationApiPath,
+  selectDocClassificationDetailApiPath,
+} from "@/api/docClassification/DocClassificationApiPaths";
+import https from "@/api/axiosInstance";
 
 export default function DocClassificationDetail() {
+  const { docClsfNo } = useParams();
+
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const notifications = useNotifications();
-
-  const { docClsfNo } = useParams();
 
   const [detailData, setDetailData] = React.useState<DocClassDetail | null>(
     null,
@@ -41,7 +45,11 @@ export default function DocClassificationDetail() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // TODO: load data
+      const res = await https.get(
+        selectDocClassificationDetailApiPath(docClsfNo ?? ""),
+      );
+      const payload = res.data?.data ?? res.data;
+      setDetailData((payload ?? null) as DocClassDetail | null);
     } catch (e) {
       notifications.show(getErrorMessage(e), {
         severity: "error",
@@ -55,7 +63,7 @@ export default function DocClassificationDetail() {
   React.useEffect(() => {
     loadData();
   }, []);
-  
+
   const [returnStatus, setReturnStatus] = React.useState("");
 
   const [approvalRows, setApprovalRows] = React.useState<
@@ -117,9 +125,72 @@ export default function DocClassificationDetail() {
     [approvalRows, dialogs, notifications],
   );
 
+  const handleViewDataEdit = React.useCallback(() => {
+    navigate(`/docClassification/${docClsfNo}/modify`);
+  }, [navigate, docClsfNo]);
+
+  const handleViewDataDelete = React.useCallback(async () => {
+    if (!detailData) {
+      return;
+    }
+
+    const confirmed = await dialogs.confirm("삭제하시겠습니까?", {
+      title: `삭제 확인`,
+      severity: "error",
+      okText: "확인",
+      cancelText: "취소",
+    });
+
+    if (confirmed) {
+      setIsLoading(true);
+      try {
+        await deleteDocClassificationApiPath(docClsfNo ?? "");
+
+        notifications.show("삭제 되었습니다..", {
+          severity: "success",
+          autoHideDuration: 3000,
+        });
+        navigate("/docClassification/list");
+      } catch (e) {
+        notifications.show(getErrorMessage(e), {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [detailData, dialogs, docClsfNo, navigate, notifications]);
+
   const handleBack = () => {
     navigate("/docClassification/list");
   };
+
+  const detailExt = detailData as
+    | (DocClassDetail & {
+        docNo?: string;
+        docTtl?: string;
+        endYmd?: string;
+        gvbkYn?: string;
+        addExpln?: string;
+        deptNm?: string;
+        deptId?: string;
+      })
+    | null;
+
+  const mappedDocNo = detailExt?.docNo ?? "-";
+  const mappedDocTtl = detailExt?.docTtl ?? "-";
+  const mappedDept = detailExt?.deptNm ?? detailExt?.deptId ?? "-";
+  const mappedEndYmd = detailExt?.endYmd
+    ? formatDate(detailExt.endYmd.replaceAll("-", ""))
+    : "-";
+  const mappedGvbkYn =
+    detailExt?.gvbkYn === "Y"
+      ? "반환"
+      : detailExt?.gvbkYn === "N"
+        ? "미반환"
+        : "-";
+  const mappedAddExpln = detailExt?.addExpln ?? "-";
 
   if (isLoading) {
     return <PageStatus isLoading={isLoading} />;
@@ -127,26 +198,70 @@ export default function DocClassificationDetail() {
 
   return (
     <div>
-      <div className="btn_wrapper">
-        <Button variant="contained" onClick={handleBack}>
-          목록
-        </Button>
-        <DocClassificationHistoryButton
-          docClsfNo={detailData?.docClsfNo ?? ""}
-        />
-      </div>
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
+        mb={2}
+        className="detail-top-actions"
+      >
+        <div className="btn_wrapper detail-top-actions__group">
+          <Button variant="contained" onClick={handleBack}>
+            목록
+          </Button>
+          <DocClassificationHistoryButton docClsfNo={docClsfNo ?? ""} />
+        </div>
+        <div className="btn_wrapper detail-top-actions__group">
+          <Button variant="contained" onClick={handleViewDataEdit}>
+            수정
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleViewDataDelete}
+          >
+            삭제
+          </Button>
+        </div>
+      </Stack>
 
       {/* 문서분류 */}
       <Grid container spacing={0} className="table-view-grid">
-        <GridField label="문서분류" value="대분류" />
-        <GridField label="문서번호" value="KIDS-0001" />
-        <GridField label="기본권한" value="피해구제팀 / 전체" />
-        <GridField label="문서제목" value="333" />
-        <GridField label="수집일자" value="sddsdf" />
-        <GridField label="종료일자" value="22" />
-        <GridField label="개인정보" value="Y" />
-        <GridField label="반환여부" value="미반환" />
-        <GridField label="비고" value="333" />
+        <GridField
+          label="문서분류"
+          value={
+            <>
+              {detailData?.docClsfSeCd === "L" && `${detailData?.docLclsfNm}`}
+              {detailData?.docClsfSeCd === "M" &&
+                `${detailData?.docLclsfNm} > ${detailData?.docMclsfNm}`}
+              {detailData?.docClsfSeCd === "S" &&
+                `${detailData?.docLclsfNm} > ${detailData?.docMclsfNm} > ${detailData?.docSclsfNm}`}
+            </>
+          }
+        />
+        <GridField
+          label="개인정보 포함"
+          value={detailData?.prvcInclYn === "Y" ? "포함" : "미포함"}
+        />
+        <GridField
+          label="사용여부"
+          value={detailData?.useEn === "Y" ? "사용" : "사용안함"}
+        />
+        <GridField
+          label="등록일자"
+          value={
+            detailData?.regDt
+              ? formatDate(detailData?.regDt.replaceAll("-", ""))
+              : "-"
+          }
+        />
+        <GridField label="등록자" value={detailData?.rgtrId ?? "-"} />
+        <GridField label="문서번호" value={mappedDocNo} />
+        <GridField label="기본권한" value={mappedDept} />
+        <GridField label="문서제목" value={mappedDocTtl} />
+        <GridField label="종료일자" value={mappedEndYmd} />
+        <GridField label="반환여부" value={mappedGvbkYn} />
+        <GridField label="비고" value={mappedAddExpln} />
         <GridField
           label="첨부파일"
           value={
@@ -305,11 +420,6 @@ export default function DocClassificationDetail() {
               </TableRow>
             </TableWrapper>
           </div>
-          <Box className="btn_wrapper" style={{ marginTop: 12 }}>
-            <Button variant="contained" size="small" color="primary">
-              수정
-            </Button>
-          </Box>
         </Grid>
       </Grid>
     </div>

@@ -34,12 +34,7 @@ export default function DigitalDocDownButton() {
 
   return (
     <React.Fragment>
-      <Button
-        variant="outlined"
-        size="small"
-        color="secondary"
-        onClick={handleClickOpen}
-      >
+      <Button variant="outlined" size="small" onClick={handleClickOpen}>
         다운로드
       </Button>
       <Dialog open={open} onClose={handleClose}>

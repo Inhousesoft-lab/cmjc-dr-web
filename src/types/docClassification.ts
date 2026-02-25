@@ -19,8 +19,8 @@ export interface DocClsf {
   useEn: string;
   regYmd: string;
   rgtrId: string;
-  mdfcnYmd: string;
   mdfrId: string;
+  mdfcnYmd: string;
   prvcFileHldPrst: DocClassSubDetail;
 }
 
@@ -56,10 +56,11 @@ export interface DocClassDetail {
   docMclsfNm: string;
   docSclsfNm: string;
   prvcInclYn: string;
+  prvcFileHldPrst: Partial<DocClassSubDetail>;
   useEn: string;
   regDt: string;
   rgtrId: string;
-  prvcFileHldPrst: Partial<DocClassSubDetail>;
+  mdfrId: string;
 }
 
 export interface DocClassSubDetail {

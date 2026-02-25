@@ -1,144 +1,79 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Checkbox,
   Divider,
-  FormControl,
   FormControlLabel,
   Grid,
-  MenuItem,
-  Select,
   TextField,
 } from "@mui/material";
-import { useForm, useWatch } from "react-hook-form";
-import AgGridContainer from "@/components/grid/AgGridContainer";
-import React from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { ColDef } from "ag-grid-community";
-import { useAppDispatch } from "@/app/hooks";
-import type { RootState } from "@/app/store";
-import { useSelector } from "react-redux";
+import AgGridContainer from "@/components/grid/AgGridContainer";
+import MuiSelect from "@/components/elements/MuiSelect";
 import useNotifications from "@/hooks/useNotifications";
-import { useNavigate } from "react-router-dom";
+import { useDocClassificationList } from "@/hooks/useDocClassificationList";
+import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 import {
   DocClassificationSearch,
   DocClassificationVO,
 } from "@/types/docClassification";
-import { selectDocClsfByParent } from "@/features/clsf/DocClsfSelectors";
-import { fetchDocClsfList } from "@/features/clsf/DocClsfThunk";
-import { https } from "@shared/utils/https";
 import { listDefs } from "./col-def";
-import { selectDocClassificationListApiPath } from "@/api/docClassification/DocClassificationApiPaths";
 
 export default function DocClassificationList() {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const notifications = useNotifications();
 
   const [columnDefs] = React.useState<ColDef[]>(listDefs);
 
-  const [rowData, setRowsData] = React.useState<{
-    rows: DocClassificationVO[];
-    rowCount: number;
-  }>({
-    rows: [],
-    rowCount: 0,
+  const { control, handleSubmit, setValue } = useForm<DocClassificationSearch>({
+    defaultValues: {
+      docLclsfNo: "",
+      docMclsfNo: "",
+      docSclsfNo: "",
+      prvcInclYn: "",
+      useEn: "",
+      docClsfNm: "",
+      pageNum: 1,
+      pageSize: 10,
+    },
   });
-
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  const { control, handleSubmit, setValue, getValues } =
-    useForm<DocClassificationSearch>({
-      defaultValues: {
-        docLclsfNo: "",
-        docMclsfNo: "",
-        docSclsfNo: "",
-        prvcInclYn: "",
-        useEn: "",
-        docClsfNm: "",
-        pageNum: 1,
-        pageSize: 10,
-      },
-    });
-
-  const loadData = async () => {
-    setIsLoading(true);
-    const data = { ...getValues() };
-    try {
-      const res = await https.get(selectDocClassificationListApiPath(), {
-        params: data,
-      });
-
-      setRowsData({
-        rows: res.data.list,
-        rowCount: res.data.total,
-      });
-    } catch (e) {
-      notifications.show(getErrorMessage(e), {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  React.useEffect(() => {
-    loadData();
-  }, []);
 
   const docLclsfNo = useWatch({ control, name: "docLclsfNo" });
   const docMclsfNo = useWatch({ control, name: "docMclsfNo" });
+  const useEnItems = [
+    { name: "전체", code: "" },
+    { name: "사용", code: "Y" },
+    { name: "사용안함", code: "N" },
+  ];
+  const { lclsfList, mclsfList, sclsfList, lclsfError } = useDocClsfOptions(
+    docLclsfNo,
+    docMclsfNo,
+  );
 
-  const lclsfDocs = useSelector((state: RootState) =>
-    selectDocClsfByParent(state),
-  );
-  const mclsfDocs = useSelector((state: RootState) =>
-    selectDocClsfByParent(state, docLclsfNo),
-  );
-  const sclsfDocs = useSelector((state: RootState) =>
-    selectDocClsfByParent(state, docMclsfNo),
-  );
+  const { rows, rowCount, isLoading, listError, loadData } =
+    useDocClassificationList();
 
   React.useEffect(() => {
-    dispatch(fetchDocClsfList());
-  }, [dispatch]);
+    if (!listError) return;
+    notifications.show(listError, {
+      severity: "error",
+      autoHideDuration: 3000,
+    });
+  }, [listError, notifications]);
 
   React.useEffect(() => {
-    if (!docLclsfNo) return;
-    dispatch(fetchDocClsfList({ parentDocClsfNo: docLclsfNo }));
-  }, [dispatch, docLclsfNo]);
+    if (!lclsfError) return;
+    notifications.show(lclsfError, {
+      severity: "error",
+      autoHideDuration: 3000,
+    });
+  }, [lclsfError, notifications]);
 
-  React.useEffect(() => {
-    if (!docMclsfNo) return;
-    dispatch(fetchDocClsfList({ parentDocClsfNo: docMclsfNo }));
-  }, [dispatch, docMclsfNo]);
-
-  // const lclsfList = lclsfDocs
-  //   ? [
-  //       ...initSelectItem,
-  //       ...lclsfDocs.map((vo) => ({
-  //         label: vo.docClsfNm,
-  //         value: vo.docClsfNo,
-  //       })),
-  //     ]
-  //   : initSelectItem;
-  // const mclsfList = mclsfDocs
-  //   ? [
-  //       ...initSelectItem,
-  //       ...mclsfDocs.map((vo) => ({
-  //         label: vo.docClsfNm,
-  //         value: vo.docClsfNo,
-  //       })),
-  //     ]
-  //   : initSelectItem;
-  // const sclsfList = sclsfDocs
-  //   ? [
-  //       ...initSelectItem,
-  //       ...sclsfDocs.map((vo) => ({
-  //         label: vo.docClsfNm,
-  //         value: vo.docClsfNo,
-  //       })),
-  //     ]
-  //   : initSelectItem;
+  const handleSearch = handleSubmit((values) => {
+    loadData(values);
+  });
 
   const handleCreateClick = () => {
     navigate(`/docClassification/create`);
@@ -150,34 +85,59 @@ export default function DocClassificationList() {
 
   return (
     <div>
-      {/* <!-- 검색조건 --> */}
       <div className="filter">
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">대상</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
+            <Controller
+              name="docLclsfNo"
+              control={control}
+              render={({ field }) => (
+                <MuiSelect
+                  id="docLclsfNo"
+                  label="대분류"
+                  items={lclsfList}
+                  value={field.value}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    setValue("docMclsfNo", "");
+                    setValue("docSclsfNo", "");
+                  }}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">소분류</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
+            <Controller
+              name="docMclsfNo"
+              control={control}
+              render={({ field }) => (
+                <MuiSelect
+                  id="docMclsfNo"
+                  label="중분류"
+                  items={mclsfList}
+                  value={field.value}
+                  onChange={(e) => {
+                    field.onChange(e.target.value);
+                    setValue("docSclsfNo", "");
+                  }}
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 3 }}>
+            <Controller
+              name="docSclsfNo"
+              control={control}
+              render={({ field }) => (
+                <MuiSelect
+                  id="docSclsfNo"
+                  label="소분류"
+                  items={sclsfList}
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
+                />
+              )}
+            />
           </Grid>
           <Grid
             size={{ xs: 12, sm: 3 }}
@@ -187,34 +147,59 @@ export default function DocClassificationList() {
               <FormControlLabel
                 className="filter-checkbox"
                 name="holding-check"
-                control={<Checkbox size="small" />}
+                control={
+                  <Controller
+                    name="prvcInclYn"
+                    control={control}
+                    render={({ field }) => (
+                      <Checkbox
+                        size="small"
+                        checked={field.value === "Y"}
+                        onChange={(e) =>
+                          field.onChange(e.target.checked ? "Y" : "")
+                        }
+                      />
+                    )}
+                  />
+                }
                 label="개인정보 포함"
               />
             </div>
           </Grid>
-          {/* 2행: 사용유무 / 검색어 / 검색 버튼 */}
           <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">사용유무</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="useEn" name="useEn" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="00">사용</MenuItem>
-                    <MenuItem value="01">사용안함</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
+            <Controller
+              name="useEn"
+              control={control}
+              render={({ field }) => (
+                <MuiSelect
+                  id="useEn"
+                  label="사용유무"
+                  items={useEnItems}
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 9 }}>
-            <div className="filter-field">
-              <label className="filter-label">검색어</label>
-              <TextField name="docClsfNm" size="small" fullWidth />
-            </div>
+            <Controller
+              name="docClsfNm"
+              control={control}
+              render={({ field }) => (
+                <div className="filter-field">
+                  <label className="filter-label">검색어</label>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                </div>
+              )}
+            />
           </Grid>
         </Grid>
-        <Button size="small" variant="contained">
+        <Button size="small" variant="contained" onClick={handleSearch}>
           조회
         </Button>
       </div>
@@ -226,12 +211,11 @@ export default function DocClassificationList() {
         </Button>
       </div>
 
-      {/* <!-- 본문 --> */}
       <AgGridContainer
         isLoading={isLoading}
         colDefs={columnDefs}
-        rowData={rowData.rows}
-        count={rowData.rowCount}
+        rowData={rows}
+        count={rowCount}
         onRowClick={handleRowClick}
       />
     </div>

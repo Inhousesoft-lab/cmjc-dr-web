@@ -28,7 +28,17 @@ const menuItems: Menu[] = [
       },
       {
         path: "docClassification/create",
-        label: "문서분류 등록/수정",
+        label: "문서분류 등록",
+        menuType: "MENU",
+        element: {
+          ko: "DocClassificationForm",
+          en: "DocClassificationForm",
+        },
+        menu: false,
+      },
+      {
+        path: "docClassification/:docClsfNo/modify",
+        label: "문서분류 수정",
         menuType: "MENU",
         element: {
           ko: "DocClassificationForm",

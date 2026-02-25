@@ -27,7 +27,18 @@ export const fetchDocClsfList = createAsyncThunk<
       ? selectDocClsfList(parentDocClsfNo)
       : selectLclsfList();
     const res = await https.get(url);
-    const raw = res.data?.list ?? res.data ?? [];
+    const payload = res.data;
+    const candidates = [
+      payload?.list,
+      payload?.data?.list,
+      payload?.result?.list,
+      payload?.items,
+      payload?.content,
+      payload?.data,
+      payload?.result,
+      payload,
+    ];
+    const raw = candidates.find((v) => Array.isArray(v)) ?? [];
     const list = Array.isArray(raw) ? (raw as DocClsf[]) : [];
     return { parentKey, list };
   } catch (error) {

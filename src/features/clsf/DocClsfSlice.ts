@@ -44,3 +44,4 @@ const docClsfSlice = createSlice({
 });
 
 export default docClsfSlice.reducer;
+

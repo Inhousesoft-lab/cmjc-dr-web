@@ -108,6 +108,17 @@
   flex-wrap: wrap;
 }
 
+.detail-top-actions {
+  position: relative;
+  z-index: 3;
+  pointer-events: auto;
+}
+
+.detail-top-actions__group {
+  position: relative;
+  z-index: 4;
+}
+
 .highlighted_btn {
   display: inline-flex;
   align-items: center;

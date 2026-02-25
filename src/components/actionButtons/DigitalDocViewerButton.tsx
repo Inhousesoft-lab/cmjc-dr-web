@@ -15,7 +15,6 @@ export default function DigitalDocViewerButton() {
     <Button
       variant="outlined"
       size="small"
-      color="secondary"
       onClick={handleView}
     >
       열람

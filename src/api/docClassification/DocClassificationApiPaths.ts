@@ -31,5 +31,5 @@ export const updateDocClassificationApiPath = () =>
 /**
  * 삭제
  */
-export const deleteDocClassificationApiPath = () =>
-  "/api/dr/documentclassification/delete";
+export const deleteDocClassificationApiPath = (docClsfNo: string) =>
+  `/api/dr/documentclassification/${docClsfNo}/delete`;
