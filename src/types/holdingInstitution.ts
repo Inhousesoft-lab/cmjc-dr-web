@@ -96,9 +96,9 @@ export interface PrvcFileHldPrst {
   rrnoClctSttBssExpln: string;
   infoMnbdAgreYn: string;
   infoMnbdDsagClctSttBssExpln: string;
-  sensInfoHldYn: string;
-  sensInfoIndivAgreYn: string;
-  sensInfoHldSttBssExpln: string;
+  spiHldYn: string;
+  spiIndivAgrnYn: string;
+  spiHldSttBssExpln: string;
   uiiHldYn: string;
   uiiIndivAgreYn: string;
   uiiHldSttBssExpln: string;

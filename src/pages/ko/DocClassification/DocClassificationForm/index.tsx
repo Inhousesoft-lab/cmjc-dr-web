@@ -378,8 +378,8 @@ const PrvcDetailTable = React.memo(
           <TableCell>
             <RadioGroup
               row
-              name="sensInfoHldYn"
-              defaultValue={defaults.sensInfoHldYn ?? "N"}
+              name="spiHldYn"
+              defaultValue={defaults.spiHldYn ?? "N"}
             >
               <FormControlLabel
                 value="Y"
@@ -397,8 +397,8 @@ const PrvcDetailTable = React.memo(
           <TableCell>
             <RadioGroup
               row
-              name="sensInfoIndivAgreYn"
-              defaultValue={defaults.sensInfoIndivAgreYn ?? "N"}
+              name="spiIndivAgrnYn"
+              defaultValue={defaults.spiIndivAgrnYn ?? "N"}
             >
               <FormControlLabel
                 value="Y"
@@ -421,12 +421,12 @@ const PrvcDetailTable = React.memo(
               fullWidth
               size="small"
               placeholder="민감 정보 보유 법령근거"
-              name="sensInfoHldSttBssExpln"
+              name="spiHldSttBssExpln"
               multiline
               rows={5}
-              defaultValue={defaults.sensInfoHldSttBssExpln ?? ""}
-              error={!!formErrors.sensInfoHldSttBssExpln}
-              helperText={formErrors.sensInfoHldSttBssExpln ?? ""}
+              defaultValue={defaults.spiHldSttBssExpln ?? ""}
+              error={!!formErrors.spiHldSttBssExpln}
+              helperText={formErrors.spiHldSttBssExpln ?? ""}
             />
           </TableCell>
         </TableRow>
@@ -858,17 +858,17 @@ export default function DocClassificationForm() {
           "infoMnbdDsagClctSttBssExpln",
           defaults.prvcFileHldPrst?.infoMnbdDsagClctSttBssExpln ?? "",
         ),
-        sensInfoHldYn: getText(
-          "sensInfoHldYn",
-          defaults.prvcFileHldPrst?.sensInfoHldYn ?? "",
+        spiHldYn: getText(
+          "spiHldYn",
+          defaults.prvcFileHldPrst?.spiHldYn ?? "",
         ),
-        sensInfoIndivAgreYn: getText(
-          "sensInfoIndivAgreYn",
-          defaults.prvcFileHldPrst?.sensInfoIndivAgreYn ?? "",
+        spiIndivAgrnYn: getText(
+          "spiIndivAgrnYn",
+          defaults.prvcFileHldPrst?.spiIndivAgrnYn ?? "",
         ),
-        sensInfoHldSttBssExpln: getText(
-          "sensInfoHldSttBssExpln",
-          defaults.prvcFileHldPrst?.sensInfoHldSttBssExpln ?? "",
+        spiHldSttBssExpln: getText(
+          "spiHldSttBssExpln",
+          defaults.prvcFileHldPrst?.spiHldSttBssExpln ?? "",
         ),
         uiiHldYn: getText("uiiHldYn", defaults.prvcFileHldPrst?.uiiHldYn ?? ""),
         uiiIndivAgreYn: getText(

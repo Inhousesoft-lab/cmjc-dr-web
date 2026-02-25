@@ -80,9 +80,9 @@ export interface DocClassSubDetail {
   rrnoClctSttBssExpln: string; // 주민등록번호 수집 법령근거
   infoMnbdAgreYn: string; // 정보주체 동의여부(Y:동의, N:미동의)
   infoMnbdDsagClctSttBssExpln: string; // 정보주체 동의 없이 수집 법령근거
-  sensInfoHldYn: string; // 민감정보 보유여부(Y:보유, N:미보유)
-  sensInfoIndivAgreYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
-  sensInfoHldSttBssExpln: string; // 민감정보 보유 법령근거
+  spiHldYn: string; // 민감정보 보유여부(Y:보유, N:미보유)
+  spiIndivAgrnYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
+  spiHldSttBssExpln: string; // 민감정보 보유 법령근거
   uiiHldYn: string; // 고유식별정보 보유여부(Y:보유, N:미보유)
   uiiIndivAgreYn: string; // 고유식별정보 별도 동의여부(Y:동의, N:미동의)
   uiiHldSttBssExpln: string; // 고유식별정보 보유 법령근거
@@ -120,9 +120,9 @@ export interface DocClassHistory {
   rrnoClctSttBssExpln: string; // 주민등록번호 수집 법령근거
   infoMnbdAgreYn: string; // 정보주체 동의여부(Y:동의, N:미동의)
   infoMnbdDsagClctSttBssExpln: string; // 정보주체 동의 없이 수집 법령근거
-  sensInfoHldYn: string; // 민감정보 보유여부(Y:보유, N:미보유)
-  sensInfoIndivAgreYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
-  sensInfoHldSttBssExpln: string; // 민감정보 보유 법령근거
+  spiHldYn: string; // 민감정보 보유여부(Y:보유, N:미보유)
+  spiIndivAgrnYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
+  spiHldSttBssExpln: string; // 민감정보 보유 법령근거
   uiiHldYn: string; // 고유식별정보 보유여부(Y:보유, N:미보유)
   uiiIndivAgreYn: string; // 고유식별정보 별도 동의여부(Y:동의, N:미동의)
   uiiHldSttBssExpln: string; // 고유식별정보 보유 법령근거
