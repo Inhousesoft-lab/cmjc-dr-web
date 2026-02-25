@@ -24,7 +24,9 @@ const GridField = ({
         fullWidth ? " guest-card-view__cell--full" : ""
       }`}
     >
-      <Typography variant="body2">{value}</Typography>
+      <Typography variant="body2" component="div">
+        {value}
+      </Typography>
     </Grid>
   </>
 );
