@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 type Props = {
   // 비즈니스/RHF에서 사용하는 값: 'YYYYMMDD' 또는 ''
   value: string;
+  name?: string;
   onChange: (value: string) => void;
   label?: string;
   disabled?: boolean;
@@ -15,6 +16,7 @@ type Props = {
 
 export function MuiDatePickerFt({
   value,
+  name,
   onChange,
   label,
   disabled,
@@ -28,6 +30,7 @@ export function MuiDatePickerFt({
   return (
     <DatePicker
       label={label}
+      name={name}
       format="YYYY-MM-DD"
       disabled={disabled}
       minDate={dayjsMinDate}

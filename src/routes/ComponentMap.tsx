@@ -9,6 +9,7 @@ import DocDestructionDetail from "@/pages/ko/DocDestruction/DocDestructionDetail
 import DigitalDocList from "@/pages/ko/DigitalDoc/DigitalDocList";
 import DigitalDocDetail from "@/pages/ko/DigitalDoc/DigitalDocDetail";
 import DigitalDocForm from "@/pages/ko/DigitalDoc/DigitalDocForm";
+import DigitalDocFormTemp from "@/pages/ko/DigitalDoc/DigitalDocFormTemp";
 
 import DocDestructionReqList from "@/pages/ko/DocDestruction/DocDestructionReqList";
 import DocDestructionAppvList from "@/pages/ko/DocDestruction/DocDestructionAppvList";
@@ -24,6 +25,7 @@ export const componentMap = {
   DigitalDocList,
   DigitalDocDetail,
   DigitalDocForm,
+  DigitalDocFormTemp,
   DocDestructionReqList,
   DocDestructionAppvList,
   DocDestructionList,

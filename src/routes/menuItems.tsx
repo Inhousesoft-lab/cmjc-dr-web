@@ -71,7 +71,7 @@ const menuItems: Menu[] = [
   },
   {
     path: "digitalDoc/:id",
-    label: "문서고 상세",
+    label: "문서 상세",
     menuType: "MENU",
     element: {
       ko: "DigitalDocDetail",
@@ -81,13 +81,23 @@ const menuItems: Menu[] = [
   },
   {
     path: "digitalDoc/create",
-    label: "문서분류 등록",
+    label: "문서 등록",
     menuType: "MENU",
     element: {
       ko: "DigitalDocForm",
       en: "DigitalDocForm",
     },
     menu: false,
+  },
+  {
+    path: "digitalDoc/temp",
+    label: "문서 임시 등록",
+    menuType: "MENU",
+    element: {
+      ko: "DigitalDocFormTemp",
+      en: "DigitalDocFormTemp",
+    },
+    menu: true,
   },
   {
     path: "destruction",
