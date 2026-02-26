@@ -22,10 +22,12 @@ pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface DigitalDocViewerButtonProps {
   fileUrl: string;
+  label?: string;
 }
 
 export default function DigitalDocViewerButton({
   fileUrl,
+  label = "열람",
 }: DigitalDocViewerButtonProps) {
   const authUser = useAppSelector((state) => state.auth.user);
   const [open, setOpen] = React.useState(false);
@@ -192,7 +194,7 @@ export default function DigitalDocViewerButton({
   return (
     <React.Fragment>
       <Button variant="outlined" size="small" onClick={handleOpen}>
-        열람
+        {label}
       </Button>
 
       <Dialog

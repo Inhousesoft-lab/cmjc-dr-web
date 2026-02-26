@@ -3,6 +3,7 @@ import { Button, Stack } from "@mui/material";
 import { ColDef } from "ag-grid-community";
 import DialogTrigger from "@/components/dialog/DialogTrigger";
 import AgGridTable from "@/components/grid/AgGridTable";
+import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
 
 const rows = [
   {
@@ -72,9 +73,7 @@ export default function ExternalView() {
         if (params.data?.type === "파일") return null;
         return (
           <Stack direction="row" spacing={1} justifyContent="center">
-            <Button size="small" variant="contained">
-              열람
-            </Button>
+            <DigitalDocViewerButton fileUrl="/pdf/피해구제 접수서류.pdf" />
             <Button size="small" variant="outlined">
               다운로드
             </Button>
