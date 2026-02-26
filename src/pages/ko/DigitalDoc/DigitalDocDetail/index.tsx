@@ -48,7 +48,7 @@ export default function DigitalDocDetail() {
           value={
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography>피해구제 접수서류.pdf</Typography>
-              <DigitalDocViewerButton />
+              <DigitalDocViewerButton fileUrl="/pdf/피해구제 접수서류.pdf" />
               <DigitalDocDownButton />
             </Stack>
           }

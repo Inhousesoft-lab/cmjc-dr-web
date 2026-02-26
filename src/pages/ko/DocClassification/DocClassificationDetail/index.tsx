@@ -272,7 +272,8 @@ export default function DocClassificationDetail() {
               alignItems="center"
             >
               피해구제 접수서류.pdf
-              <DigitalDocViewerButton />
+              <DigitalDocViewerButton fileUrl="/pdf/피해구제 접수서류.pdf" />
+              {/* <DigitalDocViewerButton fileUrl="/pdf/java-developers-guide.pdf" /> */}
               <DigitalDocDownButton />
             </Stack>
           }
