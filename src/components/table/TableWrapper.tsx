@@ -15,9 +15,11 @@ export default function TableWrapper({
   sx,
 }: TableWrapperProp) {
   return (
-    <Table aria-label={tableAriaLabel} className="tbl_view" sx={sx}>
-      {colgroup && colgroup}
-      <TableBody>{children}</TableBody>
-    </Table>
+    <div className="tbl_wrap">
+      <Table aria-label={tableAriaLabel} className="tbl_view" sx={sx}>
+        {colgroup && colgroup}
+        <TableBody>{children}</TableBody>
+      </Table>
+    </div>
   );
 }
