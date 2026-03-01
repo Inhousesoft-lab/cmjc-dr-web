@@ -60,7 +60,7 @@ export default function DocDestructionReqList() {
               <label className="filter-label">대분류</label>
               <div className="field_select">
                 <MuiSelect
-                  id="largeCategory"
+                  id="docLclsfNo"
                   items={[
                     {
                       name: "전체",
@@ -80,7 +80,7 @@ export default function DocDestructionReqList() {
               <label className="filter-label">중분류</label>
               <div className="field_select">
                 <MuiSelect
-                  id="midCategory"
+                  id="docMclsfNo"
                   items={[
                     {
                       name: "전체",
@@ -109,7 +109,7 @@ export default function DocDestructionReqList() {
               <div className="field_select">
                 <FormControl size="small" fullWidth>
                   <MuiSelect
-                    id="smallCategory"
+                    id="docSclsfNo"
                     items={[
                       {
                         name: "전체",

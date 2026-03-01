@@ -66,11 +66,7 @@ export default function DocDestructionReqList() {
               <label className="filter-label">대분류</label>
               <div className="field_select">
                 <FormControl size="small" fullWidth>
-                  <Select
-                    id="largeCategory"
-                    name="largeCategory"
-                    defaultValue="00"
-                  >
+                  <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
                     <MenuItem value="00">전체</MenuItem>
                     <MenuItem value="01">피해구제</MenuItem>
                   </Select>
@@ -83,7 +79,7 @@ export default function DocDestructionReqList() {
               <label className="filter-label">중분류</label>
               <div className="field_select">
                 <FormControl size="small" fullWidth>
-                  <Select id="midCategory" name="midCategory" defaultValue="00">
+                  <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
                     <MenuItem value="00">전체</MenuItem>
                     <MenuItem value="01">접수서류</MenuItem>
                     <MenuItem value="02">신청자 제출서류</MenuItem>
@@ -98,11 +94,7 @@ export default function DocDestructionReqList() {
               <label className="filter-label">소분류</label>
               <div className="field_select">
                 <FormControl size="small" fullWidth>
-                  <Select
-                    id="smallCategory"
-                    name="smallCategory"
-                    defaultValue="00"
-                  >
+                  <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
                     <MenuItem value="00">전체</MenuItem>
                     <MenuItem value="01">사망 신청</MenuItem>
                     <MenuItem value="02">미성년자 신청</MenuItem>

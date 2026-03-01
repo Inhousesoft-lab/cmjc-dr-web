@@ -124,7 +124,7 @@ export default function HoldingInstitutionList() {
               <label className="filter-label">대분류</label>
               <div className="field_select">
                 <MuiSelect
-                  id="largeCategory"
+                  id="docLclsfNo"
                   items={[
                     {
                       name: "전체",
@@ -144,7 +144,7 @@ export default function HoldingInstitutionList() {
               <label className="filter-label">중분류</label>
               <div className="field_select">
                 <MuiSelect
-                  id="midCategory"
+                  id="docMclsfNo"
                   items={[
                     {
                       name: "전체",
@@ -172,7 +172,7 @@ export default function HoldingInstitutionList() {
               <label className="filter-label">소분류</label>
               <div className="field_select">
                 <MuiSelect
-                  id="smallCategory"
+                  id="docSclsfNo"
                   items={[
                     {
                       name: "전체",
@@ -204,7 +204,7 @@ export default function HoldingInstitutionList() {
               <label className="filter-label">기간</label>
               <div className="field_select">
                 <MuiSelect
-                  id="smallCategory"
+                  id="docSclsfNo"
                   items={[
                     {
                       name: "전체",
