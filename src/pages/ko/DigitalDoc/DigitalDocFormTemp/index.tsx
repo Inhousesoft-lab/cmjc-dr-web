@@ -22,7 +22,7 @@ import useNotifications from "@/hooks/useNotifications";
 import PageStatus from "@/components/common/PageStatus";
 import { insertEDocTempApiPath } from "@/api/digitalDoc/DigitalDocApiPaths";
 import { https } from "@shared/utils/https";
-import FileUploadField from "@/components/common/FileUploadField";
+import UploadFiles from "@/components/file/UploadFiles";
 
 export default function DigitalDocForm() {
   const navigate = useNavigate();
@@ -49,6 +49,8 @@ export default function DigitalDocForm() {
 
   const eldocYn = useWatch({ control, name: "eldocYn" });
 
+  const eldocNo = useWatch({ control, name: "eldocNo" });
+
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -68,7 +70,6 @@ export default function DigitalDocForm() {
     async (data: DigitalDoc) => {
       setIsLoading(true);
       setIsSubmitting(true);
-      data.atchFileSn = "0";
       try {
         await https.post(insertEDocTempApiPath(), data);
         notifications.show("생성 완료.", {
@@ -86,7 +87,7 @@ export default function DigitalDocForm() {
         setIsSubmitting(false);
       }
     },
-    [navigate, notifications],
+    [navigate, notifications]
   );
 
   // handleFileChange 핸들러 추가 (주석 해제 및 수정)
@@ -105,7 +106,7 @@ export default function DigitalDocForm() {
       // input 리셋 (중복 파일 선택 허용)
       event.target.value = "";
     },
-    [setValue, notifications],
+    [setValue, notifications]
   );
 
   if (isLoading) {
@@ -165,45 +166,45 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
 
-    <TableRow>
-    <LabelCell>문서제목</LabelCell>
-    <TableCell colSpan={3}>
-      <Controller
-        name="docTtl"
-        control={control}
-        rules={{ required: "문서제목은 필수입니다." }}
-        render={({ field }) => (
-          <TextField
-            fullWidth
-            placeholder="문서제목"
-            {...field}
-            error={!!errors.docTtl}
-            helperText={errors.docTtl?.message}
-          />
-        )}
-      />
-    </TableCell>
-  </TableRow>
+        <TableRow>
+          <LabelCell>문서제목</LabelCell>
+          <TableCell colSpan={3}>
+            <Controller
+              name="docTtl"
+              control={control}
+              rules={{ required: "문서제목은 필수입니다." }}
+              render={({ field }) => (
+                <TextField
+                  fullWidth
+                  placeholder="문서제목"
+                  {...field}
+                  error={!!errors.docTtl}
+                  helperText={errors.docTtl?.message}
+                />
+              )}
+            />
+          </TableCell>
+        </TableRow>
 
-  <TableRow>
-    <LabelCell>문서번호</LabelCell>
-    <TableCell colSpan={3}>
-      <Controller
-        name="docNo"
-        control={control}
-        rules={{ required: "문서번호는 필수입니다." }}
-        render={({ field }) => (
-          <TextField
-            fullWidth
-            placeholder="문서번호"
-            {...field}
-            error={!!errors.docNo}
-            helperText={errors.docNo?.message}
-          />
-        )}
-      />
-    </TableCell>
-  </TableRow>
+        <TableRow>
+          <LabelCell>문서번호</LabelCell>
+          <TableCell colSpan={3}>
+            <Controller
+              name="docNo"
+              control={control}
+              rules={{ required: "문서번호는 필수입니다." }}
+              render={({ field }) => (
+                <TextField
+                  fullWidth
+                  placeholder="문서번호"
+                  {...field}
+                  error={!!errors.docNo}
+                  helperText={errors.docNo?.message}
+                />
+              )}
+            />
+          </TableCell>
+        </TableRow>
 
         <TableRow>
           <LabelCell>수집일자</LabelCell>
@@ -224,7 +225,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>첨부파일</LabelCell>
+          <LabelCell>파일분류</LabelCell>
           <TableCell colSpan={3}>
             <Stack direction="row" spacing={1} alignItems="center">
               <Controller
@@ -255,7 +256,13 @@ export default function DigitalDocForm() {
                   </FormControl>
                 )}
               />
-
+            </Stack>
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>첨부파일</LabelCell>
+          <TableCell colSpan={3}>
+            <Stack direction="row" spacing={1} alignItems="center">
               <Controller
                 name="atchFileSn"
                 control={control}
@@ -263,10 +270,9 @@ export default function DigitalDocForm() {
                   required: "파일 선택은 필수입니다.",
                 }}
                 render={({ field }) => (
-                  <FileUploadField
-                    name={field.name}
-                    value={[]} // File[]
-                    onChange={handleFileButtonClick}
+                  <UploadFiles
+                    taskSeTrgtId={eldocNo} //  수정/상세일 경우 해당 업무의 pk 등록만 쓸거면 안보내도됨
+                    setGroupId={field.onChange}
                   />
                 )}
               />
