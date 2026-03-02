@@ -61,7 +61,7 @@ export const muiTheme = createTheme({
   ...globalTheme,
   shape: { borderRadius: 4 },
   components: {
-    // ...buttonCustomizations,
+    ...buttonCustomizations,
     ...inputCustomizations,
     ...menuCustomizations,
     ...paginationCustomizations,

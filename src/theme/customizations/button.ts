@@ -75,9 +75,18 @@ const button: Components<Theme> = {
     },
     styleOverrides: {
       root: ({ theme }) => ({
-        fontFamily: "Pretendard, Malgun Gothic, Dotum, Arial, sans-serif",
         fontWeight: "600",
         textTransform: "none",
+        boxShadow: "none",
+        "&:hover": {
+          boxShadow: "none",
+        },
+        "&:active": {
+          boxShadow: "none",
+        },
+        "&.Mui-focusVisible": {
+          boxShadow: "none",
+        },
         "& .MuiButton-startIcon": {
           position: "relative",
           top: "-1px",
@@ -88,6 +97,18 @@ const button: Components<Theme> = {
           },
         },
       }),
+      contained: {
+        boxShadow: "none",
+        "&:hover": {
+          boxShadow: "none",
+        },
+        "&:active": {
+          boxShadow: "none",
+        },
+        "&.Mui-focusVisible": {
+          boxShadow: "none",
+        },
+      },
     },
   },
 };

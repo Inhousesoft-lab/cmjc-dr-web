@@ -4,7 +4,7 @@ const input: Components<Theme> = {
   MuiInputBase: {
     styleOverrides: {
       root: {
-        "&.MuiInputBase-sizeSmall": {
+        "&.MuiInputBase-sizeSmall:not(.MuiInputBase-multiline)": {
           height: "36px",
           boxSizing: "border-box",
         },
@@ -23,7 +23,8 @@ const input: Components<Theme> = {
         "& .MuiOutlinedInput-input": {
           boxSizing: "border-box",
         },
-        "& .MuiOutlinedInput-input.MuiInputBase-inputSizeSmall": {
+        "& .MuiOutlinedInput-input.MuiInputBase-inputSizeSmall:not(.MuiInputBase-inputMultiline)":
+          {
           height: "34px",
           minHeight: "34px",
           lineHeight: "1.2",
@@ -34,6 +35,14 @@ const input: Components<Theme> = {
           "&::placeholder": {
             opacity: "0.6",
           },
+          },
+        "& .MuiOutlinedInput-input.MuiInputBase-inputMultiline": {
+          height: "auto",
+          minHeight: "unset",
+          lineHeight: "1.5",
+          padding: "8px 14px",
+          margin: 0,
+          boxSizing: "border-box",
         },
         "& .MuiOutlinedInput-notchedOutline": {
           borderColor: "#d9dde4",

@@ -14,7 +14,6 @@
 @use "./ko/components/button";
 @use "./ko/components/elements";
 @use "./ko/components/dialog";
-// @use "./ko/components/field";
 @use "./ko/components/fileUpload";
 @use "./ko/components/filter";
 @use "./ko/components/grid";
@@ -26,7 +25,3 @@
 @use "./ko/layout/content";
 @use "./ko/layout/header";
 @use "./ko/layout/sub";
-
-// pages
-@use "./ko/pages/drugsafe";
-// @use "./ko/pages/error";
