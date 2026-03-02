@@ -9,7 +9,7 @@ export default function MenuGate({
   fallback?: React.ReactNode;
 }) {
   const dispatch = useAppDispatch();
-  const { list, loading } = useAppSelector((s) => s.menu);
+  const { list, loading } = useAppSelector((s) => s.menuList);
 
   const [ready, setReady] = useState(false);
 

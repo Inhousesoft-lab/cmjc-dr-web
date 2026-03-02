@@ -45,7 +45,9 @@ const GridField = ({
         <Typography variant="subtitle2">{label}</Typography>
       </Grid>
       <Grid size={size.value} className={`table-view__value-cell`}>
-        <Typography variant="body2">{value}</Typography>
+        <Typography component="div" variant="body2">
+          {value}
+        </Typography>
       </Grid>
     </>
   );
