@@ -6,43 +6,88 @@ const button: Components<Theme> = {
       disableRipple: true,
     },
   },
-  MuiIconButton: {
-    defaultProps: {
-      disableRipple: true,
-    },
-  },
   MuiButton: {
-    defaultProps: { disableElevation: true },
+    variants: [
+      {
+        props: { size: "small" },
+        style: {
+          minWidth: "auto !important",
+          height: "33px",
+          fontWeight: "500",
+          padding: "5px 13px",
+        },
+      },
+      {
+        props: { size: "medium" },
+        style: {
+          height: "40px",
+          fontSize: "15px",
+          padding: "9px 18px 7px",
+          lineHeight: "1.2",
+        },
+      },
+      {
+        props: { size: "large" },
+        style: {
+          minWidth: "100px !important",
+          // height: "52px",
+          // padding: "16px 20px",
+          // fontSize: "18px",
+        },
+      },
+      {
+        props: { variant: "contained", color: "primary" },
+        style: {
+          minWidth: "95px",
+        },
+      },
+      {
+        props: { variant: "outlined" },
+        style: ({ theme }) => ({
+          backgroundColor: "#fff",
+        }),
+      },
+      {
+        props: { variant: "outlined", color: "primary" },
+        style: ({ theme }) => ({
+          border: "1px solid",
+          borderColor: theme.palette.primary.main,
+        }),
+      },
+      {
+        props: { variant: "outlined", color: "secondary" },
+        style: ({ theme }) => ({
+          color: theme.palette.secondary.contrastText,
+          border: "1px solid",
+          borderColor: theme.palette.secondary.main,
+        }),
+      },
+
+      {
+        props: { variant: "outlined", color: "secondary", size: "large" },
+        style: {
+          border: "1px solid #adb0bb",
+        },
+      },
+    ],
+    defaultProps: {
+      disableElevation: true,
+    },
     styleOverrides: {
       root: ({ theme }) => ({
+        fontFamily: "Pretendard, Malgun Gothic, Dotum, Arial, sans-serif",
+        fontWeight: "600",
         textTransform: "none",
-        fontWeight: 600,
-        boxShadow: "none",
-        "&:hover": { boxShadow: "none" },
-        "--btn-contained-lg": theme.palette.button.color02,
-        "--btn-outlined-lg-bg": theme.palette.button.color04,
-        "--btn-outlined-lg-border": theme.palette.button.accent,
+        "& .MuiButton-startIcon": {
+          position: "relative",
+          top: "-1px",
+        },
+        "&.MuiButton-textPrimary.MuiButton-disableElevation": {
+          "& .MuiButton-startIcon": {
+            marginLeft: "-16px",
+          },
+        },
       }),
-      sizeSmall: { height: 34 },
-      contained: ({ ownerState }) =>
-        ownerState.size === "large"
-          ? {
-              background: "var(--btn-contained-lg)",
-              border: "1px solid var(--btn-contained-lg)",
-              color: "#fff",
-            }
-          : undefined,
-      // Outlined 버튼의 기본 테두리 색상을 divider 색상과 맞춤
-      outlined: ({ ownerState, theme }) =>
-        ownerState.size === "large"
-          ? {
-              backgroundColor: "var(--btn-outlined-lg-bg)",
-              color: "var(--btn-outlined-lg-border)",
-              border: "1px solid var(--btn-outlined-lg-border)",
-            }
-          : {
-              borderColor: theme.palette.divider,
-            },
     },
   },
 };

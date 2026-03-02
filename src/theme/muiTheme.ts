@@ -1,6 +1,13 @@
 import { createTheme, PaletteColorOptions } from "@mui/material/styles";
-import palette from "./customizations/palette";
+import palette from "./palette";
 import buttonCustomizations from "./customizations/button";
+import inputCustomizations from "./customizations/input";
+import menuCustomizations from "./customizations/menu";
+import paginationCustomizations from "./customizations/pagination";
+import selectCustomizations from "./customizations/select";
+import tabCustomizations from "./customizations/tab";
+import textfieldCustomizations from "./customizations/textfield";
+import typographyCustomizations from "./customizations/typography";
 
 declare module "@mui/material/styles" {
   interface Palette {
@@ -45,11 +52,21 @@ declare module "@mui/material/FormControl" {
   }
 }
 
+const globalTheme = createTheme({
+  palette: palette,
+});
+
 // 2. 테마 생성
 export const muiTheme = createTheme({
-  palette,
+  ...globalTheme,
   shape: { borderRadius: 4 },
   components: {
-    ...buttonCustomizations,
+    // ...buttonCustomizations,
+    ...inputCustomizations,
+    ...menuCustomizations,
+    ...paginationCustomizations,
+    ...selectCustomizations,
+    ...tabCustomizations,
+    ...textfieldCustomizations,
   },
 });

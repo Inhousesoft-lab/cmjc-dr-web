@@ -1,11 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Box,
   Button,
   Checkbox,
-  Divider,
-  FormControlLabel,
   Grid,
+  Stack,
   TextField,
 } from "@mui/material";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -20,6 +20,7 @@ import {
   DocClassificationVO,
 } from "@/types/docClassification";
 import { listDefs } from "./col-def";
+import GridField from "@/components/common/GridField";
 
 export default function DocClassificationList() {
   const navigate = useNavigate();
@@ -85,133 +86,134 @@ export default function DocClassificationList() {
 
   return (
     <div>
-      <div className="filter">
-        <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller
-              name="docLclsfNo"
-              control={control}
-              render={({ field }) => (
-                <MuiSelect
-                  id="docLclsfNo"
-                  label="대분류"
-                  items={lclsfList}
-                  value={field.value}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setValue("docMclsfNo", "");
-                    setValue("docSclsfNo", "");
-                  }}
-                />
-              )}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller
-              name="docMclsfNo"
-              control={control}
-              render={({ field }) => (
-                <MuiSelect
-                  id="docMclsfNo"
-                  label="중분류"
-                  items={mclsfList}
-                  value={field.value}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setValue("docSclsfNo", "");
-                  }}
-                />
-              )}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller
-              name="docSclsfNo"
-              control={control}
-              render={({ field }) => (
-                <MuiSelect
-                  id="docSclsfNo"
-                  label="소분류"
-                  items={sclsfList}
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                />
-              )}
-            />
-          </Grid>
-          <Grid
-            size={{ xs: 12, sm: 3 }}
-            sx={{ display: "flex", alignItems: "center" }}
-          >
-            <div className="filter-field filter-field--checkbox">
-              <FormControlLabel
-                className="filter-checkbox"
-                name="holding-check"
-                control={
-                  <Controller
-                    name="prvcInclYn"
-                    control={control}
-                    render={({ field }) => (
-                      <Checkbox
-                        size="small"
-                        checked={field.value === "Y"}
-                        onChange={(e) =>
-                          field.onChange(e.target.checked ? "Y" : "")
-                        }
-                      />
-                    )}
+      <Stack direction="row" className="search-area" mb={2}>
+        <Grid container spacing={0} className="table-view-grid">
+          <GridField
+            item={3}
+            label="대분류"
+            value={
+              <Controller
+                name="docLclsfNo"
+                control={control}
+                render={({ field }) => (
+                  <MuiSelect
+                    id="docLclsfNo"
+                    items={lclsfList}
+                    value={field.value}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      setValue("docMclsfNo", "");
+                      setValue("docSclsfNo", "");
+                    }}
                   />
-                }
-                label="개인정보 포함"
+                )}
               />
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller
-              name="useEn"
-              control={control}
-              render={({ field }) => (
-                <MuiSelect
-                  id="useEn"
-                  label="사용유무"
-                  items={useEnItems}
-                  value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
-                />
-              )}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 9 }}>
-            <Controller
-              name="docClsfNm"
-              control={control}
-              render={({ field }) => (
-                <div className="filter-field">
-                  <label className="filter-label">검색어</label>
+            }
+          />
+          <GridField
+            item={3}
+            label="중뷴류"
+            value={
+              <Controller
+                name="docMclsfNo"
+                control={control}
+                render={({ field }) => (
+                  <MuiSelect
+                    id="docMclsfNo"
+                    items={mclsfList}
+                    value={field.value}
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      setValue("docSclsfNo", "");
+                    }}
+                  />
+                )}
+              />
+            }
+          />
+          <GridField
+            item={3}
+            label="소분류"
+            value={
+              <Controller
+                name="docSclsfNo"
+                control={control}
+                render={({ field }) => (
+                  <MuiSelect
+                    id="docSclsfNo"
+                    items={sclsfList}
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
+              />
+            }
+          />
+          <GridField
+            item={3}
+            label="개인정보 포함"
+            value={
+              <Controller
+                name="prvcInclYn"
+                control={control}
+                render={({ field }) => (
+                  <Checkbox
+                    size="small"
+                    checked={field.value === "Y"}
+                    onChange={(e) =>
+                      field.onChange(e.target.checked ? "Y" : "")
+                    }
+                  />
+                )}
+              />
+            }
+          />
+          <GridField
+            item={3}
+            label="사용유무"
+            value={
+              <Controller
+                name="useEn"
+                control={control}
+                render={({ field }) => (
+                  <MuiSelect
+                    id="useEn"
+                    items={useEnItems}
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                  />
+                )}
+              />
+            }
+          />
+          <GridField
+            item={9}
+            label="검색어"
+            value={
+              <Controller
+                name="docClsfNm"
+                control={control}
+                render={({ field }) => (
                   <TextField
                     size="small"
                     fullWidth
                     value={field.value}
                     onChange={(e) => field.onChange(e.target.value)}
                   />
-                </div>
-              )}
-            />
-          </Grid>
+                )}
+              />
+            }
+          />
         </Grid>
-        <Button size="small" variant="contained" onClick={handleSearch}>
-          조회
-        </Button>
-      </div>
-      <Divider sx={{ marginY: 2 }} />
-
-      <div className="btn_wrapper">
-        <Button size="small" variant="contained" onClick={handleCreateClick}>
-          등록
-        </Button>
-      </div>
+        <Box className="table-view-actions">
+          <Button variant="contained" onClick={handleSearch}>
+            조회
+          </Button>
+        </Box>
+      </Stack>
 
       <AgGridContainer
+        actionButtons={[{ label: "등록", onClick: handleCreateClick }]}
         isLoading={isLoading}
         colDefs={columnDefs}
         rowData={rows}

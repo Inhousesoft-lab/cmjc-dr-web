@@ -69,7 +69,7 @@ export default function DocDestructionReqButton(prop: ButtonProps) {
 
   return (
     <React.Fragment>
-      <Button variant="contained" size="small" onClick={handleClickOpen}>
+      <Button variant="contained" onClick={handleClickOpen}>
         문서파기 신청
       </Button>
       <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>

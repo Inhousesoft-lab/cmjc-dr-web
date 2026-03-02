@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Grid } from "@mui/material";
+import { Box, Button, Grid, Stack } from "@mui/material";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import useNotifications from "@/hooks/useNotifications";
 import { DocDestruction } from "@/types/docDestruction";
 import { ColDef } from "ag-grid-community";
+import GridField from "@/components/common/GridField";
 
 export default function DocDestructionReqList() {
   const navigate = useNavigate();
@@ -70,8 +71,8 @@ export default function DocDestructionReqList() {
     toDstrcAplyYmd: "",
     fromDstrcAprvYmd: "",
     toDstrcAprvYmd: "",
-    page: 1,
-    recordCountPerPage: 10,
+    pageNum: 1,
+    pageSize: 10,
   };
 
   const handlePrintCurrentList = () => {
@@ -150,110 +151,103 @@ export default function DocDestructionReqList() {
 
   return (
     <div>
-      <div className="filter">
-        <Grid container spacing={2}>
+      <Stack direction="row" className="search-area" mb={2}>
+        <Grid container spacing={0} className="table-view-grid">
           {/* 1행 */}
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <div className="filter-field">
-              <label className="filter-label">대분류</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docLclsfNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "피해구제",
-                      code: "01",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <div className="filter-field">
-              <label className="filter-label">중분류</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docMclsfNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "접수서류",
-                      code: "01",
-                    },
-                    {
-                      name: "신청자 제출서류",
-                      code: "02",
-                    },
-                    {
-                      name: "직원보완자료",
-                      code: "03",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <div className="filter-field">
-              <label className="filter-label">소분류</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docSclsfNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "사망 신청",
-                      code: "01",
-                    },
-                    {
-                      name: "미성년자 신청",
-                      code: "02",
-                    },
-                    {
-                      name: "이전문서",
-                      code: "03",
-                    },
-                    {
-                      name: "의무기록",
-                      code: "04",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
-          {/* 2행 MuiDateRangePicker */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <div className="filter-field">
-              <label className="filter-label">기간</label>
+          <GridField
+            item={4}
+            label="대분류"
+            value={
+              <MuiSelect
+                id="docLclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "피해구제",
+                    code: "01",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={4}
+            label="중분류"
+            value={
+              <MuiSelect
+                id="docMclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "접수서류",
+                    code: "01",
+                  },
+                  {
+                    name: "신청자 제출서류",
+                    code: "02",
+                  },
+                  {
+                    name: "직원보완자료",
+                    code: "03",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={4}
+            label="소분류"
+            value={
+              <MuiSelect
+                id="docSclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "사망 신청",
+                    code: "01",
+                  },
+                  {
+                    name: "미성년자 신청",
+                    code: "02",
+                  },
+                  {
+                    name: "이전문서",
+                    code: "03",
+                  },
+                  {
+                    name: "의무기록",
+                    code: "04",
+                  },
+                ]}
+              />
+            }
+          />
+          {/* 2행 */}
+          <GridField
+            item={12}
+            label="기간"
+            value={
               <div className="filter-range">
                 <MuiDatePickerFt value={""} onChange={() => {}} />
                 <span className="filter-range-sep">-</span>{" "}
                 <MuiDatePickerFt value={""} onChange={() => {}} />
               </div>
-            </div>
-          </Grid>
+            }
+          />
         </Grid>
-        <div className="filter-actions">
-          <Button size="small" variant="contained">
-            조회
-          </Button>
-        </div>
-      </div>
-
-      <Divider sx={{ my: 2 }} />
-
+        <Box className="table-view-actions">
+          <Button variant="contained">조회</Button>
+        </Box>
+      </Stack>
       <div className="btn_wrapper">
         <Button variant="contained" onClick={handlePrintCurrentList}>
           파기목록출력

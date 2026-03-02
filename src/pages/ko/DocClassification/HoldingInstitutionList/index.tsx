@@ -1,11 +1,13 @@
 import React from "react";
 import {
+  Box,
   Button,
   Checkbox,
   Divider,
   FormControl,
   FormControlLabel,
   Grid,
+  Stack,
   TextField,
 } from "@mui/material";
 import { listDefs } from "./col-def";
@@ -16,6 +18,7 @@ import AgGridContainer from "@/components/grid/AgGridContainer";
 import MuiSelect from "@/components/elements/MuiSelect";
 import { ColDef } from "ag-grid-community";
 import { HoldingInstitution } from "@/types/holdingInstitution";
+import GridField from "@/components/common/GridField";
 
 export default function HoldingInstitutionList() {
   const notifications = useNotifications();
@@ -95,210 +98,196 @@ export default function HoldingInstitutionList() {
 
   return (
     <div>
-      <div className="filter">
-        <Grid container spacing={2}>
+      <Stack direction="row" className="search-area" mb={2}>
+        <Grid container spacing={0} className="table-view-grid">
           {/* 1행 */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <div className="filter-field">
-              <label className="filter-label">수집일자</label>
+          <GridField
+            item={6}
+            label="수집일자"
+            value={
               <div className="filter-range">
                 <MuiDatePickerFt value={""} onChange={() => {}} />
                 <span className="filter-range-sep">-</span>{" "}
                 <MuiDatePickerFt value={""} onChange={() => {}} />
               </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <div className="filter-field">
-              <label className="filter-label">종료일자</label>
+            }
+          />
+          <GridField
+            item={6}
+            label="종료일자"
+            value={
               <div className="filter-range">
                 <MuiDatePickerFt value={""} onChange={() => {}} />
                 <span className="filter-range-sep">-</span>{" "}
                 <MuiDatePickerFt value={""} onChange={() => {}} />
               </div>
-            </div>
-          </Grid>
+            }
+          />
           {/* 2행 */}
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">대분류</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docLclsfNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "피해구제",
-                      code: "01",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">중분류</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docMclsfNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "접수서류",
-                      code: "01",
-                    },
-                    {
-                      name: "신청자 제출서류",
-                      code: "02",
-                    },
-                    {
-                      name: "직원보완자료",
-                      code: "03",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">소분류</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docSclsfNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "사망 신청",
-                      code: "01",
-                    },
-                    {
-                      name: "미성년자 신청",
-                      code: "02",
-                    },
-                    {
-                      name: "이전문서",
-                      code: "03",
-                    },
-                    {
-                      name: "의무기록",
-                      code: "04",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">기간</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docSclsfNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "1년",
-                      code: "01",
-                    },
-                    {
-                      name: "3년",
-                      code: "03",
-                    },
-                    {
-                      name: "5년",
-                      code: "05",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
+          <GridField
+            item={3}
+            label="대분류"
+            value={
+              <MuiSelect
+                id="docLclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "피해구제",
+                    code: "01",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={3}
+            label="중분류"
+            value={
+              <MuiSelect
+                id="docMclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "접수서류",
+                    code: "01",
+                  },
+                  {
+                    name: "신청자 제출서류",
+                    code: "02",
+                  },
+                  {
+                    name: "직원보완자료",
+                    code: "03",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={3}
+            label="소분류"
+            value={
+              <MuiSelect
+                id="docSclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "사망 신청",
+                    code: "01",
+                  },
+                  {
+                    name: "미성년자 신청",
+                    code: "02",
+                  },
+                  {
+                    name: "이전문서",
+                    code: "03",
+                  },
+                  {
+                    name: "의무기록",
+                    code: "04",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={3}
+            label="보유기간"
+            value={
+              <MuiSelect
+                id="docSclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "1년",
+                    code: "01",
+                  },
+                  {
+                    name: "3년",
+                    code: "03",
+                  },
+                  {
+                    name: "5년",
+                    code: "05",
+                  },
+                ]}
+              />
+            }
+          />
           {/* 3행 */}
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <div className="filter-field">
-              <label className="filter-label">문서번호</label>
-              <div className="field_select">
-                <MuiSelect
-                  id="docNo"
-                  items={[
-                    {
-                      name: "전체",
-                      code: "",
-                    },
-                    {
-                      name: "사망 신청",
-                      code: "01",
-                    },
-                    {
-                      name: "미성년자 신청",
-                      code: "02",
-                    },
-                    {
-                      name: "이전문서",
-                      code: "03",
-                    },
-                    {
-                      name: "의무기록",
-                      code: "04",
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <div className="filter-field">
-              <label className="filter-label">문서제목</label>
+          <GridField
+            item={3}
+            label="문서번호"
+            value={
+              <MuiSelect
+                id="docNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "사망 신청",
+                    code: "01",
+                  },
+                  {
+                    name: "미성년자 신청",
+                    code: "02",
+                  },
+                  {
+                    name: "이전문서",
+                    code: "03",
+                  },
+                  {
+                    name: "의무기록",
+                    code: "04",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={6}
+            label="문서제목"
+            value={
               <TextField
                 name="docTtl"
                 fullWidth
                 size="small"
                 placeholder="문서제목"
               />
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 2 }} alignContent="flex-end">
-            <FormControl error={false}>
-              <FormControlLabel
-                name="holding-check"
-                control={<Checkbox size="small" />}
-                label="개인정보 포함"
-              />
-            </FormControl>
-          </Grid>
+            }
+          />
+          <GridField
+            item={3}
+            label="개인정보 포함"
+            value={<Checkbox size="small" />}
+          />
         </Grid>
-        <div className="filter-actions">
-          <Button size="small" variant="contained">
-            조회
-          </Button>
-        </div>
-      </div>
-
-      <Divider sx={{ my: 2 }} />
-      <div className="btn_wrapper">
-        <Button variant="contained" onClick={handleApplySelectedRows}>
-          선택 반영
-        </Button>
-        <Button variant="contained" onClick={handleApplyAllRows}>
-          일괄 반영
-        </Button>
-      </div>
+        <Box className="table-view-actions">
+          <Button variant="contained">조회</Button>
+        </Box>
+      </Stack>
 
       <AgGridContainer<any>
+        actionButtons={[
+          { label: "선택 반영", onClick: handleApplySelectedRows },
+          { label: "일괄 반영", onClick: handleApplyAllRows },
+        ]}
         isLoading={isLoading}
         enableRowSelection={true}
         colDefs={columnDefs}

@@ -1,12 +1,5 @@
 import React, { useCallback, useState } from "react";
-import {
-  Button,
-  FormControl,
-  Grid,
-  MenuItem,
-  Select,
-  Stack,
-} from "@mui/material";
+import { Box, Button, Grid, Stack } from "@mui/material";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
@@ -16,6 +9,8 @@ import DocDestructionAppvButton from "@/components/actionButtons/DocDestructionA
 import useNotifications from "@/hooks/useNotifications";
 import { DocDestruction } from "@/types/docDestruction";
 import { ColDef } from "ag-grid-community";
+import GridField from "@/components/common/GridField";
+import MuiSelect from "@/components/elements/MuiSelect/MuiSelect";
 
 export default function DocDestructionReqList() {
   const notifications = useNotifications();
@@ -58,71 +53,103 @@ export default function DocDestructionReqList() {
 
   return (
     <div>
-      <div className="filter">
-        <Grid container spacing={2}>
+      <Stack direction="row" className="search-area" mb={2}>
+        <Grid container spacing={0} className="table-view-grid">
           {/* 1행 */}
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <div className="filter-field">
-              <label className="filter-label">대분류</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <div className="filter-field">
-              <label className="filter-label">중분류</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">접수서류</MenuItem>
-                    <MenuItem value="02">신청자 제출서류</MenuItem>
-                    <MenuItem value="03">직원보완자료</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <div className="filter-field">
-              <label className="filter-label">소분류</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">사망 신청</MenuItem>
-                    <MenuItem value="02">미성년자 신청</MenuItem>
-                    <MenuItem value="03">이전문서</MenuItem>
-                    <MenuItem value="04">의무기록</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
-          </Grid>
-          {/* 2행 MuiDateRangePicker */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <div className="filter-field">
-              <label className="filter-label">기간</label>
+          <GridField
+            item={4}
+            label="대분류"
+            value={
+              <MuiSelect
+                id="docLclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "피해구제",
+                    code: "01",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={4}
+            label="중분류"
+            value={
+              <MuiSelect
+                id="docMclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "접수서류",
+                    code: "01",
+                  },
+                  {
+                    name: "신청자 제출서류",
+                    code: "02",
+                  },
+                  {
+                    name: "직원보완자료",
+                    code: "03",
+                  },
+                ]}
+              />
+            }
+          />
+          <GridField
+            item={4}
+            label="소분류"
+            value={
+              <MuiSelect
+                id="docSclsfNo"
+                items={[
+                  {
+                    name: "전체",
+                    code: "",
+                  },
+                  {
+                    name: "사망 신청",
+                    code: "01",
+                  },
+                  {
+                    name: "미성년자 신청",
+                    code: "02",
+                  },
+                  {
+                    name: "이전문서",
+                    code: "03",
+                  },
+                  {
+                    name: "의무기록",
+                    code: "04",
+                  },
+                ]}
+              />
+            }
+          />
+          {/* 2행 */}
+          <GridField
+            item={12}
+            label="기간"
+            value={
               <div className="filter-range">
                 <MuiDatePickerFt value={""} onChange={() => {}} />
                 <span className="filter-range-sep">-</span>{" "}
                 <MuiDatePickerFt value={""} onChange={() => {}} />
               </div>
-            </div>
-          </Grid>
+            }
+          />
         </Grid>
-        <div className="filter-actions">
-          <Button size="small" variant="contained">
-            조회
-          </Button>
-        </div>
-      </div>
+        <Box className="table-view-actions">
+          <Button variant="contained">조회</Button>
+        </Box>
+      </Stack>
 
       <Stack direction="row" spacing={1} justifyContent="right" mt={2}>
         <DocDestructionAppvButton selectedRows={selectedRows} />

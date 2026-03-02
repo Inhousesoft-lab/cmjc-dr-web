@@ -14,3 +14,45 @@
     }
   }
 }
+
+
+.tree-grid {
+  .tree-grid__cell {
+    --tree-indent-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-left: calc(var(--tree-level, 0) * var(--tree-indent-size));
+  }
+
+  .tree-grid__toggle {
+    width: 14px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .tree-grid__toggle-spacer {
+    width: 14px;
+    flex: 0 0 auto;
+  }
+
+  .tree-grid__icon {
+    font-size: 18px !important;
+  }
+
+  .tree-grid__icon--leaf {
+    color: #616161;
+  }
+
+  .tree-grid__icon--folder {
+    color: #d0a200;
+  }
+
+  .tree-grid__label {
+    display: inline-block;
+  }
+}

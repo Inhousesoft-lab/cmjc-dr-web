@@ -12,23 +12,21 @@
 @use "./ko/components/aggrid";
 @use "./ko/components/aside";
 @use "./ko/components/button";
+@use "./ko/components/elements";
 @use "./ko/components/dialog";
-@use "./ko/components/field";
+// @use "./ko/components/field";
 @use "./ko/components/fileUpload";
 @use "./ko/components/filter";
 @use "./ko/components/grid";
-@use "./ko/components/input";
 @use "./ko/components/modal";
 @use "./ko/components/paging";
-@use "./ko/components/tab";
 @use "./ko/components/table";
 
 // layout
 @use "./ko/layout/content";
-@use "./ko/layout/footer";
 @use "./ko/layout/header";
 @use "./ko/layout/sub";
 
 // pages
 @use "./ko/pages/drugsafe";
-@use "./ko/pages/error";
+// @use "./ko/pages/error";

@@ -1,10 +1,11 @@
 import {
+  Box,
   Button,
-  Divider,
   FormControl,
   Grid,
   MenuItem,
   Select,
+  Stack,
   TextField,
 } from "@mui/material";
 import { useNavigate } from "react-router";
@@ -14,6 +15,7 @@ import AgGridContainer from "@/components/grid/AgGridContainer";
 import React from "react";
 import { ColDef } from "ag-grid-community";
 import { DigitalDoc } from "@/types/digitalDoc";
+import GridField from "@/components/common/GridField";
 
 export default function DigitalDocList() {
   const navigate = useNavigate();
@@ -42,74 +44,70 @@ export default function DigitalDocList() {
   return (
     <div>
       {/* <!-- 검색조건 --> */}
-      <div className="filter">
-        <Grid container spacing={2} width="100%">
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">대분류</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">중분류</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <div className="filter-field">
-              <label className="filter-label">소분류</label>
-              <div className="field_select">
-                <FormControl size="small" fullWidth>
-                  <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
-                    <MenuItem value="00">전체</MenuItem>
-                    <MenuItem value="01">피해구제</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-            </div>
-          </Grid>
-
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <div className="filter-field">
-              <label className="filter-label">검색어</label>
-              <TextField fullWidth size="small" placeholder="문서번호" />
-            </div>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="문서제목"
-              label="문서제목"
-            />
-          </Grid>
+      <Stack direction="row" className="search-area" mb={2}>
+        <Grid container spacing={0} className="table-view-grid">
+          {/* 1행 */}
+          <GridField
+            item={6}
+            label="대분류"
+            value={
+              <FormControl size="small" fullWidth>
+                <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
+                  <MenuItem value="00">전체</MenuItem>
+                  <MenuItem value="01">피해구제</MenuItem>
+                </Select>
+              </FormControl>
+            }
+          />
+          <GridField
+            item={6}
+            label="중분류"
+            value={
+              <FormControl size="small" fullWidth>
+                <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
+                  <MenuItem value="00">전체</MenuItem>
+                  <MenuItem value="01">피해구제</MenuItem>
+                </Select>
+              </FormControl>
+            }
+          />
+          <GridField
+            item={6}
+            label="중분류"
+            value={
+              <FormControl size="small" fullWidth>
+                <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
+                  <MenuItem value="00">전체</MenuItem>
+                  <MenuItem value="01">피해구제</MenuItem>
+                </Select>
+              </FormControl>
+            }
+          />
+          <GridField
+            item={6}
+            label="검색어"
+            value={<TextField fullWidth size="small" placeholder="문서번호" />}
+          />
+          <GridField
+            item={12}
+            label="문서제목"
+            value={
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="문서제목"
+                label="문서제목"
+              />
+            }
+          />
         </Grid>
-        <Button variant="contained">검색</Button>
-      </div>
-
-      <Divider sx={{ my: 2 }} />
-      <div className="btn_wrapper">
-        <Button size="small" variant="contained" onClick={handleCreateClick}>
-          등록
-        </Button>
-      </div>
+        <Box className="table-view-actions">
+          <Button variant="contained">검색</Button>
+        </Box>
+      </Stack>
 
       <AgGridContainer<DigitalDoc>
+        actionButtons={[{ label: "등록", onClick: handleCreateClick }]}
         isLoading={isLoading}
         enableRowSelection={false}
         colDefs={columnDefs}
