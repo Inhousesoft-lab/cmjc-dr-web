@@ -1,16 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import "./i18n/i18n"; /* first load */
-import { LOCALE_KEY } from "./i18n/i18n";
-
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "@/app/store";
+
 import { FALLBACK_LANG, normalizeLang } from "./routes/lang";
+import { LOCALE_KEY } from "./i18n/i18n";
+import "./i18n/i18n"; /* first load */
 
 import App from "./App";
-import NotificationsProvider from "./hooks/useNotifications/NotificationsProvider";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -48,11 +47,9 @@ dayjs.locale("ko"); // 전역 로케일을 한국으로 설정
 ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
     <Provider store={store}>
-      <NotificationsProvider>
-        <PersistGate loading={null} persistor={persistor}>
-          <App />
-        </PersistGate>
-      </NotificationsProvider>
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
     </Provider>
   </React.StrictMode>,
 );
