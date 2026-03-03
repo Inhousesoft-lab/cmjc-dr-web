@@ -13,11 +13,23 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import React from "react";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
+import MuiSelect from "@/components/elements/MuiSelect";
 import LabelCell from "@/components/table/LabelCell";
 import TableWrapper from "@/components/table/TableWrapper";
+import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 
 export default function DigitalDocForm() {
+  const [docLclsfNo, setDocLclsfNo] = React.useState("");
+  const [docMclsfNo, setDocMclsfNo] = React.useState("");
+  const [docSclsfNo, setDocSclsfNo] = React.useState("");
+
+  const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
+    docLclsfNo,
+    docMclsfNo,
+  );
+
   return (
     <div>
       <TableWrapper
@@ -35,27 +47,40 @@ export default function DigitalDocForm() {
           <LabelCell>문서분류</LabelCell>
           <TableCell colSpan={3}>
             <Stack direction="row" spacing={1}>
-              <FormControl size="small" fullWidth>
+              <Stack spacing={0.5} width="100%">
                 <FormLabel>대분류</FormLabel>
-                <Select id="docLclsfNo" name="docLclsfNo" defaultValue="00">
-                  <MenuItem value="00">전체</MenuItem>
-                  <MenuItem value="01">피해구제</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" fullWidth>
+                <MuiSelect
+                  id="docLclsfNo"
+                  items={lclsfList}
+                  value={docLclsfNo}
+                  onChange={(e) => {
+                    setDocLclsfNo(e.target.value);
+                    setDocMclsfNo("");
+                    setDocSclsfNo("");
+                  }}
+                />
+              </Stack>
+              <Stack spacing={0.5} width="100%">
                 <FormLabel>중분류</FormLabel>
-                <Select id="docMclsfNo" name="docMclsfNo" defaultValue="00">
-                  <MenuItem value="00">전체</MenuItem>
-                  <MenuItem value="01">피해구제</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" fullWidth>
+                <MuiSelect
+                  id="docMclsfNo"
+                  items={mclsfList}
+                  value={docMclsfNo}
+                  onChange={(e) => {
+                    setDocMclsfNo(e.target.value);
+                    setDocSclsfNo("");
+                  }}
+                />
+              </Stack>
+              <Stack spacing={0.5} width="100%">
                 <FormLabel>소분류</FormLabel>
-                <Select id="docSclsfNo" name="docSclsfNo" defaultValue="00">
-                  <MenuItem value="00">전체</MenuItem>
-                  <MenuItem value="01">피해구제</MenuItem>
-                </Select>
-              </FormControl>
+                <MuiSelect
+                  id="docSclsfNo"
+                  items={sclsfList}
+                  value={docSclsfNo}
+                  onChange={(e) => setDocSclsfNo(e.target.value)}
+                />
+              </Stack>
             </Stack>
           </TableCell>
         </TableRow>
