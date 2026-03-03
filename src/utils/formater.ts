@@ -16,3 +16,36 @@ export const gvbkLabel = (value: string | undefined) =>
 
 export const prvcLabel = (value: string | undefined) =>
   ynLabel(value, "포함", "미포함");
+
+export const formatPeriod = (years: unknown, months: unknown) => {
+  const y = String(years ?? "").trim();
+  const m = String(months ?? "").trim();
+
+  if (!y) return "-";
+  if (y === "0") return `${m || "0"}개월`;
+  if (y === "90") return "준영구";
+  if (y === "99") return "영구";
+  return `${y}년`;
+};
+
+export const formatYmd = (value: unknown) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "-";
+
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (digits.length < 8) return "-";
+
+  const yyyymmdd = digits.slice(0, 8);
+  return formatYYMMDD(yyyymmdd);
+};
+
+export const formatRegDate = (value: unknown) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "-";
+
+  // ISO("2026-03-03T14:47:05.049+00:00") 또는 YYYYMMDD 모두 대응
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (digits.length < 8) return "-";
+
+  return formatDate(digits.slice(0, 8));
+};

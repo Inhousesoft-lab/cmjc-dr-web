@@ -1,48 +1,52 @@
+import { formatPeriod, formatRegDate, formatYmd } from "@/utils/formater";
+
 export const listDefs = [
   {
     headerName: "번호",
     field: "rowNo",
-    width: 40,
+    width: 70,
     cellStyle: { textAlign: "center" },
   },
   {
     headerName: "문서분류",
-    field: "docSclsfNm",
-    width: 150,
+    field: "docClsfNm",
+    width: 260,
     valueFormatter: (params: any) => {
-      return (
-        params.data.docLclsfNm +
-        ">" +
-        params.data.docMclsfNm +
-        ">" +
-        params.data.docSclsfNm
-      );
+      const l = params?.data?.docLclsfNm ?? "";
+      const m = params?.data?.docMclsfNm ?? "";
+      const s = params?.data?.docSclsfNm ?? "";
+      const parts = [l, m, s].filter(Boolean);
+      return parts.length > 0 ? parts.join(" > ") : "-";
     },
   },
   {
     headerName: "문서번호",
     field: "docNo",
-    width: 150,
+    width: 130,
   },
   {
     headerName: "문서제목",
     field: "docTtl",
-    width: 200,
+    width: 220,
   },
   {
     headerName: "정보주체 동의여부",
     field: "docClsf.prvcFileHldPrst.infoMnbdAgreYn",
-    width: 200,
+    width: 170,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      return params.value === "Y" ? "동의" : "비동의";
+      const yn = params?.data?.docClsf?.prvcFileHldPrst?.infoMnbdAgreYn;
+      if (yn === "Y") return "동의";
+      if (yn === "N") return "비동의";
+      return "-";
     },
   },
   {
     headerName: "수집일자",
     field: "clctYmd",
-    width: 150,
+    width: 120,
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => formatYmd(params?.value),
   },
   {
     headerName: "변경 전",
@@ -51,56 +55,41 @@ export const listDefs = [
       {
         headerName: "보유기간",
         field: "hldPrdDfyrs",
-        width: 150,
+        width: 110,
         cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => {
-          const hldPrdDfyrs = params.value;
-          if (String(hldPrdDfyrs) === "0")
-            return `${params.data.hldPrdMmCnt || "0"}개월`;
-          if (String(hldPrdDfyrs) === "90") return "반영구";
-          if (String(hldPrdDfyrs) === "99") return "영구";
-          return `${hldPrdDfyrs || "0"}년`;
-        },
+        valueFormatter: (params: any) =>
+          formatPeriod(params?.data?.hldPrdDfyrs, params?.data?.hldPrdMmCnt),
       },
       {
         headerName: "종료일자",
         field: "endYmd",
-        width: 150,
+        width: 120,
         cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => {
-          return formatYYMMDD(params.value);
-        },
+        valueFormatter: (params: any) => formatYmd(params?.value),
       },
     ],
   },
   {
-    headerName: "변경 전",
+    headerName: "변경 후",
     cellStyle: { textAlign: "center" },
     children: [
       {
         headerName: "보유기간",
         field: "docClsf.prvcFileHldPrst.hldPrdDfyrs",
-        width: 150,
+        width: 110,
         cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => {
-          const hldPrdDfyrs = params.value;
-          if (String(hldPrdDfyrs) === "0")
-            return `${
-              params.data.docClsf.prvcFileHldPrst.hldPrdMmCnt || "0"
-            }개월`;
-          if (String(hldPrdDfyrs) === "90") return "반영구";
-          if (String(hldPrdDfyrs) === "99") return "영구";
-          return `${hldPrdDfyrs || "0"}년`;
-        },
+        valueFormatter: (params: any) =>
+          formatPeriod(
+            params?.data?.docClsf?.prvcFileHldPrst?.hldPrdDfyrs,
+            params?.data?.docClsf?.prvcFileHldPrst?.hldPrdMmCnt,
+          ),
       },
       {
         headerName: "종료일자",
         field: "endYmdAfterChanged",
-        width: 150,
+        width: 120,
         cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => {
-          return formatYYMMDD(params.value);
-        },
+        valueFormatter: (params: any) => formatYmd(params?.value),
       },
     ],
   },
@@ -109,14 +98,17 @@ export const listDefs = [
     field: "rgtrId",
     width: 150,
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      const rgtrId = params?.data?.rgtrId ?? "-";
+      const deptId = params?.data?.deptId ?? "-";
+      return `${rgtrId} (${deptId})`;
+    },
   },
   {
     headerName: "등록일자",
     field: "regDt",
-    width: 150,
+    width: 120,
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => {
-      return formatDate(params.value.replaceAll("-", "")); // null/undefined 대비
-    },
+    valueFormatter: (params: any) => formatRegDate(params?.value),
   },
 ];
