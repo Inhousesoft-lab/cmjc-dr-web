@@ -8,6 +8,16 @@ export const selectDigitalDocRows = createSelector(
   (s) => s.rows,
 );
 
+export const selectDigitalDocAuthrtRows = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.authrtRows,
+);
+
+export const selectDigitalDocDetail = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.detail,
+);
+
 export const selectDigitalDocRowCount = createSelector(
   [selectDigitalDocListState],
   (s) => s.rowCount,
@@ -21,6 +31,36 @@ export const selectDigitalDocLoading = createSelector(
 export const selectDigitalDocError = createSelector(
   [selectDigitalDocListState],
   (s) => s.error,
+);
+
+export const selectDigitalDocAuthrtLoading = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.authrtLoading,
+);
+
+export const selectDigitalDocAuthrtSaving = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.authrtSaving,
+);
+
+export const selectDigitalDocAuthrtError = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.authrtError,
+);
+
+export const selectDigitalDocAuthrtSaveError = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.authrtSaveError,
+);
+
+export const selectDigitalDocDetailLoading = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.detailLoading,
+);
+
+export const selectDigitalDocDetailError = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.detailError,
 );
 
 export const selectDigitalDocSaving = createSelector(

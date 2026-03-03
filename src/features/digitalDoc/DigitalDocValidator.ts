@@ -52,6 +52,34 @@ export const digitalDocListSchema = z.looseObject({
   total: numberField,
 });
 
+export const digitalAuthrtRowSchema = z.looseObject({
+  eldocNo: stringField,
+  inqAuthrtNo: stringField,
+  deptId: stringField,
+  indvId: stringField,
+  delYn: stringField,
+  regDt: stringField,
+  rgtrId: stringField,
+  mdfcnDt: stringField,
+  mdfrId: stringField,
+});
+
+export const digitalAuthrtListSchema = z.looseObject({
+  list: z.array(digitalAuthrtRowSchema).optional().default([]),
+});
+
+export const digitalAuthrtCreateSchema = z.object({
+  deptId: z.string().trim().min(1, "부서를 선택해 주세요."),
+  indvId: z.string().trim().min(1, "이름을 선택해 주세요."),
+});
+
+export function digitalAuthrtCreateValidator(data: unknown) {
+  const result = digitalAuthrtCreateSchema.safeParse(data);
+  return result.success
+    ? { success: true as const, data: result.data, issues: [] }
+    : { success: false as const, data: null, issues: result.error.issues };
+}
+
 const dateField = z
   .string()
   .trim()
