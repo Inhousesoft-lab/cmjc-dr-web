@@ -16,7 +16,6 @@ import {
   FormGroup,
   SelectChangeEvent,
 } from "@mui/material";
-import { useSelector } from "react-redux";
 import type {
   DocClassDetail,
   DocClassDetailFormState,
@@ -37,8 +36,6 @@ import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import MuiSelect from "@/components/elements/MuiSelect";
 import PageStatus from "@/components/common/PageStatus";
 import SectionTitle from "@/components/common/SectionTitle";
-import MuiCheckbox from "@/components/elements/MuiCheckbox";
-import type { RootState } from "@/app/store";
 
 type SubDetailValues = NonNullable<Values["prvcFileHldPrst"]>;
 
@@ -106,24 +103,24 @@ const PrvcDetailTable = React.memo(
 
     const handleInfoAgreeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const checked = e.target.checked; // checked == 동의(Y)
-      const notAgree = checked; // 동의가 아니면 true
-      onChangeInfoAgree(notAgree);
+      onChangeInfoAgree(checked);
 
       const target = document.querySelector<HTMLInputElement>(
         'input[name="infoMnbdDsagClctSttBssExpln"]',
       );
       if (!target) return;
 
-      if (!notAgree) {
+      if (checked) {
         // 동의(Y)인 경우: 값 초기화 + 비활성
         target.value = "";
         target.disabled = true;
       } else {
-        // 비동의인 경우: 활성
+        // 비동의(N)인 경우: 활성
         target.value = "";
         target.disabled = false;
       }
     };
+    
     return (
       <TableWrapper aria-label="개인정보 상세 입력">
         {/* 부서명 / 파일명 */}
@@ -346,7 +343,7 @@ const PrvcDetailTable = React.memo(
                 <Checkbox
                   size="small"
                   name="infoMnbdAgreYn"
-                  defaultChecked={defaults.infoMnbdAgreYn === "Y"} // ← 플래그로 제어
+                  checked={isInfoAgree}
                   onChange={handleInfoAgreeChange}
                 />
               }
@@ -778,186 +775,238 @@ export default function DocClassificationForm() {
     navigate(URL.DOC_CLASSIFICATION_LIST);
   }, [navigate]);
 
-  /* ---------------- 제출 처리 ---------------- */
+  const buildPayload = React.useCallback((): Values | null => {
+    if (!formRef.current) return null;
+
+    const fd = new FormData(formRef.current);
+    const hasField = (key: string) =>
+      Boolean(formRef.current?.elements.namedItem(key));
+    const getText = (key: string, fallback = "") => {
+      if (!hasField(key)) return fallback;
+      const value = fd.get(key);
+      return typeof value === "string" ? value : fallback;
+    };
+    const getNumber = (key: string, fallback: number | null = null) => {
+      if (!hasField(key)) return fallback;
+      const value = fd.get(key);
+      if (value === null || value === "") return fallback;
+      const num = Number(value);
+      return Number.isNaN(num) ? fallback : num;
+    };
+    const getCheckboxYn = (key: string, fallback: string) => {
+      if (!hasField(key)) return fallback;
+      return fd.get(key) ? "Y" : "N";
+    };
+
+    const subDetail: SubDetailValues = {
+      ...(defaults.prvcFileHldPrst ?? {}),
+      deptNm: getText("deptNm", defaults.prvcFileHldPrst?.deptNm ?? ""),
+      fileNm: getText("fileNm", defaults.prvcFileHldPrst?.fileNm ?? ""),
+      hldPrpsExpln: getText(
+        "hldPrpsExpln",
+        defaults.prvcFileHldPrst?.hldPrpsExpln ?? "",
+      ),
+      clctSttBssExpln: getText(
+        "clctSttBssExpln",
+        defaults.prvcFileHldPrst?.clctSttBssExpln ?? "",
+      ),
+      useDeptNm: getText("useDeptNm", defaults.prvcFileHldPrst?.useDeptNm ?? ""),
+      prvcPrcsMthdExpln: getText(
+        "prvcPrcsMthdExpln",
+        defaults.prvcFileHldPrst?.prvcPrcsMthdExpln ?? "",
+      ),
+      hldPrdDfyrs: getNumber(
+        "hldPrdDfyrs",
+        defaults.prvcFileHldPrst?.hldPrdDfyrs ?? null,
+      ),
+      hldPrdMmCnt: getNumber(
+        "hldPrdMmCnt",
+        defaults.prvcFileHldPrst?.hldPrdMmCnt ?? null,
+      ),
+      infoMnbdPrvcMttr: getText(
+        "infoMnbdPrvcMttr",
+        defaults.prvcFileHldPrst?.infoMnbdPrvcMttr ?? "",
+      ),
+      sttyAgtPrvcMttr: getText(
+        "sttyAgtPrvcMttr",
+        defaults.prvcFileHldPrst?.sttyAgtPrvcMttr ?? "",
+      ),
+      rrnoClctYn: getText("rrnoClctYn", defaults.prvcFileHldPrst?.rrnoClctYn ?? ""),
+      rrnoClctSttBssExpln: getText(
+        "rrnoClctSttBssExpln",
+        defaults.prvcFileHldPrst?.rrnoClctSttBssExpln ?? "",
+      ),
+      infoMnbdAgreYn: getCheckboxYn(
+        "infoMnbdAgreYn",
+        defaults.prvcFileHldPrst?.infoMnbdAgreYn ?? "N",
+      ),
+      infoMnbdDsagClctSttBssExpln: getText(
+        "infoMnbdDsagClctSttBssExpln",
+        defaults.prvcFileHldPrst?.infoMnbdDsagClctSttBssExpln ?? "",
+      ),
+      spiHldYn: getText("spiHldYn", defaults.prvcFileHldPrst?.spiHldYn ?? ""),
+      spiIndivAgrnYn: getText(
+        "spiIndivAgrnYn",
+        defaults.prvcFileHldPrst?.spiIndivAgrnYn ?? "",
+      ),
+      spiHldSttBssExpln: getText(
+        "spiHldSttBssExpln",
+        defaults.prvcFileHldPrst?.spiHldSttBssExpln ?? "",
+      ),
+      uiiHldYn: getText("uiiHldYn", defaults.prvcFileHldPrst?.uiiHldYn ?? ""),
+      uiiIndivAgreYn: getText(
+        "uiiIndivAgreYn",
+        defaults.prvcFileHldPrst?.uiiIndivAgreYn ?? "",
+      ),
+      uiiHldSttBssExpln: getText(
+        "uiiHldSttBssExpln",
+        defaults.prvcFileHldPrst?.uiiHldSttBssExpln ?? "",
+      ),
+      prvcEvlTrgtYn: getText(
+        "prvcEvlTrgtYn",
+        defaults.prvcFileHldPrst?.prvcEvlTrgtYn ?? "",
+      ),
+      hndlPicNm: getText("hndlPicNm", defaults.prvcFileHldPrst?.hndlPicNm ?? ""),
+      tdptySplrcpNmCn: getText(
+        "tdptySplrcpNmCn",
+        defaults.prvcFileHldPrst?.tdptySplrcpNmCn ?? "",
+      ),
+      tdptyPvsnBssExpln: getText(
+        "tdptyPvsnBssExpln",
+        defaults.prvcFileHldPrst?.tdptyPvsnBssExpln ?? "",
+      ),
+      tdptyPvsnMttr: getText(
+        "tdptyPvsnMttr",
+        defaults.prvcFileHldPrst?.tdptyPvsnMttr ?? "",
+      ),
+      prvcPrcsCnsgnBzentyNmCn: getText(
+        "prvcPrcsCnsgnBzentyNmCn",
+        defaults.prvcFileHldPrst?.prvcPrcsCnsgnBzentyNmCn ?? "",
+      ),
+      prvcCnsgnCtrtYn: getText(
+        "prvcCnsgnCtrtYn",
+        defaults.prvcFileHldPrst?.prvcCnsgnCtrtYn ?? "",
+      ),
+      prvcCnsgnFactIndctYn: getText(
+        "prvcCnsgnFactIndctYn",
+        defaults.prvcFileHldPrst?.prvcCnsgnFactIndctYn ?? "",
+      ),
+      prpsExclUtztnPvsnYn: getText(
+        "prpsExclUtztnPvsnYn",
+        defaults.prvcFileHldPrst?.prpsExclUtztnPvsnYn ?? "",
+      ),
+      prpsExclUtztnPvsnBssExpln: getText(
+        "prpsExclUtztnPvsnBssExpln",
+        defaults.prvcFileHldPrst?.prpsExclUtztnPvsnBssExpln ?? "",
+      ),
+    };
+
+    let docClsfNm = "";
+    let upDocClsfNo: string | null = null;
+
+    switch (docClsfSeCd) {
+      case "L":
+        docClsfNm = fd.get("docLclsfNm") as string;
+        break;
+      case "M":
+        docClsfNm = fd.get("docMclsfNm") as string;
+        upDocClsfNo = fd.get("docLclsfNo") as string;
+        break;
+      default:
+        docClsfNm = fd.get("docSclsfNm") as string;
+        upDocClsfNo = fd.get("docMclsfNo") as string;
+        break;
+    }
+
+    return {
+      ...defaults,
+      docClsfNm,
+      upDocClsfNo,
+      docClsfSeCd: getText("docClsfSeCd", docClsfSeCd),
+      docLclsfNo: getText("docLclsfNo", defaults.docLclsfNo ?? ""),
+      docMclsfNo: getText("docMclsfNo", defaults.docMclsfNo ?? ""),
+      docSclsfNo: getText("docSclsfNo", defaults.docSclsfNo ?? ""),
+      docLclsfNm: getText("docLclsfNm", defaults.docLclsfNm ?? ""),
+      docMclsfNm: getText("docMclsfNm", defaults.docMclsfNm ?? ""),
+      docSclsfNm: getText("docSclsfNm", defaults.docSclsfNm ?? ""),
+      prvcInclYn: getCheckboxYn("prvcInclYn", defaults.prvcInclYn ?? "N"),
+      useEn: getText("useEn", defaults.useEn ?? "Y"),
+      rgtrId: "Admin test",
+      mdfrId: "Admin test",
+      prvcFileHldPrst: subDetail,
+    };
+  }, [defaults, docClsfSeCd]);
+
+  const handleSave = React.useCallback(
+    async (payload: Values) => {
+      const isEditMode = Boolean(docClsfNo);
+
+      if (isEditMode) {
+        if (
+          payload.prvcInclYn === "Y" &&
+          (Number(payload.prvcFileHldPrst?.hldPrdDfyrs) !==
+            Number(hldPrdDfyrs) ||
+            Number(payload.prvcFileHldPrst?.hldPrdMmCnt) !==
+              Number(hldPrdMmCnt))
+        ) {
+          const confirmed = await dialogs.confirm(
+            "보유기간 변경 시, 기존 개인정보파일에 대한 보유기간 수정에 대한 검토가 필요합니다. 해당화면으로 이동 하시겠습니다?",
+            {
+              severity: "error",
+              okText: "확인",
+              cancelText: "취소",
+            },
+          );
+
+          if (confirmed) {
+            navigate({
+              pathname: URL.HOLDING_INSTITUTION_LIST,
+              search: `?${createSearchParams({
+                lclsfNo: payload.docLclsfNo ?? "",
+                mclsfNo: payload.docMclsfNo ?? "",
+                sclsfNo: payload.docClsfNo ?? "",
+              })}`,
+            });
+          }
+          return;
+        }
+
+        await https.post(updateDocClassificationApiPath(), payload as DocClassDetail);
+        notifications.show("수정 완료.", {
+          severity: "success",
+          autoHideDuration: 3000,
+        });
+        navigate(URL.DOC_CLASSIFICATION_LIST);
+        return;
+      }
+
+      if (!payload.rgtrId) {
+        notifications.show("등록자 정보가 없습니다. 다시 로그인 후 시도해 주세요.", {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
+        return;
+      }
+
+      await https.post(
+        insertDocClassificationApiPath(),
+        payload as Omit<DocClassDetail, "docClsfNo">,
+      );
+      notifications.show("생성 완료.", {
+        severity: "success",
+        autoHideDuration: 3000,
+      });
+      navigate(URL.DOC_CLASSIFICATION_LIST);
+    },
+    [docClsfNo, hldPrdDfyrs, hldPrdMmCnt, dialogs, navigate, notifications],
+  );
+
   const handleSubmit = React.useCallback(
     async (e: React.SubmitEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if (!formRef.current) return;
+      const payload = buildPayload();
+      if (!payload) return;
 
-      // 폼데이터로 안하고 수정될때마다 컬럼의 값을 바꿔주는 형태로 가면 입력이 너무 느려짐..
-      // 추후 좋은 방안 나오면 수정가능
-      const fd = new FormData(formRef.current);
-      const hasField = (key: string) =>
-        Boolean(formRef.current?.elements.namedItem(key));
-      const getText = (key: string, fallback = "") => {
-        if (!hasField(key)) return fallback;
-        const value = fd.get(key);
-        return typeof value === "string" ? value : fallback;
-      };
-      const getNumber = (key: string, fallback: number | null = null) => {
-        if (!hasField(key)) return fallback;
-        const value = fd.get(key);
-        if (value === null || value === "") return fallback;
-        const num = Number(value);
-        return Number.isNaN(num) ? fallback : num;
-      };
-      const getCheckboxYn = (key: string, fallback: string) => {
-        if (!hasField(key)) return fallback;
-        return fd.get(key) ? "Y" : "N";
-      };
-
-      const subDetail: SubDetailValues = {
-        ...(defaults.prvcFileHldPrst ?? {}),
-        deptNm: getText("deptNm", defaults.prvcFileHldPrst?.deptNm ?? ""),
-        fileNm: getText("fileNm", defaults.prvcFileHldPrst?.fileNm ?? ""),
-        hldPrpsExpln: getText(
-          "hldPrpsExpln",
-          defaults.prvcFileHldPrst?.hldPrpsExpln ?? "",
-        ),
-        clctSttBssExpln: getText(
-          "clctSttBssExpln",
-          defaults.prvcFileHldPrst?.clctSttBssExpln ?? "",
-        ),
-        useDeptNm: getText(
-          "useDeptNm",
-          defaults.prvcFileHldPrst?.useDeptNm ?? "",
-        ),
-        prvcPrcsMthdExpln: getText(
-          "prvcPrcsMthdExpln",
-          defaults.prvcFileHldPrst?.prvcPrcsMthdExpln ?? "",
-        ),
-        hldPrdDfyrs: getNumber(
-          "hldPrdDfyrs",
-          defaults.prvcFileHldPrst?.hldPrdDfyrs ?? null,
-        ),
-        hldPrdMmCnt: getNumber(
-          "hldPrdMmCnt",
-          defaults.prvcFileHldPrst?.hldPrdMmCnt ?? null,
-        ),
-        infoMnbdPrvcMttr: getText(
-          "infoMnbdPrvcMttr",
-          defaults.prvcFileHldPrst?.infoMnbdPrvcMttr ?? "",
-        ),
-        sttyAgtPrvcMttr: getText(
-          "sttyAgtPrvcMttr",
-          defaults.prvcFileHldPrst?.sttyAgtPrvcMttr ?? "",
-        ),
-        rrnoClctYn: getText(
-          "rrnoClctYn",
-          defaults.prvcFileHldPrst?.rrnoClctYn ?? "",
-        ),
-        rrnoClctSttBssExpln: getText(
-          "rrnoClctSttBssExpln",
-          defaults.prvcFileHldPrst?.rrnoClctSttBssExpln ?? "",
-        ),
-        infoMnbdAgreYn: getCheckboxYn(
-          "infoMnbdAgreYn",
-          defaults.prvcFileHldPrst?.infoMnbdAgreYn ?? "N",
-        ),
-        infoMnbdDsagClctSttBssExpln: getText(
-          "infoMnbdDsagClctSttBssExpln",
-          defaults.prvcFileHldPrst?.infoMnbdDsagClctSttBssExpln ?? "",
-        ),
-        spiHldYn: getText(
-          "spiHldYn",
-          defaults.prvcFileHldPrst?.spiHldYn ?? "",
-        ),
-        spiIndivAgrnYn: getText(
-          "spiIndivAgrnYn",
-          defaults.prvcFileHldPrst?.spiIndivAgrnYn ?? "",
-        ),
-        spiHldSttBssExpln: getText(
-          "spiHldSttBssExpln",
-          defaults.prvcFileHldPrst?.spiHldSttBssExpln ?? "",
-        ),
-        uiiHldYn: getText("uiiHldYn", defaults.prvcFileHldPrst?.uiiHldYn ?? ""),
-        uiiIndivAgreYn: getText(
-          "uiiIndivAgreYn",
-          defaults.prvcFileHldPrst?.uiiIndivAgreYn ?? "",
-        ),
-        uiiHldSttBssExpln: getText(
-          "uiiHldSttBssExpln",
-          defaults.prvcFileHldPrst?.uiiHldSttBssExpln ?? "",
-        ),
-        prvcEvlTrgtYn: getText(
-          "prvcEvlTrgtYn",
-          defaults.prvcFileHldPrst?.prvcEvlTrgtYn ?? "",
-        ),
-        hndlPicNm: getText(
-          "hndlPicNm",
-          defaults.prvcFileHldPrst?.hndlPicNm ?? "",
-        ),
-        tdptySplrcpNmCn: getText(
-          "tdptySplrcpNmCn",
-          defaults.prvcFileHldPrst?.tdptySplrcpNmCn ?? "",
-        ),
-        tdptyPvsnBssExpln: getText(
-          "tdptyPvsnBssExpln",
-          defaults.prvcFileHldPrst?.tdptyPvsnBssExpln ?? "",
-        ),
-        tdptyPvsnMttr: getText(
-          "tdptyPvsnMttr",
-          defaults.prvcFileHldPrst?.tdptyPvsnMttr ?? "",
-        ),
-        prvcPrcsCnsgnBzentyNmCn: getText(
-          "prvcPrcsCnsgnBzentyNmCn",
-          defaults.prvcFileHldPrst?.prvcPrcsCnsgnBzentyNmCn ?? "",
-        ),
-        prvcCnsgnCtrtYn: getText(
-          "prvcCnsgnCtrtYn",
-          defaults.prvcFileHldPrst?.prvcCnsgnCtrtYn ?? "",
-        ),
-        prvcCnsgnFactIndctYn: getText(
-          "prvcCnsgnFactIndctYn",
-          defaults.prvcFileHldPrst?.prvcCnsgnFactIndctYn ?? "",
-        ),
-        prpsExclUtztnPvsnYn: getText(
-          "prpsExclUtztnPvsnYn",
-          defaults.prvcFileHldPrst?.prpsExclUtztnPvsnYn ?? "",
-        ),
-        prpsExclUtztnPvsnBssExpln: getText(
-          "prpsExclUtztnPvsnBssExpln",
-          defaults.prvcFileHldPrst?.prpsExclUtztnPvsnBssExpln ?? "",
-        ),
-
-        // 필요하면 나머지도 여기서만 추가
-      };
-
-      let docClsfNm = "";
-      let upDocClsfNo: string | null = null;
-
-      switch (docClsfSeCd) {
-        case "L":
-          docClsfNm = fd.get("docLclsfNm") as string;
-          break;
-        case "M":
-          docClsfNm = fd.get("docMclsfNm") as string;
-          upDocClsfNo = fd.get("docLclsfNo") as string;
-          break;
-        default:
-          docClsfNm = fd.get("docSclsfNm") as string;
-          upDocClsfNo = fd.get("docMclsfNo") as string;
-          break;
-      }
-
-      const payload: Values = {
-        ...defaults,
-        docClsfNm: docClsfNm,
-        upDocClsfNo: upDocClsfNo,
-        docClsfSeCd: getText("docClsfSeCd", docClsfSeCd),
-        docLclsfNo: getText("docLclsfNo", defaults.docLclsfNo ?? ""),
-        docMclsfNo: getText("docMclsfNo", defaults.docMclsfNo ?? ""),
-        docSclsfNo: getText("docSclsfNo", defaults.docSclsfNo ?? ""),
-        docLclsfNm: getText("docLclsfNm", defaults.docLclsfNm ?? ""),
-        docMclsfNm: getText("docMclsfNm", defaults.docMclsfNm ?? ""),
-        docSclsfNm: getText("docSclsfNm", defaults.docSclsfNm ?? ""),
-        prvcInclYn: getCheckboxYn("prvcInclYn", defaults.prvcInclYn ?? "N"),
-        useEn: getText("useEn", defaults.useEn ?? "Y"),
-        rgtrId: "Admin test",
-        mdfrId: "Admin test",
-        prvcFileHldPrst: subDetail,
-      };
-      // 검증
       const { issues } = docClassificationvalidator(payload);
       if (issues && issues.length > 0) {
         setFormErrors(
@@ -967,76 +1016,11 @@ export default function DocClassificationForm() {
         );
         return;
       }
+
       setFormErrors({});
-
       setIsSubmitting(true);
-
       try {
-        const isEditMode = Boolean(docClsfNo);
-
-        if (isEditMode) {
-          if (
-            payload.prvcInclYn === "Y" &&
-            (Number(payload.prvcFileHldPrst?.hldPrdDfyrs) !==
-              Number(hldPrdDfyrs) ||
-              Number(payload.prvcFileHldPrst?.hldPrdMmCnt) !==
-                Number(hldPrdMmCnt))
-          ) {
-            const confirmed = await dialogs.confirm(
-              "보유기간 변경 시, 기존 개인정보파일에 대한 보유기간 수정에 대한 검토가 필요합니다. 해당화면으로 이동 하시겠습니다?",
-              {
-                severity: "error",
-                okText: "확인",
-                cancelText: "취소",
-              },
-            );
-
-            if (confirmed) {
-              navigate({
-                pathname: URL.HOLDING_INSTITUTION_LIST,
-                search: `?${createSearchParams({
-                  lclsfNo: payload.docLclsfNo ?? "",
-                  mclsfNo: payload.docMclsfNo ?? "",
-                  sclsfNo: payload.docClsfNo ?? "",
-                })}`,
-              });
-
-              return;
-            } else {
-              return;
-            }
-          } else {
-            await https.post(
-              updateDocClassificationApiPath(),
-              payload as DocClassDetail,
-            );
-            notifications.show("수정 완료.", {
-              severity: "success",
-              autoHideDuration: 3000,
-            });
-          }
-        } else {
-          if (!payload.rgtrId) {
-            notifications.show(
-              "등록자 정보가 없습니다. 다시 로그인 후 시도해 주세요.",
-              {
-                severity: "error",
-                autoHideDuration: 3000,
-              },
-            );
-            return;
-          }
-          await https.post(
-            insertDocClassificationApiPath(),
-            payload as Omit<DocClassDetail, "docClsfNo">,
-          );
-          notifications.show("생성 완료.", {
-            severity: "success",
-            autoHideDuration: 3000,
-          });
-        }
-
-        navigate(URL.DOC_CLASSIFICATION_LIST);
+        await handleSave(payload);
       } catch (err) {
         notifications.show(`처리 실패. 사유: ${(err as Error).message}`, {
           severity: "error",
@@ -1046,22 +1030,14 @@ export default function DocClassificationForm() {
         setIsSubmitting(false);
       }
     },
-    [
-      defaults,
-      docClsfSeCd,
-      docClsfNo,
-      navigate,
-      hldPrdDfyrs,
-      hldPrdMmCnt,
-      dialogs,
-      notifications,
-    ],
+    [buildPayload, handleSave, notifications],
   );
 
   /* ---------------- 렌더링 ---------------- */
   if (isLoading) {
     return <PageStatus isLoading={isLoading} />;
   }
+  
   return (
     <Box
       key={formRenderKey}
@@ -1184,7 +1160,7 @@ export default function DocClassificationForm() {
                       <Checkbox
                         size="small"
                         name="prvcInclYn"
-                        defaultChecked={prvcInclYn === "Y"}
+                        checked={prvcInclYn === "Y"}
                         onChange={(e) =>
                           setPrvcInclYn(e.target.checked ? "Y" : "N")
                         }
@@ -1203,7 +1179,17 @@ export default function DocClassificationForm() {
               <LabelCell>사용여부</LabelCell>
               <TableCell>
                 <FormControl component="fieldset">
-                  <RadioGroup row name="useEn" defaultValue={defaults.useEn}>
+                  <RadioGroup
+                    row
+                    name="useEn"
+                    value={defaults.useEn ?? "Y"}
+                    onChange={(e) =>
+                      setDefaults((prev) => ({
+                        ...prev,
+                        useEn: e.target.value as "Y" | "N",
+                      }))
+                    }
+                  >
                     <FormControlLabel
                       value="Y"
                       control={<Radio size="small" />}

@@ -103,7 +103,6 @@ export default function DialogTrigger({
     [dragOffset.x, dragOffset.y],
   );
 
-
   return (
     <>
       {!hideTrigger &&
@@ -112,7 +111,7 @@ export default function DialogTrigger({
             {triggerIcon || <SearchIcon />}
           </IconButton>
         ) : (
-          <Button variant="outlined" color="secondary" onClick={onOpen}>
+          <Button variant="outlined" onClick={onOpen}>
             {buttonLabel}
           </Button>
         ))}
@@ -131,12 +130,8 @@ export default function DialogTrigger({
           },
         }}
       >
-
         {title && (
-          <DialogTitle
-            className="dialog-title"
-            onMouseDown={handleDragStart}
-          >
+          <DialogTitle className="dialog-title" onMouseDown={handleDragStart}>
             {title}
             <IconButton
               aria-label="닫기"
@@ -150,7 +145,7 @@ export default function DialogTrigger({
         )}
 
         <Divider className="dialog-divider" />
-        
+
         {actions && actionsPosition === "top" && (
           <DialogActions className="dialog-actions-top">
             {actions}

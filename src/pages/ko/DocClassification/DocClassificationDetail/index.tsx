@@ -1,133 +1,51 @@
 import * as React from "react";
-import {
-  Button,
-  FormControl,
-  FormControlLabel,
-  Grid,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  Stack,
-  TableCell,
-  TableRow,
-} from "@mui/material";
+import { Button, Stack, TableCell, TableRow } from "@mui/material";
 import TableWrapper from "@/components/table/TableWrapper";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
 import DocClassificationHistoryButton from "@/components/biz/DocClassificationHistoryDialog";
-import DigitalDocDownButton from "@/components/actionButtons/DigitalDocDownButton";
-import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
-import GridField from "@/components/common/GridField";
 import LabelCell from "@/components/table/LabelCell";
 import { useNavigate, useParams } from "react-router-dom";
-import { DocClassDetail } from "@/types/docClassification";
 import PageStatus from "@/components/common/PageStatus";
+import { deleteDocClassificationApiPath } from "@/api/docClassification/DocClassificationApiPaths";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { fetchDocClassificationDetail } from "@/features/classification/DocClassificationListThunk";
 import {
-  deleteDocClassificationApiPath,
-  selectDocClassificationDetailApiPath,
-} from "@/api/docClassification/DocClassificationApiPaths";
-import https from "@/api/axiosInstance";
+  selectDocClassificationDetail,
+  selectDocClassificationDetailError,
+  selectDocClassificationDetailLoading,
+} from "@/features/classification/DocClassificationListSelectors";
+import { dateLabel, holdPeriodLabel, ynLabel } from "@/utils/formater";
 
 export default function DocClassificationDetail() {
   const { docClsfNo } = useParams();
+  const targetDocClsfNo = docClsfNo ?? "";
+  const dispatch = useAppDispatch();
 
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const notifications = useNotifications();
 
-  const [detailData, setDetailData] = React.useState<DocClassDetail | null>(
-    null,
-  );
-
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      const res = await https.get(
-        selectDocClassificationDetailApiPath(docClsfNo ?? ""),
-      );
-      const payload = res.data?.data ?? res.data;
-      setDetailData((payload ?? null) as DocClassDetail | null);
-    } catch (e) {
-      notifications.show(getErrorMessage(e), {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const detailData = useAppSelector(selectDocClassificationDetail);
+  const isLoading = useAppSelector(selectDocClassificationDetailLoading);
+  const detailError = useAppSelector(selectDocClassificationDetailError);
 
   React.useEffect(() => {
-    loadData();
-  }, []);
+    if (!targetDocClsfNo) return;
+    dispatch(fetchDocClassificationDetail(targetDocClsfNo));
+  }, [dispatch, targetDocClsfNo]);
 
-  const [returnStatus, setReturnStatus] = React.useState("");
-
-  const [approvalRows, setApprovalRows] = React.useState<
-    { id: number; dept: string; target: string; name: string }[]
-  >([
-    { id: 1, dept: "정보화팀", target: "전체", name: "전체" },
-    { id: 2, dept: "경영팀", target: "전체", name: "김길동" },
-  ]);
-
-  const [newDept, setNewDept] = React.useState("");
-  const [newName, setNewName] = React.useState("");
-
-  const handleAddApprovalRow = React.useCallback(async () => {
-    if (!newDept || !newName) return;
-    setApprovalRows((prev) => [
-      ...prev,
-      {
-        id: prev.length ? prev[prev.length - 1].id + 1 : 1,
-        dept: newDept,
-        target: "전체",
-        name: newName,
-      },
-    ]);
-    setNewDept("");
-    setNewName("");
-
-    notifications.show("공람 이력이 등록되었습니다.", {
-      severity: "success",
+  React.useEffect(() => {
+    if (!detailError) return;
+    notifications.show(detailError, {
+      severity: "error",
       autoHideDuration: 3000,
     });
-  }, [newDept, newName, notifications]);
-
-  const handleDeleteApprovalRow = React.useCallback(
-    async (id: number) => {
-      // 삭제 대상 행 찾기
-      const targetRow = approvalRows.find((row) => row.id === id);
-      if (!targetRow) {
-        return;
-      }
-
-      const confirmed = await dialogs.confirm("삭제하시겠습니까?", {
-        title: `삭제 확인`,
-        severity: "error",
-        okText: "확인",
-        cancelText: "취소",
-      });
-
-      if (!confirmed) {
-        return;
-      }
-
-      setApprovalRows((prev) => prev.filter((row) => row.id !== id));
-
-      notifications.show("공람 이력이 삭제되었습니다.", {
-        severity: "success",
-        autoHideDuration: 3000,
-      });
-    },
-    [approvalRows, dialogs, notifications],
-  );
+  }, [detailError, notifications]);
 
   const handleViewDataEdit = React.useCallback(() => {
-    navigate(`/docClassification/${docClsfNo}/modify`);
-  }, [navigate, docClsfNo]);
+    navigate(`/docClassification/${targetDocClsfNo}/modify`);
+  }, [navigate, targetDocClsfNo]);
 
   const handleViewDataDelete = React.useCallback(async () => {
     if (!detailData) {
@@ -142,9 +60,8 @@ export default function DocClassificationDetail() {
     });
 
     if (confirmed) {
-      setIsLoading(true);
       try {
-        await deleteDocClassificationApiPath(docClsfNo ?? "");
+        await deleteDocClassificationApiPath(targetDocClsfNo);
 
         notifications.show("삭제 되었습니다..", {
           severity: "success",
@@ -156,45 +73,26 @@ export default function DocClassificationDetail() {
           severity: "error",
           autoHideDuration: 3000,
         });
-      } finally {
-        setIsLoading(false);
       }
     }
-  }, [detailData, dialogs, docClsfNo, navigate, notifications]);
+  }, [detailData, dialogs, navigate, notifications, targetDocClsfNo]);
 
   const handleBack = () => {
     navigate("/docClassification/list");
   };
 
-  const detailExt = detailData as
-    | (DocClassDetail & {
-        docNo?: string;
-        docTtl?: string;
-        endYmd?: string;
-        gvbkYn?: string;
-        addExpln?: string;
-        deptNm?: string;
-        deptId?: string;
-      })
-    | null;
-
-  const mappedDocNo = detailExt?.docNo ?? "-";
-  const mappedDocTtl = detailExt?.docTtl ?? "-";
-  const mappedDept = detailExt?.deptNm ?? detailExt?.deptId ?? "-";
-  const mappedEndYmd = detailExt?.endYmd
-    ? formatDate(detailExt.endYmd.replaceAll("-", ""))
-    : "-";
-  const mappedGvbkYn =
-    detailExt?.gvbkYn === "Y"
-      ? "반환"
-      : detailExt?.gvbkYn === "N"
-        ? "미반환"
-        : "-";
-  const mappedAddExpln = detailExt?.addExpln ?? "-";
-
   if (isLoading) {
     return <PageStatus isLoading={isLoading} />;
   }
+
+  const sub = detailData?.prvcFileHldPrst ?? {};
+  const classification = [
+    detailData?.docLclsfNm,
+    detailData?.docMclsfNm,
+    detailData?.docSclsfNm,
+  ]
+    .filter(Boolean)
+    .join(" > ");
 
   return (
     <div>
@@ -209,7 +107,7 @@ export default function DocClassificationDetail() {
           <Button variant="contained" onClick={handleBack}>
             목록
           </Button>
-          <DocClassificationHistoryButton docClsfNo={docClsfNo ?? ""} />
+          <DocClassificationHistoryButton docClsfNo={targetDocClsfNo} />
         </div>
         <div className="btn_wrapper detail-top-actions__group">
           <Button variant="contained" onClick={handleViewDataEdit}>
@@ -225,204 +123,136 @@ export default function DocClassificationDetail() {
         </div>
       </Stack>
 
-      {/* 문서분류 */}
-      <Grid container spacing={0} className="table-view-grid">
-        <GridField
-          label="문서분류"
-          value={
-            <>
-              {detailData?.docClsfSeCd === "L" && `${detailData?.docLclsfNm}`}
-              {detailData?.docClsfSeCd === "M" &&
-                `${detailData?.docLclsfNm} > ${detailData?.docMclsfNm}`}
-              {detailData?.docClsfSeCd === "S" &&
-                `${detailData?.docLclsfNm} > ${detailData?.docMclsfNm} > ${detailData?.docSclsfNm}`}
-            </>
-          }
-        />
-        <GridField
-          label="개인정보 포함"
-          value={detailData?.prvcInclYn === "Y" ? "포함" : "미포함"}
-        />
-        <GridField
-          label="사용여부"
-          value={detailData?.useEn === "Y" ? "사용" : "사용안함"}
-        />
-        <GridField
-          label="등록일자"
-          value={
-            detailData?.regDt
-              ? formatDate(detailData?.regDt.replaceAll("-", ""))
-              : "-"
-          }
-        />
-        <GridField label="등록자" value={detailData?.rgtrId ?? "-"} />
-        <GridField label="문서번호" value={mappedDocNo} />
-        <GridField label="기본권한" value={mappedDept} />
-        <GridField label="문서제목" value={mappedDocTtl} />
-        <GridField label="종료일자" value={mappedEndYmd} />
-        <GridField label="반환여부" value={mappedGvbkYn} />
-        <GridField label="비고" value={mappedAddExpln} />
-        <GridField
-          label="첨부파일"
-          value={
-            <Stack
-              direction="row"
-              gap={1}
-              justifyContent="flex-start"
-              alignItems="center"
-            >
-              피해구제 접수서류.pdf
-              <DigitalDocViewerButton fileUrl="/pdf/피해구제 접수서류.pdf" />
-              {/* <DigitalDocViewerButton fileUrl="/pdf/java-developers-guide.pdf" /> */}
-              <DigitalDocDownButton />
-            </Stack>
-          }
-        />
-      </Grid>
+      <TableWrapper
+        sx={{ mb: 2 }}
+        tableAriaLabel="문서분류 요약"
+        colgroup={
+          <colgroup>
+            <col className="tbl-col-w-200" />
+            <col />
+            <col className="tbl-col-w-200" />
+            <col />
+          </colgroup>
+        }
+      >
+        <TableRow>
+          <LabelCell>문서분류</LabelCell>
+          <TableCell colSpan={3}>{classification || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>개인정보 포함</LabelCell>
+          <TableCell>
+            {ynLabel(detailData?.prvcInclYn, "포함", "미포함")}
+          </TableCell>
+          <LabelCell>사용여부</LabelCell>
+          <TableCell>
+            {ynLabel(detailData?.useEn, "사용", "사용안함")}
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>등록일자</LabelCell>
+          <TableCell>{dateLabel(detailData?.regDt)}</TableCell>
+          <LabelCell>등록자</LabelCell>
+          <TableCell>{detailData?.rgtrId || "-"}</TableCell>
+        </TableRow>
+      </TableWrapper>
 
-      <Grid container spacing={3} gap={2} mt={2}>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <div className="tbl_wrap">
-            <TableWrapper
-              tableAriaLabel="디지털 문서 상세 정보"
-              colgroup={
-                <colgroup>
-                  <col className="tbl-col-w-28p" />
-                  <col className="tbl-col-w-28p" />
-                  <col className="tbl-col-w-28p" />
-                  <col className="tbl-col-w-16p" />
-                </colgroup>
-              }
-            >
-              <TableRow>
-                <LabelCell>공람</LabelCell>
-                <LabelCell>부서</LabelCell>
-                <LabelCell>이름</LabelCell>
-                <LabelCell>삭제</LabelCell>
-              </TableRow>
-              {approvalRows.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.dept}</TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell sx={{ width: 60 }}>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteApprovalRow(row.id)}
-                    >
-                      삭제
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              <TableRow>
-                <TableCell>
-                  <FormControl fullWidth>
-                    <Select size="small" displayEmpty value={newDept}>
-                      <MenuItem value="">
-                        <em>부서</em>
-                      </MenuItem>
-                      <MenuItem value="정보화팀">정보화팀</MenuItem>
-                      <MenuItem value="경영팀">경영팀</MenuItem>
-                      <MenuItem value="기획팀">기획팀</MenuItem>
-                    </Select>
-                  </FormControl>
-                </TableCell>
-                <TableCell>
-                  <FormControl fullWidth>
-                    <Select size="small" displayEmpty value={newName}>
-                      <MenuItem value="">
-                        <em>대상</em>
-                      </MenuItem>
-                      <MenuItem value="전체">전체</MenuItem>
-                    </Select>
-                  </FormControl>
-                </TableCell>
-                <TableCell>
-                  <FormControl fullWidth>
-                    <Select size="small" displayEmpty value={newName}>
-                      <MenuItem value="">
-                        <em>이름</em>
-                      </MenuItem>
-                      <MenuItem value="전체">전체</MenuItem>
-                      <MenuItem value="김길동">김길동</MenuItem>
-                      <MenuItem value="홍길동">홍길동</MenuItem>
-                    </Select>
-                  </FormControl>
-                </TableCell>
-                <TableCell sx={{ width: 60 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    color="primary"
-                    onClick={handleAddApprovalRow}
-                  >
-                    등록
-                  </Button>
-                </TableCell>
-              </TableRow>
-            </TableWrapper>
-          </div>
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <div className="tbl_wrap">
-            <TableWrapper tableAriaLabel="문서분류 및 반환여부">
-              <TableRow>
-                <LabelCell>문서분류</LabelCell>
-                <TableCell>
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                    sx={{ width: "100%" }}
-                  >
-                    <Select size="small" fullWidth displayEmpty value="">
-                      <MenuItem value="">
-                        <em>대분류</em>
-                      </MenuItem>
-                    </Select>
-                    <Select size="small" fullWidth displayEmpty value="">
-                      <MenuItem value="">
-                        <em>중분류</em>
-                      </MenuItem>
-                    </Select>
-                    <Select size="small" fullWidth displayEmpty value="">
-                      <MenuItem value="">
-                        <em>소분류</em>
-                      </MenuItem>
-                    </Select>
-                  </Stack>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <LabelCell>반환여부</LabelCell>
-                <TableCell>
-                  <FormControl component="fieldset">
-                    <RadioGroup
-                      row
-                      value={returnStatus}
-                      onChange={(event) => setReturnStatus(event.target.value)}
-                    >
-                      <FormControlLabel
-                        value="Y"
-                        control={<Radio size="small" />}
-                        label="반환"
-                      />
-                      <FormControlLabel
-                        value="N"
-                        control={<Radio size="small" />}
-                        label="미반환"
-                      />
-                    </RadioGroup>
-                  </FormControl>
-                </TableCell>
-              </TableRow>
-            </TableWrapper>
-          </div>
-        </Grid>
-      </Grid>
+      <TableWrapper
+        tableAriaLabel="문서분류 상세 조회"
+        colgroup={
+          <colgroup>
+            <col className="tbl-col-w-200" />
+            <col />
+            <col className="tbl-col-w-200" />
+            <col />
+          </colgroup>
+        }
+      >
+        <TableRow>
+          <LabelCell>부서명</LabelCell>
+          <TableCell>{sub.deptNm || "-"}</TableCell>
+          <LabelCell>파일명</LabelCell>
+          <TableCell>{sub.fileNm || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>보유목적</LabelCell>
+          <TableCell>{sub.hldPrpsExpln || "-"}</TableCell>
+          <LabelCell>사용부서(내부, 외부)</LabelCell>
+          <TableCell>{sub.useDeptNm || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>개인정보 처리방법</LabelCell>
+          <TableCell>{sub.prvcPrcsMthdExpln || "-"}</TableCell>
+          <LabelCell>보유기간</LabelCell>
+          <TableCell>
+            {holdPeriodLabel(sub.hldPrdDfyrs ?? null, sub.hldPrdMmCnt ?? null)}
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>정보주체의 개인정보항목</LabelCell>
+          <TableCell>{sub.infoMnbdPrvcMttr || "-"}</TableCell>
+          <LabelCell>법정대리인의 개인정보항목</LabelCell>
+          <TableCell>{sub.sttyAgtPrvcMttr || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>주민등록번호 수집여부</LabelCell>
+          <TableCell>{ynLabel(sub.rrnoClctYn, "수집", "미수집")}</TableCell>
+          <LabelCell>주민등록번호 수집 법령근거</LabelCell>
+          <TableCell>{sub.rrnoClctSttBssExpln || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>정보주체 동의여부</LabelCell>
+          <TableCell>{ynLabel(sub.infoMnbdAgreYn, "동의", "미동의")}</TableCell>
+          <LabelCell>정보주체 동의 없이 수집 법령근거</LabelCell>
+          <TableCell>{sub.infoMnbdDsagClctSttBssExpln || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>민감 정보 보유여부</LabelCell>
+          <TableCell>{ynLabel(sub.spiHldYn, "보유", "미보유")}</TableCell>
+          <LabelCell>민감 정보 별도동의 여부</LabelCell>
+          <TableCell>{ynLabel(sub.spiIndivAgrnYn, "동의", "미동의")}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>고유식별정보 보유여부</LabelCell>
+          <TableCell>{ynLabel(sub.uiiHldYn, "보유", "미보유")}</TableCell>
+          <LabelCell>고유식별정보 별도동의여부</LabelCell>
+          <TableCell>{ynLabel(sub.uiiIndivAgreYn, "동의", "미동의")}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>개인정보영향평가 대상여부</LabelCell>
+          <TableCell>{ynLabel(sub.prvcEvlTrgtYn, "대상", "미대상")}</TableCell>
+          <LabelCell>취급담당자</LabelCell>
+          <TableCell>{sub.hndlPicNm || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>제3자 제공받는 자</LabelCell>
+          <TableCell>{sub.tdptySplrcpNmCn || "-"}</TableCell>
+          <LabelCell>제3자 제공 근거</LabelCell>
+          <TableCell>{sub.tdptyPvsnBssExpln || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>제3자 제공 항목</LabelCell>
+          <TableCell>{sub.tdptyPvsnMttr || "-"}</TableCell>
+          <LabelCell>개인정보처리 위탁 업체명</LabelCell>
+          <TableCell>{sub.prvcPrcsCnsgnBzentyNmCn || "-"}</TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>개인정보위탁 계약서 여부</LabelCell>
+          <TableCell>{ynLabel(sub.prvcCnsgnCtrtYn, "있음", "없음")}</TableCell>
+          <LabelCell>개인정보위탁사실 게재여부</LabelCell>
+          <TableCell>
+            {ynLabel(sub.prvcCnsgnFactIndctYn, "게재", "미게재")}
+          </TableCell>
+        </TableRow>
+        <TableRow>
+          <LabelCell>목적 외 이용.제공 여부</LabelCell>
+          <TableCell>
+            {ynLabel(sub.prpsExclUtztnPvsnYn, "있음", "없음")}
+          </TableCell>
+          <LabelCell>목적 외 이용.제공 근거</LabelCell>
+          <TableCell>{sub.prpsExclUtztnPvsnBssExpln || "-"}</TableCell>
+        </TableRow>
+      </TableWrapper>
     </div>
   );
 }

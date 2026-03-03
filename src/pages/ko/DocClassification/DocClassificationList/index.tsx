@@ -122,7 +122,7 @@ export default function DocClassificationList() {
             />
             <GridField
               item={3}
-              label="중뷴류"
+              label="중분류"
               value={
                 <MuiSelect
                   id="docMclsfNo"

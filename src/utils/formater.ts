@@ -49,3 +49,23 @@ export const formatRegDate = (value: unknown) => {
 
   return formatDate(digits.slice(0, 8));
 };
+
+export const holdPeriodLabel = (
+  years: number | null | undefined,
+  months: number | null | undefined,
+) => {
+  const y = years == null ? "" : String(years);
+  if (!y) return "-";
+  if (y === "0") return `${months ?? 0}개월`;
+  if (y === "90") return "준영구";
+  if (y === "99") return "영구";
+  return `${y}년`;
+};
+
+export const dateLabel = (value: string | undefined) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "-";
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (digits.length < 8) return "-";
+  return formatDate(digits.slice(0, 8));
+};
