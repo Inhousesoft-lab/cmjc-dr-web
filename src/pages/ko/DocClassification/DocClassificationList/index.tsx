@@ -85,8 +85,10 @@ export default function DocClassificationList() {
   };
 
   const handleResetSearchValues = useCallback(() => {
-    setSearchParams(INITIAL_SEARCH_PARAMS);
-  }, []);
+    const resetParams = { ...INITIAL_SEARCH_PARAMS };
+    setSearchParams(resetParams);
+    dispatch(fetchDocClassificationList(resetParams));
+  }, [dispatch]);
 
   const handleCreateClick = () => {
     navigate(`/docClassification/create`);

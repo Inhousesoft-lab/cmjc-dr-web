@@ -1,5 +1,15 @@
 import React from "react";
-import { Box, Button, Checkbox, Grid, Stack, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  Stack,
+  TextField,
+} from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { ColDef } from "ag-grid-community";
 import { listDefs } from "./col-def";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
@@ -136,6 +146,12 @@ export default function HoldingInstitutionList() {
     setSearchParams(nextParams);
     dispatch(fetchHoldingInstitutionList(nextParams));
   }, [dispatch, searchParams]);
+
+  const handleResetSearchValues = React.useCallback(() => {
+    const resetParams = { ...INITIAL_SEARCH_PARAMS };
+    setSearchParams(resetParams);
+    dispatch(fetchHoldingInstitutionList(resetParams));
+  }, [dispatch]);
 
   return (
     <div>
@@ -296,23 +312,38 @@ export default function HoldingInstitutionList() {
             item={3}
             label="정보주체 동의여부"
             value={
-              <Checkbox
-                size="small"
-                checked={searchParams.infoMnbdAgreYn === "Y"}
-                onChange={(e) =>
-                  setSearchParams((prev) => ({
-                    ...prev,
-                    infoMnbdAgreYn: e.target.checked ? "Y" : "",
-                  }))
+              <FormControlLabel
+                className="filter-checkbox"
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={searchParams.infoMnbdAgreYn === "Y"}
+                    onChange={(_, checked) =>
+                      setSearchParams((prev) => ({
+                        ...prev,
+                        infoMnbdAgreYn: checked ? "Y" : "",
+                      }))
+                    }
+                  />
                 }
+                label="동의"
               />
             }
           />
         </Grid>
         <Box className="table-view-actions">
-          <Button variant="contained" onClick={handleSearch}>
-            조회
-          </Button>
+          <Stack spacing={1} alignItems="center">
+            <Button variant="contained" onClick={handleSearch}>
+              조회
+            </Button>
+            <IconButton
+              aria-label="검색조건 초기화"
+              onClick={handleResetSearchValues}
+              size="small"
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Stack>
         </Box>
       </Stack>
 

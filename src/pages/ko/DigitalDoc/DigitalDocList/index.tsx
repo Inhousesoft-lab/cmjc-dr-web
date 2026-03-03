@@ -95,7 +95,9 @@ export default function DigitalDocList() {
   };
 
   const handleResetSearchValues = () => {
-    setSearchParams(INITIAL_SEARCH_PARAMS);
+    const resetParams = { ...INITIAL_SEARCH_PARAMS };
+    setSearchParams(resetParams);
+    dispatch(fetchDigitalDocList(resetParams));
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -228,8 +230,19 @@ export default function DigitalDocList() {
         enableRowSelection={false}
         colDefs={columnDefs}
         rowData={rows}
+        pageNum={searchParams.pageNum}
+        pageSize={searchParams.pageSize}
         count={rowCount}
         onRowClick={handleRowClick}
+        onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {
+          const nextParams = {
+            ...searchParams,
+            pageNum: nextPage,
+            pageSize: nextSize,
+          };
+          setSearchParams(nextParams);
+          dispatch(fetchDigitalDocList(nextParams));
+        }}
       />
     </div>
   );
