@@ -21,7 +21,7 @@ export default function PageHeader({ children }: PageHeaderProps) {
 
   const isPathMatch = (routePath: string, currentPath: string): boolean => {
     const escaped = routePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pathPattern = escaped.replace(/\\:([^/]+)/g, "[^/]+");
+    const pathPattern = escaped.replace(/:([^/]+)/g, "[^/]+");
     const regex = new RegExp(`^${pathPattern}$`);
 
     return regex.test(currentPath);
