@@ -62,6 +62,7 @@ export default function DigitalDocDetail() {
   const [selectedDocLclsfNo, setSelectedDocLclsfNo] = React.useState("");
   const [selectedDocMclsfNo, setSelectedDocMclsfNo] = React.useState("");
   const [selectedDocSclsfNo, setSelectedDocSclsfNo] = React.useState("");
+  const [selectedGvbkYn, setSelectedGvbkYn] = React.useState<"Y" | "N">("N");
 
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     selectedDocLclsfNo,
@@ -88,6 +89,7 @@ export default function DigitalDocDetail() {
     setSelectedDocLclsfNo(detail.docLclsfNo ?? "");
     setSelectedDocMclsfNo(detail.docMclsfNo ?? "");
     setSelectedDocSclsfNo(detail.docSclsfNo ?? "");
+    setSelectedGvbkYn(detail.gvbkYn === "Y" ? "Y" : "N");
   }, [detail]);
 
   const handleBack = React.useCallback(() => {
@@ -207,7 +209,12 @@ export default function DigitalDocDetail() {
                 <LabelCell>반환여부</LabelCell>
                 <TableCell>
                   <FormControl component="fieldset">
-                    <RadioGroup defaultValue={detail?.gvbkYn || "N"}>
+                    <RadioGroup
+                      value={selectedGvbkYn}
+                      onChange={(e) =>
+                        setSelectedGvbkYn((e.target.value as "Y" | "N") ?? "N")
+                      }
+                    >
                       <FormControlLabel
                         value="Y"
                         control={<Radio size="small" />}
