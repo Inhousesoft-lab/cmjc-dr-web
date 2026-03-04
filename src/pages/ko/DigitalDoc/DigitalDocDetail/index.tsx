@@ -10,17 +10,15 @@ import {
   Stack,
   TableCell,
   TableRow,
-  Typography,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
-import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
-import DigitalDocDownDialog from "@/components/biz/DigitalDocDownDialog";
 import DigitalDocHistoryButton from "@/components/actionButtons/DigitalDocHistoryButton";
 import { AuthrtTable } from "@/components/table/AuthrtTable";
 import GridField from "@/components/common/GridField";
 import TableWrapper from "@/components/table/TableWrapper";
 import LabelCell from "@/components/table/LabelCell";
 import MuiSelect from "@/components/elements/MuiSelect";
+import UploadFiles from "@/components/file/UploadFiles";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { fetchDigitalDocDetail } from "@/features/digitalDoc/DigitalDocThunk";
 import {
@@ -139,21 +137,9 @@ export default function DigitalDocDetail() {
         <GridField label="개인정보" value={mappedPrvcLabel} />
         <GridField label="반환여부" value={mappedGvbkLabel} />
         <GridField item={12} label="비고" value={detail?.addExpln || "-"} />
-        {/* TODO: 첨부파일 개발 필요 */}
         <GridField
           label="첨부파일"
-          value={
-            <Stack direction="row" spacing={1} alignItems="center">
-              {/* TODO: 업로드된 파일이 있다면 연결 필요 */}
-              <Typography>피해구제 접수서류.pdf</Typography>
-              {detail?.atchFileSn && (
-                <>
-                  <DigitalDocViewerButton fileUrl="/pdf/피해구제 접수서류.pdf" />
-                  <DigitalDocDownDialog atchFileSn={detail.atchFileSn} />
-                </>
-              )}
-            </Stack>
-          }
+          value={eldocNo ? <UploadFiles taskSeTrgtId={eldocNo} readOnly /> : "-"}
         />
       </Grid>
 
