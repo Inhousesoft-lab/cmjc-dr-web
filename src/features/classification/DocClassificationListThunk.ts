@@ -45,15 +45,27 @@ const docClassificationRowSchema = z.looseObject({
   });
 
 const docClassificationListSchema = z.looseObject({
-    list: z.array(docClassificationRowSchema).optional().default([]),
-    total: z
-      .preprocess((v) => {
-        const n = Number(v);
-        return Number.isFinite(n) ? n : 0;
-      }, z.number())
-      .optional()
-      .default(0),
-  });
+  list: z.array(docClassificationRowSchema).optional().default([]),
+  rows: z.array(docClassificationRowSchema).optional().default([]),
+  total: z
+    .preprocess((v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }, z.number())
+    .optional(),
+  totalCount: z
+    .preprocess((v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }, z.number())
+    .optional(),
+  rowCount: z
+    .preprocess((v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }, z.number())
+    .optional(),
+});
 
 const nullableStringField = z.preprocess(
   (v) => (v == null ? "" : String(v)),
@@ -146,9 +158,14 @@ export const fetchDocClassificationList = createAsyncThunk<
       return rejectWithValue("문서분류 목록 응답 형식이 올바르지 않습니다.");
     }
 
+    const rows =
+      parsed.data.list.length > 0 ? parsed.data.list : parsed.data.rows;
+    const rowCount =
+      parsed.data.total ?? parsed.data.totalCount ?? parsed.data.rowCount ?? 0;
+
     return {
-      rows: parsed.data.list as DocClassificationVO[],
-      rowCount: parsed.data.total,
+      rows: rows as DocClassificationVO[],
+      rowCount,
     };
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
