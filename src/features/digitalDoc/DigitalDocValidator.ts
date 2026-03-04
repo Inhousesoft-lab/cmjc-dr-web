@@ -49,7 +49,10 @@ export const digitalDocRowSchema = z.looseObject({
 
 export const digitalDocListSchema = z.looseObject({
   list: z.array(digitalDocRowSchema).optional().default([]),
+  rows: z.array(digitalDocRowSchema).optional().default([]),
   total: numberField,
+  totalCount: numberField,
+  rowCount: numberField,
 });
 
 export const digitalAuthrtRowSchema = z.looseObject({

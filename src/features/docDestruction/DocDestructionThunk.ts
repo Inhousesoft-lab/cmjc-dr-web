@@ -90,9 +90,14 @@ export const fetchDocDestructionList = createAsyncThunk<
       return rejectWithValue("파기문서 목록 응답 형식이 올바르지 않습니다.");
     }
 
+    const rows =
+      parsed.data.list.length > 0 ? parsed.data.list : parsed.data.rows;
+    const rowCount =
+      parsed.data.total ?? parsed.data.totalCount ?? parsed.data.rowCount ?? 0;
+
     return {
-      rows: parsed.data.list.map(normalizeDocDestructionRow),
-      rowCount: parsed.data.total,
+      rows: rows.map(normalizeDocDestructionRow),
+      rowCount,
     };
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));

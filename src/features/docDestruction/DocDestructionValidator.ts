@@ -34,7 +34,10 @@ export const docDestructionListRowSchema = z.looseObject({
 
 export const docDestructionListSchema = z.looseObject({
   list: z.array(docDestructionListRowSchema).optional().default([]),
+  rows: z.array(docDestructionListRowSchema).optional().default([]),
   total: numberField.optional().default(0),
+  totalCount: numberField.optional().default(0),
+  rowCount: numberField.optional().default(0),
 });
 
 export const docDestructionDetailSchema = z.looseObject({

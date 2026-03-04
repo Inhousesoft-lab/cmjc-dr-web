@@ -46,9 +46,14 @@ export const fetchDigitalDocList = createAsyncThunk<
       return rejectWithValue("전자문서 목록 응답 형식이 올바르지 않습니다.");
     }
 
+    const rows =
+      parsed.data.list.length > 0 ? parsed.data.list : parsed.data.rows;
+    const rowCount =
+      parsed.data.total ?? parsed.data.totalCount ?? parsed.data.rowCount ?? 0;
+
     return {
-      rows: parsed.data.list as DigitalDoc[],
-      rowCount: parsed.data.total,
+      rows: rows as DigitalDoc[],
+      rowCount,
     };
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
