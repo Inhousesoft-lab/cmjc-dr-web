@@ -20,6 +20,7 @@ import GlobalStyles from "@mui/material/GlobalStyles";
 import {
   MenuItem,
   Pagination,
+  PaginationItem,
   FormControl,
   Select,
   Button,
@@ -134,6 +135,14 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
 
   const [pageNo, setPageNo] = useState(pageNum);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const showLoadingOverlay = Boolean(isLoading) && isInitialLoad;
+
+  useEffect(() => {
+    if (!isLoading && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [isLoading, isInitialLoad]);
 
   useEffect(() => {
     setPageNo(pageNum);
@@ -208,39 +217,6 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
     }
   };
 
-  const styleGroup = {
-    container: {
-      mt: 2,
-    },
-    headerRow: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: 1,
-    },
-    paginationWrapper: {
-      position: "relative",
-      display: "flex",
-      mt: 2,
-    },
-    count: {
-      display: "flex",
-      flexDirection: "row",
-      alignItems: "center",
-      justfyContents: "flex-start",
-      gap: 1,
-      "& .MuiInputLabel-root": {
-        marginBottom: "0",
-      },
-    },
-    pagination: {
-      position: "absolute",
-      left: "50%",
-      top: "50%",
-      transform: "translate(-50%, -50%)",
-    },
-  };
-
   return (
     <React.Fragment>
       {/* Aggrid Container만 출력하도록 스타일 추가 */}
@@ -275,7 +251,6 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
             {actionButtons.map((btn, idx) => (
               <Button
                 key={`${btn.label}-${idx}`}
-                size="small"
                 variant="contained"
                 onClick={btn.onClick}
                 disabled={btn.disabled}
@@ -292,7 +267,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
           rowData={rowData}
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
-          loading={isLoading}
+          loading={showLoadingOverlay}
           rowHeight={32}
           headerHeight={32}
           rowSelection={enableRowSelection ? rowSelection : undefined}
@@ -347,6 +322,12 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
                 count={Math.ceil(count / rowsPerPage)}
                 page={pageNo}
                 onChange={(_, value) => handlePageChange(value as number)}
+                renderItem={(item) => (
+                  <PaginationItem
+                    {...item}
+                    sx={item.page === pageNo ? { pointerEvents: "none" } : undefined}
+                  />
+                )}
               />
             </div>
           )}

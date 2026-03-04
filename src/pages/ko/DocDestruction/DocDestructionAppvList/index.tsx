@@ -11,9 +11,17 @@ import { DocDestruction } from "@/types/docDestruction";
 import { ColDef } from "ag-grid-community";
 import GridField from "@/components/common/GridField";
 import MuiSelect from "@/components/elements/MuiSelect/MuiSelect";
+import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 
 export default function DocDestructionReqList() {
   const notifications = useNotifications();
+  const [docLclsfNo, setDocLclsfNo] = useState("");
+  const [docMclsfNo, setDocMclsfNo] = useState("");
+  const [docSclsfNo, setDocSclsfNo] = useState("");
+  const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
+    docLclsfNo,
+    docMclsfNo,
+  );
 
   const [columnDefs] = React.useState<ColDef<any>[]>(listDefs);
 
@@ -62,16 +70,13 @@ export default function DocDestructionReqList() {
             value={
               <MuiSelect
                 id="docLclsfNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "피해구제",
-                    code: "01",
-                  },
-                ]}
+                items={lclsfList}
+                value={docLclsfNo}
+                onChange={(e) => {
+                  setDocLclsfNo(e.target.value);
+                  setDocMclsfNo("");
+                  setDocSclsfNo("");
+                }}
               />
             }
           />
@@ -81,24 +86,12 @@ export default function DocDestructionReqList() {
             value={
               <MuiSelect
                 id="docMclsfNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "접수서류",
-                    code: "01",
-                  },
-                  {
-                    name: "신청자 제출서류",
-                    code: "02",
-                  },
-                  {
-                    name: "직원보완자료",
-                    code: "03",
-                  },
-                ]}
+                items={mclsfList}
+                value={docMclsfNo}
+                onChange={(e) => {
+                  setDocMclsfNo(e.target.value);
+                  setDocSclsfNo("");
+                }}
               />
             }
           />
@@ -108,28 +101,9 @@ export default function DocDestructionReqList() {
             value={
               <MuiSelect
                 id="docSclsfNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "사망 신청",
-                    code: "01",
-                  },
-                  {
-                    name: "미성년자 신청",
-                    code: "02",
-                  },
-                  {
-                    name: "이전문서",
-                    code: "03",
-                  },
-                  {
-                    name: "의무기록",
-                    code: "04",
-                  },
-                ]}
+                items={sclsfList}
+                value={docSclsfNo}
+                onChange={(e) => setDocSclsfNo(e.target.value)}
               />
             }
           />

@@ -3,61 +3,104 @@ import {
   Box,
   Button,
   Checkbox,
-  Divider,
-  FormControl,
   FormControlLabel,
   Grid,
+  IconButton,
   Stack,
   TextField,
 } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { ColDef } from "ag-grid-community";
 import { listDefs } from "./col-def";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import MuiSelect from "@/components/elements/MuiSelect";
-import { ColDef } from "ag-grid-community";
-import { HoldingInstitution } from "@/types/holdingInstitution";
 import GridField from "@/components/common/GridField";
+import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { fetchHoldingInstitutionList } from "@/features/holdingInstitution/HoldingInstitutionThunk";
+import {
+  selectHoldingInstitutionError,
+  selectHoldingInstitutionLoading,
+  selectHoldingInstitutionRowCount,
+  selectHoldingInstitutionRows,
+} from "@/features/holdingInstitution/HoldingInstitutionSelectors";
+import type { SearchValues } from "@/types/holdingInstitution";
+
+const INITIAL_SEARCH_PARAMS: SearchValues = {
+  fromClctYmd: "",
+  toClctYmd: "",
+  fromEndYmd: "",
+  toEndYmd: "",
+  docLclsfNo: "",
+  docMclsfNo: "",
+  docSclsfNo: "",
+  docNo: "",
+  docTtl: "",
+  infoMnbdAgreYn: "",
+  hldPrdDfyrs: "",
+  hldPrdChangedOnly: false,
+  pageNum: 1,
+  pageSize: 10,
+};
+
+const HOLD_PERIOD_ITEMS = [
+  { name: "전체", code: "" },
+  { name: "1년", code: "1" },
+  { name: "3년", code: "3" },
+  { name: "5년", code: "5" },
+  { name: "10년", code: "10" },
+  { name: "30년", code: "30" },
+  { name: "준영구", code: "90" },
+  { name: "영구", code: "99" },
+  { name: "직접입력", code: "0" },
+];
 
 export default function HoldingInstitutionList() {
+  const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const dialogs = useDialogs();
 
   const [columnDefs] = React.useState<ColDef[]>(listDefs);
+  const [searchParams, setSearchParams] =
+    React.useState<SearchValues>(INITIAL_SEARCH_PARAMS);
 
-  const [rowData, setRowsData] = React.useState<{
-    rows: HoldingInstitution[];
-    rowCount: number;
-  }>({
-    rows: [],
-    rowCount: 0,
-  });
+  const { lclsfList, mclsfList, sclsfList, lclsfError } = useDocClsfOptions(
+    searchParams.docLclsfNo,
+    searchParams.docMclsfNo,
+  );
 
-  const [isLoading, setIsLoading] = React.useState(true);
-
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: load data
-    } catch (e) {
-      notifications.show(getErrorMessage(e), {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const rows = useAppSelector(selectHoldingInstitutionRows);
+  const rowCount = useAppSelector(selectHoldingInstitutionRowCount);
+  const isLoading = useAppSelector(selectHoldingInstitutionLoading);
+  const listError = useAppSelector(selectHoldingInstitutionError);
 
   React.useEffect(() => {
-    loadData();
-  }, []);
+    dispatch(fetchHoldingInstitutionList(INITIAL_SEARCH_PARAMS));
+  }, [dispatch]);
+
+  React.useEffect(() => {
+    if (!listError) return;
+    notifications.show(listError, {
+      severity: "error",
+      autoHideDuration: 3000,
+    });
+  }, [listError, notifications]);
+
+  React.useEffect(() => {
+    if (!lclsfError) return;
+    notifications.show(lclsfError, {
+      severity: "error",
+      autoHideDuration: 3000,
+    });
+  }, [lclsfError, notifications]);
 
   const [selectedRows, setSelectedRows] = React.useState<any[]>([]);
 
-  const handleSelectionChange = React.useCallback((rows: any[]) => {
-    setSelectedRows(rows);
+  const handleSelectionChange = React.useCallback((nextRows: any[]) => {
+    setSelectedRows(nextRows);
   }, []);
 
   const handleApplySelectedRows = React.useCallback(async () => {
@@ -70,13 +113,14 @@ export default function HoldingInstitutionList() {
         cancelText: "취소",
       },
     );
-    if (confirmed) {
-      notifications.show("변경되었습니다", {
-        severity: "success",
-        autoHideDuration: 3000,
-      });
-    }
-  }, [dialogs, selectedRows]);
+
+    if (!confirmed) return;
+
+    notifications.show("변경되었습니다", {
+      severity: "success",
+      autoHideDuration: 3000,
+    });
+  }, [dialogs, notifications, selectedRows]);
 
   const handleApplyAllRows = React.useCallback(async () => {
     const confirmed = await dialogs.confirm(
@@ -88,27 +132,49 @@ export default function HoldingInstitutionList() {
         cancelText: "취소",
       },
     );
-    if (confirmed) {
-      notifications.show("변경되었습니다", {
-        severity: "success",
-        autoHideDuration: 3000,
-      });
-    }
-  }, [dialogs]);
+
+    if (!confirmed) return;
+
+    notifications.show("변경되었습니다", {
+      severity: "success",
+      autoHideDuration: 3000,
+    });
+  }, [dialogs, notifications]);
+
+  const handleSearch = React.useCallback(() => {
+    const nextParams = { ...searchParams, pageNum: 1 };
+    setSearchParams(nextParams);
+    dispatch(fetchHoldingInstitutionList(nextParams));
+  }, [dispatch, searchParams]);
+
+  const handleResetSearchValues = React.useCallback(() => {
+    const resetParams = { ...INITIAL_SEARCH_PARAMS };
+    setSearchParams(resetParams);
+    dispatch(fetchHoldingInstitutionList(resetParams));
+  }, [dispatch]);
 
   return (
     <div>
       <Stack direction="row" className="search-area" mb={2}>
         <Grid container spacing={0} className="table-view-grid">
-          {/* 1행 */}
           <GridField
             item={6}
             label="수집일자"
             value={
               <div className="filter-range">
-                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <MuiDatePickerFt
+                  value={searchParams.fromClctYmd}
+                  onChange={(value) =>
+                    setSearchParams((prev) => ({ ...prev, fromClctYmd: value }))
+                  }
+                />
                 <span className="filter-range-sep">-</span>{" "}
-                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <MuiDatePickerFt
+                  value={searchParams.toClctYmd}
+                  onChange={(value) =>
+                    setSearchParams((prev) => ({ ...prev, toClctYmd: value }))
+                  }
+                />
               </div>
             }
           />
@@ -117,29 +183,38 @@ export default function HoldingInstitutionList() {
             label="종료일자"
             value={
               <div className="filter-range">
-                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <MuiDatePickerFt
+                  value={searchParams.fromEndYmd}
+                  onChange={(value) =>
+                    setSearchParams((prev) => ({ ...prev, fromEndYmd: value }))
+                  }
+                />
                 <span className="filter-range-sep">-</span>{" "}
-                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <MuiDatePickerFt
+                  value={searchParams.toEndYmd}
+                  onChange={(value) =>
+                    setSearchParams((prev) => ({ ...prev, toEndYmd: value }))
+                  }
+                />
               </div>
             }
           />
-          {/* 2행 */}
           <GridField
             item={3}
             label="대분류"
             value={
               <MuiSelect
                 id="docLclsfNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "피해구제",
-                    code: "01",
-                  },
-                ]}
+                items={lclsfList}
+                value={searchParams.docLclsfNo}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    docLclsfNo: e.target.value,
+                    docMclsfNo: "",
+                    docSclsfNo: "",
+                  }))
+                }
               />
             }
           />
@@ -149,24 +224,15 @@ export default function HoldingInstitutionList() {
             value={
               <MuiSelect
                 id="docMclsfNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "접수서류",
-                    code: "01",
-                  },
-                  {
-                    name: "신청자 제출서류",
-                    code: "02",
-                  },
-                  {
-                    name: "직원보완자료",
-                    code: "03",
-                  },
-                ]}
+                items={mclsfList}
+                value={searchParams.docMclsfNo}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    docMclsfNo: e.target.value,
+                    docSclsfNo: "",
+                  }))
+                }
               />
             }
           />
@@ -176,28 +242,14 @@ export default function HoldingInstitutionList() {
             value={
               <MuiSelect
                 id="docSclsfNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "사망 신청",
-                    code: "01",
-                  },
-                  {
-                    name: "미성년자 신청",
-                    code: "02",
-                  },
-                  {
-                    name: "이전문서",
-                    code: "03",
-                  },
-                  {
-                    name: "의무기록",
-                    code: "04",
-                  },
-                ]}
+                items={sclsfList}
+                value={searchParams.docSclsfNo}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    docSclsfNo: e.target.value,
+                  }))
+                }
               />
             }
           />
@@ -206,57 +258,34 @@ export default function HoldingInstitutionList() {
             label="보유기간"
             value={
               <MuiSelect
-                id="docSclsfNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "1년",
-                    code: "01",
-                  },
-                  {
-                    name: "3년",
-                    code: "03",
-                  },
-                  {
-                    name: "5년",
-                    code: "05",
-                  },
-                ]}
+                id="hldPrdDfyrs"
+                items={HOLD_PERIOD_ITEMS}
+                value={searchParams.hldPrdDfyrs}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    hldPrdDfyrs: e.target.value,
+                  }))
+                }
               />
             }
           />
-          {/* 3행 */}
           <GridField
             item={3}
             label="문서번호"
             value={
-              <MuiSelect
-                id="docNo"
-                items={[
-                  {
-                    name: "전체",
-                    code: "",
-                  },
-                  {
-                    name: "사망 신청",
-                    code: "01",
-                  },
-                  {
-                    name: "미성년자 신청",
-                    code: "02",
-                  },
-                  {
-                    name: "이전문서",
-                    code: "03",
-                  },
-                  {
-                    name: "의무기록",
-                    code: "04",
-                  },
-                ]}
+              <TextField
+                name="docNo"
+                fullWidth
+                size="small"
+                placeholder="문서번호"
+                value={searchParams.docNo}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    docNo: e.target.value,
+                  }))
+                }
               />
             }
           />
@@ -269,17 +298,52 @@ export default function HoldingInstitutionList() {
                 fullWidth
                 size="small"
                 placeholder="문서제목"
+                value={searchParams.docTtl}
+                onChange={(e) =>
+                  setSearchParams((prev) => ({
+                    ...prev,
+                    docTtl: e.target.value,
+                  }))
+                }
               />
             }
           />
           <GridField
             item={3}
-            label="개인정보 포함"
-            value={<Checkbox size="small" />}
+            label="정보주체 동의여부"
+            value={
+              <FormControlLabel
+                className="filter-checkbox"
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={searchParams.infoMnbdAgreYn === "Y"}
+                    onChange={(_, checked) =>
+                      setSearchParams((prev) => ({
+                        ...prev,
+                        infoMnbdAgreYn: checked ? "Y" : "",
+                      }))
+                    }
+                  />
+                }
+                label="동의"
+              />
+            }
           />
         </Grid>
         <Box className="table-view-actions">
-          <Button variant="contained">조회</Button>
+          <Stack spacing={1} alignItems="center">
+            <Button variant="contained" onClick={handleSearch}>
+              조회
+            </Button>
+            <IconButton
+              aria-label="검색조건 초기화"
+              onClick={handleResetSearchValues}
+              size="small"
+            >
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+          </Stack>
         </Box>
       </Stack>
 
@@ -291,9 +355,18 @@ export default function HoldingInstitutionList() {
         isLoading={isLoading}
         enableRowSelection={true}
         colDefs={columnDefs}
-        rowData={rowData.rows}
-        count={rowData.rowCount}
+        rowData={rows}
+        count={rowCount}
         onSelectionChange={handleSelectionChange}
+        onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {
+          const nextParams = {
+            ...searchParams,
+            pageNum: nextPage,
+            pageSize: nextSize,
+          };
+          setSearchParams(nextParams);
+          dispatch(fetchHoldingInstitutionList(nextParams));
+        }}
       />
     </div>
   );

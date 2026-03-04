@@ -49,10 +49,10 @@ export function useDocClsfOptions(
     selectDocClsfErrorByParent(state),
   );
   const mclsfDocs = useSelector((state: RootState) =>
-    selectDocClsfByParent(state, docLclsfNo),
+    docLclsfNo ? selectDocClsfByParent(state, docLclsfNo) : [],
   );
   const sclsfDocs = useSelector((state: RootState) =>
-    selectDocClsfByParent(state, docMclsfNo),
+    docMclsfNo ? selectDocClsfByParent(state, docMclsfNo) : [],
   );
 
   useEffect(() => {

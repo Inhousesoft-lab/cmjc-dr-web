@@ -13,13 +13,11 @@ type Props = {
 
 export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
   const [open, setOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(true);
 
   const [rowData, setRowsData] = React.useState<DocClassHistory[]>([]);
 
   const loadData = async () => {
     if (!docClsfNo) return;
-    setIsLoading(true);
 
     try {
       const res = await https.get(
@@ -36,8 +34,6 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
       setRowsData(Array.isArray(raw) ? (raw as DocClassHistory[]) : []);
     } catch (listDataError) {
       console.error(listDataError);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -66,11 +62,11 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
       <TableWrapper
         colgroup={
           <colgroup>
-            <col className="tbl-col-w-20p" />
             <col />
-            <col />
-            <col />
-            <col />
+            <col className="tbl-col-w-14p" />
+            <col className="tbl-col-w-14p" />
+            <col className="tbl-col-w-14p" />
+            <col className="tbl-col-w-15p" />
             <col className="tbl-col-w-10p" />
           </colgroup>
         }

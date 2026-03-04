@@ -70,8 +70,8 @@ const menuItems: Menu[] = [
     menu: true,
   },
   {
-    path: "digitalDoc/:id",
-    label: "문서 상세",
+    path: "digitalDoc/:eldocNo",
+    label: "전자문서 상세",
     menuType: "MENU",
     element: {
       ko: "DigitalDocDetail",

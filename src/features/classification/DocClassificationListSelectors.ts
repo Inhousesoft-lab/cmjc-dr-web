@@ -9,6 +9,11 @@ export const selectDocClassificationRows = createSelector(
   (s) => s.rows,
 );
 
+export const selectDocClassificationDetail = createSelector(
+  [selectDocClassificationListState],
+  (s) => s.detail,
+);
+
 export const selectDocClassificationRowCount = createSelector(
   [selectDocClassificationListState],
   (s) => s.rowCount,
@@ -22,4 +27,14 @@ export const selectDocClassificationLoading = createSelector(
 export const selectDocClassificationError = createSelector(
   [selectDocClassificationListState],
   (s) => s.error,
+);
+
+export const selectDocClassificationDetailLoading = createSelector(
+  [selectDocClassificationListState],
+  (s) => s.detailLoading,
+);
+
+export const selectDocClassificationDetailError = createSelector(
+  [selectDocClassificationListState],
+  (s) => s.detailError,
 );

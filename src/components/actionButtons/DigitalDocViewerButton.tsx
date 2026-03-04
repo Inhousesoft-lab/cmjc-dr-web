@@ -16,7 +16,6 @@ import RotateRightIcon from "@mui/icons-material/RotateRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
 import workerSrc from "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs?url";
-import { useAppSelector } from "@/app/hooks";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -29,7 +28,7 @@ export default function DigitalDocViewerButton({
   fileUrl,
   label = "열람",
 }: DigitalDocViewerButtonProps) {
-  const authUser = useAppSelector((state) => state.auth.user);
+  // const authUser = useAppSelector((state) => state.auth.user);
   const [open, setOpen] = React.useState(false);
   const [numPages, setNumPages] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -37,9 +36,9 @@ export default function DigitalDocViewerButton({
   const [rotation, setRotation] = React.useState(0);
   const [shieldActive, setShieldActive] = React.useState(false);
   const [watermarkAt, setWatermarkAt] = React.useState(() => new Date());
-  const [orientation, setOrientation] = React.useState<"portrait" | "landscape">(
-    "portrait",
-  );
+  const [orientation, setOrientation] = React.useState<
+    "portrait" | "landscape"
+  >("portrait");
   const [pageInput, setPageInput] = React.useState("1");
   const [containerWidth, setContainerWidth] = React.useState(0);
   const viewerRef = React.useRef<HTMLDivElement | null>(null);
@@ -146,7 +145,10 @@ export default function DigitalDocViewerButton({
     async (pdf: {
       numPages: number;
       getPage: (page: number) => Promise<{
-        getViewport: (params: { scale: number }) => { width: number; height: number };
+        getViewport: (params: { scale: number }) => {
+          width: number;
+          height: number;
+        };
       }>;
     }) => {
       const loadedPages = pdf.numPages;
@@ -155,7 +157,9 @@ export default function DigitalDocViewerButton({
       try {
         const firstPage = await pdf.getPage(1);
         const viewport = firstPage.getViewport({ scale: 1 });
-        setOrientation(viewport.width >= viewport.height ? "landscape" : "portrait");
+        setOrientation(
+          viewport.width >= viewport.height ? "landscape" : "portrait",
+        );
       } catch {
         setOrientation("portrait");
       }
@@ -163,14 +167,7 @@ export default function DigitalDocViewerButton({
     [],
   );
 
-  const clientIp =
-    (authUser as any)?.ip ??
-    (authUser as any)?.clientIp ??
-    (authUser as any)?.accessIp ??
-    (authUser as any)?.authorities?.ip ??
-    (authUser as any)?.authorities?.clientIp ??
-    (authUser as any)?.authorities?.accessIp ??
-    "N/A";
+  const clientIp = "0.0.0.1";
 
   const watermarkText = React.useMemo(() => {
     const time = watermarkAt.toLocaleString("ko-KR", {
@@ -292,7 +289,9 @@ export default function DigitalDocViewerButton({
             </Tooltip>
             <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
             <Tooltip title="시계 방향으로 회전" placement="bottom" arrow>
-              <IconButton onClick={() => setRotation((prev) => (prev + 90) % 360)}>
+              <IconButton
+                onClick={() => setRotation((prev) => (prev + 90) % 360)}
+              >
                 <RotateRightIcon />
               </IconButton>
             </Tooltip>
@@ -305,7 +304,9 @@ export default function DigitalDocViewerButton({
           </Box>
           <Button
             variant="outlined"
-            onClick={() => setZoom((prev) => Math.max(0.5, Number((prev - 0.1).toFixed(1))))}
+            onClick={() =>
+              setZoom((prev) => Math.max(0.5, Number((prev - 0.1).toFixed(1))))
+            }
             disabled={zoom <= 0.5}
           >
             축소
@@ -315,7 +316,9 @@ export default function DigitalDocViewerButton({
           </Typography>
           <Button
             variant="outlined"
-            onClick={() => setZoom((prev) => Math.min(2.5, Number((prev + 0.1).toFixed(1))))}
+            onClick={() =>
+              setZoom((prev) => Math.min(2.5, Number((prev + 0.1).toFixed(1))))
+            }
             disabled={zoom >= 2.5}
           >
             확대
