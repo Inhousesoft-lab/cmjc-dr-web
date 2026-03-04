@@ -356,6 +356,8 @@ export default function HoldingInstitutionList() {
         enableRowSelection={true}
         colDefs={columnDefs}
         rowData={rows}
+        pageNum={searchParams.pageNum}
+        pageSize={searchParams.pageSize}
         count={rowCount}
         onSelectionChange={handleSelectionChange}
         onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {

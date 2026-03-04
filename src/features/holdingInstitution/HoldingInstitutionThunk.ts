@@ -197,9 +197,7 @@ export const fetchHoldingInstitutionList = createAsyncThunk<
     );
     if (directParsed.success) {
       return {
-        rows: directParsed.data.list
-          .map(mapHoldingInstitutionRow)
-          .filter(({ prvcInclYn }) => prvcInclYn === "Y"),
+        rows: directParsed.data.list.map(mapHoldingInstitutionRow),
         rowCount: directParsed.data.total,
       };
     }
