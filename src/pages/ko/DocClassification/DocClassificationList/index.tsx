@@ -1,6 +1,14 @@
 import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Button, Checkbox, Grid, Stack, TextField } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  Stack,
+  TextField,
+} from "@mui/material";
 import { ColDef } from "ag-grid-community";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import MuiSelect from "@/components/elements/MuiSelect";
@@ -100,7 +108,12 @@ export default function DocClassificationList() {
 
   return (
     <div>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSearch();
+        }}
+      >
         <Stack direction="row" className="search-area" mb={2}>
           <Grid container spacing={0} className="table-view-grid">
             <GridField
@@ -161,15 +174,21 @@ export default function DocClassificationList() {
               item={3}
               label="개인정보 포함"
               value={
-                <Checkbox
-                  size="small"
-                  checked={searchParams.prvcInclYn === "Y"}
-                  onChange={(e) =>
-                    setSearchParams((prev) => ({
-                      ...prev,
-                      prvcInclYn: e.target.checked ? "Y" : "",
-                    }))
+                <FormControlLabel
+                  className="doc-clsf-prvc-checkbox"
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={searchParams.prvcInclYn === "Y"}
+                      onChange={(e) =>
+                        setSearchParams((prev) => ({
+                          ...prev,
+                          prvcInclYn: e.target.checked ? "Y" : "",
+                        }))
+                      }
+                    />
                   }
+                  label="포함"
                 />
               }
             />
@@ -209,10 +228,11 @@ export default function DocClassificationList() {
             />
           </Grid>
           <Box className="table-view-actions">
-            <Button variant="contained" onClick={handleSearch}>
+            <Button type="submit" variant="contained">
               조회
             </Button>
             <Button
+              type="button"
               variant="text"
               aria-label="검색조건 초기화"
               onClick={handleResetSearchValues}
@@ -230,6 +250,8 @@ export default function DocClassificationList() {
         isLoading={isLoading}
         colDefs={columnDefs}
         rowData={rows}
+        pageNum={searchParams.pageNum}
+        pageSize={searchParams.pageSize}
         count={rowCount}
         onRowClick={handleRowClick}
         onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {
