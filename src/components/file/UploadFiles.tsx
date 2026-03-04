@@ -10,6 +10,7 @@ import {
   ListItemText,
   ListItemIcon,
   Button,
+  Stack,
 } from "@mui/material";
 
 import {
@@ -20,6 +21,7 @@ import {
 import "./UploadFile.css";
 import { FileApi, type FileItem } from "@/api/fileApi";
 import MuiCheckbox from "../elements/MuiCheckbox";
+import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
 
 interface FileWithId extends File {
   uid: string;
@@ -30,6 +32,7 @@ interface FileProps {
   menuSn?: number;
   taskSeTrgtId?: string; // 해당 업무의 pk
   setGroupId?: (id: string) => void;
+  readOnly?: boolean;
 }
 
 export default function UploadFiles({
@@ -37,6 +40,7 @@ export default function UploadFiles({
   menuSn = 1,
   taskSeTrgtId,
   setGroupId,
+  readOnly = false,
 }: FileProps) {
   const [fileList, setFileList] = useState<FileWithId[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -126,6 +130,7 @@ export default function UploadFiles({
   };
 
   const handleFileSelect = (files: FileList | null) => {
+    if (readOnly) return;
     if (!files) return;
 
     // File 객체를 유지하면서 uid 속성만 추가
@@ -172,6 +177,7 @@ export default function UploadFiles({
   };
 
   const handleDrop = (e: React.DragEvent) => {
+    if (readOnly) return;
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -182,6 +188,7 @@ export default function UploadFiles({
 
   // 파일업로드 액션 ///////////////////////////////////////////
   const handleUpload = async () => {
+    if (readOnly) return;
     if (fileList.length === 0) {
       console.log("업로드 안함");
       return;
@@ -231,6 +238,7 @@ export default function UploadFiles({
 
   // 개별 파일 삭제 액션
   const fileRemoveOnly = async (atchFileId: string) => {
+    if (readOnly) return;
     if (window.confirm("파일을 삭제하시겠습니까?")) {
       try {
         const responses = await FileApi.fileDelete({
@@ -259,6 +267,7 @@ export default function UploadFiles({
 
   // 선택된 파일 삭제 ==============================================
   const handleDeleteSelected = async () => {
+    if (readOnly) return;
     const deleteList = savedFileList
       .filter((f) => f.check)
       .map((d) => d.atchFileId)
@@ -339,95 +348,132 @@ export default function UploadFiles({
     <Box sx={{ p: 3 }}>
       {/* 업로드 폼 섹션 */}
 
-      <Box
-        ref={dropZoneRef}
-        onDragEnter={handleDragEnter}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        sx={{
-          border: "2px dashed",
-          borderColor: isDragging ? "primary.main" : "grey.300",
-          borderRadius: 2,
-          p: 4,
-          textAlign: "center",
-          cursor: "pointer",
-          backgroundColor: isDragging ? "action.hover" : "background.paper",
-          transition: "all 0.3s",
-          "&:hover": {
-            borderColor: "primary.main",
-            backgroundColor: "action.hover",
-          },
-        }}
-      >
-        <CloudUploadIcon sx={{ fontSize: 64, color: "primary.main", mb: 2 }} />
-        <Typography variant="h6" gutterBottom>
-          클릭하거나 파일을 드래그하여 업로드
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          여러 파일을 선택할 수 있습니다
-        </Typography>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          style={{ display: "none" }}
-          onChange={handleFileInputChange}
-        />
-      </Box>
+      {!readOnly && (
+        <Box
+          ref={dropZoneRef}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          sx={{
+            border: "2px dashed",
+            borderColor: isDragging ? "primary.main" : "grey.300",
+            borderRadius: 2,
+            p: 4,
+            textAlign: "center",
+            cursor: "pointer",
+            backgroundColor: isDragging ? "action.hover" : "background.paper",
+            transition: "all 0.3s",
+            "&:hover": {
+              borderColor: "primary.main",
+              backgroundColor: "action.hover",
+            },
+          }}
+        >
+          <CloudUploadIcon sx={{ fontSize: 64, color: "primary.main", mb: 2 }} />
+          <Typography variant="h6" gutterBottom>
+            클릭하거나 파일을 드래그하여 업로드
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            여러 파일을 선택할 수 있습니다
+          </Typography>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            style={{ display: "none" }}
+            onChange={handleFileInputChange}
+          />
+        </Box>
+      )}
 
       {savedFileList.length > 0 && (
         <Box sx={{ mt: 2 }}>
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-            <Button
-              variant="outlined"
-              color="error"
-              disabled={!savedFileList.some((f) => f.check)}
-              onClick={handleDeleteSelected}
-            >
-              선택삭제
-            </Button>
-          </Box>
+          {!readOnly && (
+            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+              <Button
+                variant="outlined"
+                color="error"
+                disabled={!savedFileList.some((f) => f.check)}
+                onClick={handleDeleteSelected}
+              >
+                선택삭제
+              </Button>
+            </Box>
+          )}
           <List dense>
             {savedFileList.map((file) => {
               const downloadUrl = `/api/dr/file/downloadStream?filename=${encodeURIComponent(
                 file.srvrFileNm || "",
               )}&originalName=${encodeURIComponent(file.fileNm || "")}`;
+              const ext =
+                (file.fileExtnNm ??
+                  file.fileNm?.split(".").pop() ??
+                  "").toLowerCase();
+              const isPdf = ext === "pdf";
               return (
                 <ListItem
                   key={file.atchFileId}
                   secondaryAction={
-                    <IconButton
-                      edge="end"
-                      onClick={() => fileRemoveOnly(file.atchFileId ?? "")}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    readOnly ? undefined : (
+                      <IconButton
+                        edge="end"
+                        onClick={() => fileRemoveOnly(file.atchFileId ?? "")}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )
                   }
                 >
-                  <MuiCheckbox
-                    id={file.atchFileId ?? ""}
-                    checked={file.check}
-                    onChange={(e, checked) =>
-                      handleCheck(file.atchFileId ?? "", checked)
-                    }
-                  />
+                  {!readOnly && (
+                    <MuiCheckbox
+                      id={file.atchFileId ?? ""}
+                      checked={file.check}
+                      onChange={(e, checked) =>
+                        handleCheck(file.atchFileId ?? "", checked)
+                      }
+                    />
+                  )}
                   <ListItemIcon>
                     <FileIcon />
                   </ListItemIcon>
-                  <Button
-                    component="a"
-                    href={downloadUrl}
-                    download={file.fileNm || undefined} // 저장 파일명: fileNm 사용
-                    variant="text"
-                    sx={{ textTransform: "none", p: 0 }}
-                  >
-                    <ListItemText
-                      primary={file.fileNm}
-                      secondary={formatFileSize(file.fileSz)}
-                    />
-                  </Button>
+                  {readOnly ? (
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      alignItems="center"
+                      justifyContent="space-between"
+                      width="100%"
+                    >
+                      <Button
+                        component="a"
+                        href={downloadUrl}
+                        download={file.fileNm || undefined} // 저장 파일명: fileNm 사용
+                        variant="text"
+                        sx={{ textTransform: "none", p: 0, minWidth: 0 }}
+                      >
+                        <ListItemText
+                          primary={file.fileNm}
+                          secondary={formatFileSize(file.fileSz)}
+                        />
+                      </Button>
+                      {isPdf && <DigitalDocViewerButton fileUrl={downloadUrl} />}
+                    </Stack>
+                  ) : (
+                    <Button
+                      component="a"
+                      href={downloadUrl}
+                      download={file.fileNm || undefined} // 저장 파일명: fileNm 사용
+                      variant="text"
+                      sx={{ textTransform: "none", p: 0 }}
+                    >
+                      <ListItemText
+                        primary={file.fileNm}
+                        secondary={formatFileSize(file.fileSz)}
+                      />
+                    </Button>
+                  )}
                 </ListItem>
               );
             })}
