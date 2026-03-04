@@ -5,10 +5,14 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  TableCell,
+  TableRow,
   TextField,
 } from "@mui/material";
 import type { DocDestruction } from "@/types/docDestruction";
 import useNotifications from "@/hooks/useNotifications";
+import LabelCell from "../table/LabelCell";
+import TableWrapper from "../table/TableWrapper";
 
 type ButtonProps = {
   selectedRows: DocDestruction[];
@@ -62,17 +66,23 @@ export default function DocDestructionAppvButton(prop: ButtonProps) {
         <DialogTitle>문서파기 승인</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit} id="subscription-form">
-            <TextField
-              autoFocus
-              required
-              fullWidth
-              variant="outlined"
-              margin="dense"
-              id="password"
-              name="password"
-              label="비밀번호"
-              type="password"
-            />
+            <TableWrapper>
+              <TableRow>
+                <LabelCell required>비밀번호</LabelCell>
+                <TableCell>
+                  <TextField
+                    autoFocus
+                    required
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
+                    id="password"
+                    name="password"
+                    type="password"
+                  />
+                </TableCell>
+              </TableRow>
+            </TableWrapper>
           </form>
         </DialogContent>
         <DialogActions>

@@ -10,8 +10,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  TableCell,
+  TableRow,
   TextField,
 } from "@mui/material";
+import TableWrapper from "../table/TableWrapper";
+import LabelCell from "../table/LabelCell";
 
 type ButtonProps = {
   selectedRows: DocDestruction[];
@@ -76,28 +80,38 @@ export default function DocDestructionReqButton(prop: ButtonProps) {
         <DialogTitle>문서파기 신청</DialogTitle>
         <DialogContent>
           <form onSubmit={handleSubmit} id="subscription-form">
-            <TextField
-              autoFocus
-              required
-              fullWidth
-              variant="outlined"
-              margin="dense"
-              id="password"
-              name="password"
-              label="비밀번호"
-              type="password"
-            />
-            <TextField
-              autoFocus
-              required
-              fullWidth
-              variant="outlined"
-              margin="dense"
-              id="reason"
-              name="reason"
-              label="사유"
-              type="reason"
-            />
+            <TableWrapper>
+              <TableRow>
+                <LabelCell>비밀번호</LabelCell>
+                <TableCell>
+                  <TextField
+                    autoFocus
+                    required
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
+                    id="password"
+                    name="password"
+                    type="password"
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <LabelCell>사유</LabelCell>
+                <TableCell>
+                  <TextField
+                    autoFocus
+                    required
+                    fullWidth
+                    variant="outlined"
+                    margin="dense"
+                    id="reason"
+                    name="reason"
+                    type="reason"
+                  />
+                </TableCell>
+              </TableRow>
+            </TableWrapper>
           </form>
         </DialogContent>
         <DialogActions>

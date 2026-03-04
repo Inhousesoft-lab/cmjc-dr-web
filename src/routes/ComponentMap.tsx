@@ -5,15 +5,14 @@ import DocClassificationDetail from "@/pages/ko/DocClassification/DocClassificat
 import DocClassificationForm from "@/pages/ko/DocClassification/DocClassificationForm";
 import HoldingInstitutionList from "@/pages/ko/DocClassification/HoldingInstitutionList";
 
-import DocDestructionDetail from "@/pages/ko/DocDestruction/DocDestructionDetail";
 import DigitalDocList from "@/pages/ko/DigitalDoc/DigitalDocList";
 import DigitalDocDetail from "@/pages/ko/DigitalDoc/DigitalDocDetail";
 import DigitalDocForm from "@/pages/ko/DigitalDoc/DigitalDocForm";
 import DigitalDocFormTemp from "@/pages/ko/DigitalDoc/DigitalDocFormTemp";
 
-import DocDestructionReqList from "@/pages/ko/DocDestruction/DocDestructionReqList";
-import DocDestructionAppvList from "@/pages/ko/DocDestruction/DocDestructionAppvList";
 import DocDestructionList from "@/pages/ko/DocDestruction/DocDestructionList";
+import DocDestructionDetail from "@/pages/ko/DocDestruction/DocDestructionDetail";
+
 import ExternalView from "@/pages/ko/ExternalView";
 
 export const componentMap = {
@@ -26,8 +25,6 @@ export const componentMap = {
   DigitalDocDetail,
   DigitalDocForm,
   DigitalDocFormTemp,
-  DocDestructionReqList,
-  DocDestructionAppvList,
   DocDestructionList,
   DocDestructionDetail,
   ExternalView,

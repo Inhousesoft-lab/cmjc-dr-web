@@ -1,23 +1,71 @@
-import { Box, Button, Grid, Stack } from "@mui/material";
+import { Box, Button, Grid, IconButton, Stack } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import { listDefs } from "./col-def";
 
 import DocDestructionManagementPrintButton from "@/components/biz/DocDestructionManagementPrintDialog";
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import dayjs from "dayjs";
 import MuiSelect from "@/components/elements/MuiSelect";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import useNotifications from "@/hooks/useNotifications";
 import { DocDestruction } from "@/types/docDestruction";
 import { ColDef } from "ag-grid-community";
 import GridField from "@/components/common/GridField";
 import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { fetchDocDestructionList } from "@/features/docDestruction/DocDestructionThunk";
+import {
+  selectDocDestructionError,
+  selectDocDestructionLoading,
+  selectDocDestructionRowCount,
+  selectDocDestructionRows,
+} from "@/features/docDestruction/DocDestructionSelectors";
+import type { SearchValues } from "@/types/docDestruction";
+import { getLangFromPathname, langPath } from "@/routes/lang";
+import DocDestructionReqButton from "@/components/actionButtons/DocDestructionReqButton";
+import DocDestructionAppvButton from "@/components/actionButtons/DocDestructionAppvButton";
 
-export default function DocDestructionReqList() {
+const buildSearchValues = (
+  docLclsfNo: string,
+  docMclsfNo: string,
+  docSclsfNo: string,
+): SearchValues => ({
+  docLclsfNo,
+  docMclsfNo,
+  docSclsfNo,
+  prvcInclYn: "N",
+  docNo: "",
+  docTtl: "",
+  hldPrdChangedOnly: false,
+  docClsfNm: "",
+  fromEndYmd: dayjs().add(-7, "day").format("YYYYMMDD"),
+  toEndYmd: dayjs()
+    .set("year", 9999)
+    .set("month", 11)
+    .set("date", 31)
+    .format("YYYYMMDD"),
+  fromDstrcAplyYmd: "",
+  toDstrcAplyYmd: "",
+  fromDstrcAprvYmd: "",
+  toDstrcAprvYmd: "",
+  pageNum: 1,
+  pageSize: 10,
+});
+
+export default function DocDestructionList() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const notifications = useNotifications();
+  const curLang = getLangFromPathname(location.pathname);
 
   const printAreaRef = useRef<HTMLDivElement | null>(null);
 
@@ -25,6 +73,8 @@ export default function DocDestructionReqList() {
   const [docLclsfNo, setDocLclsfNo] = useState("");
   const [docMclsfNo, setDocMclsfNo] = useState("");
   const [docSclsfNo, setDocSclsfNo] = useState("");
+  const [pageNum, setPageNum] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     docLclsfNo,
     docMclsfNo,
@@ -32,56 +82,58 @@ export default function DocDestructionReqList() {
 
   const [columnDefs] = React.useState<ColDef<DocDestruction>[]>(listDefs);
 
-  const [rowData, setRowsData] = React.useState<{
-    rows: DocDestruction[];
-    rowCount: number;
-  }>({
-    rows: [],
-    rowCount: 0,
-  });
+  const rows = useAppSelector(selectDocDestructionRows);
+  const rowCount = useAppSelector(selectDocDestructionRowCount);
+  const isLoading = useAppSelector(selectDocDestructionLoading);
+  const listError = useAppSelector(selectDocDestructionError);
 
-  const [isLoading, setIsLoading] = React.useState(true);
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: load data
-    } catch (e) {
-      notifications.show(getErrorMessage(e), {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  React.useEffect(() => {
-    loadData();
+  const handleSelectionChange = useCallback((rows: any[]) => {
+    setSelectedRows(rows);
   }, []);
 
-  const searchValues = {
-    docLclsfNo,
-    docMclsfNo,
-    docSclsfNo,
-    prvcInclYn: "N",
-    docNo: "",
-    docTtl: "",
-    hldPrdChangedOnly: false,
-    docClsfNm: "",
-    fromEndYmd: dayjs().add(-7, "day").format("YYYYMMDD"),
-    toEndYmd: dayjs()
-      .set("year", 9999)
-      .set("month", 11)
-      .set("date", 31)
-      .format("YYYYMMDD"),
-    fromDstrcAplyYmd: "",
-    toDstrcAplyYmd: "",
-    fromDstrcAprvYmd: "",
-    toDstrcAprvYmd: "",
-    pageNum: 1,
-    pageSize: 10,
+  const searchValues = useMemo(
+    () => ({
+      ...buildSearchValues(docLclsfNo, docMclsfNo, docSclsfNo),
+      pageNum,
+      pageSize,
+    }),
+    [docLclsfNo, docMclsfNo, docSclsfNo, pageNum, pageSize],
+  );
+
+  const loadData = () => {
+    const nextParams = { ...searchValues, pageNum: 1 };
+    setPageNum(1);
+    dispatch(fetchDocDestructionList(nextParams));
   };
+
+  const handleRefresh = () => {
+    setDocLclsfNo("");
+    setDocMclsfNo("");
+    setDocSclsfNo("");
+    setPageNum(1);
+    setPageSize(10);
+    dispatch(
+      fetchDocDestructionList({
+        ...buildSearchValues("", "", ""),
+        pageNum: 1,
+        pageSize: 10,
+      }),
+    );
+  };
+
+  useEffect(() => {
+    dispatch(fetchDocDestructionList(buildSearchValues("", "", "")));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!listError) return;
+    notifications.show(listError, {
+      severity: "error",
+      autoHideDuration: 3000,
+    });
+  }, [listError, notifications]);
 
   const handlePrintCurrentList = () => {
     setPrintOn(true);
@@ -157,6 +209,11 @@ export default function DocDestructionReqList() {
     setPrintOn(false);
   }, [printOn]);
 
+  const handleRowClick = (row: DocDestruction) => {
+    if (!row.eldocNo) return;
+    navigate(langPath(`docDestruction/${row.eldocNo}`, curLang));
+  };
+
   return (
     <div>
       <Stack direction="row" className="search-area" mb={2}>
@@ -218,11 +275,31 @@ export default function DocDestructionReqList() {
             }
           />
         </Grid>
-        <Box className="table-view-actions">
-          <Button variant="contained">조회</Button>
+        <Box
+          className="table-view-actions"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Button variant="contained" onClick={loadData}>
+            조회
+          </Button>
+          <IconButton
+            aria-label="검색 초기화 및 새로고침"
+            onClick={handleRefresh}
+            sx={{ mt: 1, border: "1px solid", borderColor: "divider" }}
+          >
+            <RefreshIcon />
+          </IconButton>
         </Box>
       </Stack>
       <div className="btn_wrapper">
+        <DocDestructionReqButton selectedRows={selectedRows} />
+
+        <DocDestructionAppvButton selectedRows={selectedRows} />
+
         <Button variant="contained" onClick={handlePrintCurrentList}>
           파기목록출력
         </Button>
@@ -232,10 +309,25 @@ export default function DocDestructionReqList() {
       <Box ref={printAreaRef} sx={{ width: "100%" }}>
         <AgGridContainer
           isLoading={isLoading}
-          enableRowSelection={false}
+          enableRowSelection={true}
           colDefs={columnDefs}
-          rowData={rowData.rows}
-          count={rowData.rowCount}
+          rowData={rows}
+          pageNum={pageNum}
+          pageSize={pageSize}
+          count={rowCount}
+          onRowClick={handleRowClick}
+          onSelectionChange={handleSelectionChange}
+          onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {
+            setPageNum(nextPage);
+            setPageSize(nextSize);
+            dispatch(
+              fetchDocDestructionList({
+                ...searchValues,
+                pageNum: nextPage,
+                pageSize: nextSize,
+              }),
+            );
+          }}
         />
       </Box>
     </div>
