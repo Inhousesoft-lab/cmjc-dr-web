@@ -455,45 +455,47 @@ export default function UploadFiles({
                       width="100%"
                     >
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Button
-                          component="a"
-                          href={downloadUrl}
-                          download={file.fileNm || undefined} // 저장 파일명: fileNm 사용
-                          variant="text"
-                          sx={{
-                            textTransform: "none",
-                            p: 0,
-                            minWidth: 0,
-                            maxWidth: "100%",
-                            justifyContent: "flex-start",
+                        <ListItemText
+                          primary={file.fileNm}
+                          secondary={formatFileSize(file.fileSz)}
+                          primaryTypographyProps={{
+                            noWrap: true,
+                            title: file.fileNm || "",
                           }}
-                        >
-                          <ListItemText
-                            primary={file.fileNm}
-                            secondary={formatFileSize(file.fileSz)}
-                            primaryTypographyProps={{
-                              noWrap: true,
-                              title: file.fileNm || "",
-                            }}
-                            secondaryTypographyProps={{ noWrap: true }}
-                          />
-                        </Button>
+                          secondaryTypographyProps={{ noWrap: true }}
+                        />
                       </Box>
                       <Box
                         sx={{
-                          width: 72,
+                          width: 190,
                           display: "flex",
                           justifyContent: "flex-end",
                           flexShrink: 0,
                         }}
                       >
-                        {isPdf && <DigitalDocViewerButton fileUrl={downloadUrl} />}
-                        {!isPdf && isImage && (
-                          <DigitalDocViewerButton
-                            fileUrl={downloadUrl}
-                            fileType="image"
-                          />
-                        )}
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          justifyContent="flex-end"
+                          flexWrap="nowrap"
+                        >
+                          {isPdf && <DigitalDocViewerButton fileUrl={downloadUrl} />}
+                          {!isPdf && isImage && (
+                            <DigitalDocViewerButton
+                              fileUrl={downloadUrl}
+                              fileType="image"
+                            />
+                          )}
+                          <Button
+                            component="a"
+                            href={downloadUrl}
+                            download={file.fileNm || undefined}
+                            variant="outlined"
+                            size="small"
+                          >
+                            다운로드
+                          </Button>
+                        </Stack>
                       </Box>
                     </Stack>
                   ) : (
