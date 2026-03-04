@@ -412,6 +412,15 @@ export default function UploadFiles({
                   file.fileNm?.split(".").pop() ??
                   "").toLowerCase();
               const isPdf = ext === "pdf";
+              const isImage = [
+                "png",
+                "jpg",
+                "jpeg",
+                "gif",
+                "bmp",
+                "webp",
+                "svg",
+              ].includes(ext);
               return (
                 <ListItem
                   key={file.atchFileId}
@@ -443,22 +452,49 @@ export default function UploadFiles({
                       direction="row"
                       spacing={1}
                       alignItems="center"
-                      justifyContent="space-between"
                       width="100%"
                     >
-                      <Button
-                        component="a"
-                        href={downloadUrl}
-                        download={file.fileNm || undefined} // 저장 파일명: fileNm 사용
-                        variant="text"
-                        sx={{ textTransform: "none", p: 0, minWidth: 0 }}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Button
+                          component="a"
+                          href={downloadUrl}
+                          download={file.fileNm || undefined} // 저장 파일명: fileNm 사용
+                          variant="text"
+                          sx={{
+                            textTransform: "none",
+                            p: 0,
+                            minWidth: 0,
+                            maxWidth: "100%",
+                            justifyContent: "flex-start",
+                          }}
+                        >
+                          <ListItemText
+                            primary={file.fileNm}
+                            secondary={formatFileSize(file.fileSz)}
+                            primaryTypographyProps={{
+                              noWrap: true,
+                              title: file.fileNm || "",
+                            }}
+                            secondaryTypographyProps={{ noWrap: true }}
+                          />
+                        </Button>
+                      </Box>
+                      <Box
+                        sx={{
+                          width: 72,
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          flexShrink: 0,
+                        }}
                       >
-                        <ListItemText
-                          primary={file.fileNm}
-                          secondary={formatFileSize(file.fileSz)}
-                        />
-                      </Button>
-                      {isPdf && <DigitalDocViewerButton fileUrl={downloadUrl} />}
+                        {isPdf && <DigitalDocViewerButton fileUrl={downloadUrl} />}
+                        {!isPdf && isImage && (
+                          <DigitalDocViewerButton
+                            fileUrl={downloadUrl}
+                            fileType="image"
+                          />
+                        )}
+                      </Box>
                     </Stack>
                   ) : (
                     <Button

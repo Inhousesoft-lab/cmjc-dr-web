@@ -22,11 +22,13 @@ pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 interface DigitalDocViewerButtonProps {
   fileUrl: string;
   label?: string;
+  fileType?: "pdf" | "image";
 }
 
 export default function DigitalDocViewerButton({
   fileUrl,
   label = "열람",
+  fileType = "pdf",
 }: DigitalDocViewerButtonProps) {
   // const authUser = useAppSelector((state) => state.auth.user);
   const [open, setOpen] = React.useState(false);
@@ -56,6 +58,7 @@ export default function DigitalDocViewerButton({
   };
 
   const handleMovePage = () => {
+    if (fileType !== "pdf") return;
     const nextPage = Number(pageInput);
     if (!Number.isInteger(nextPage) || nextPage < 1) return;
     if (numPages > 0 && nextPage > numPages) return;
@@ -77,9 +80,10 @@ export default function DigitalDocViewerButton({
     observer.observe(target);
 
     return () => observer.disconnect();
-  }, [open]);
+  }, [fileType, open]);
 
   React.useEffect(() => {
+    if (fileType !== "pdf") return;
     if (!open || numPages <= 0) return;
     const scroller = scrollRef.current;
     if (!scroller) return;
@@ -104,7 +108,7 @@ export default function DigitalDocViewerButton({
     updateCurrentPage();
     scroller.addEventListener("scroll", updateCurrentPage, { passive: true });
     return () => scroller.removeEventListener("scroll", updateCurrentPage);
-  }, [open, numPages, zoom]);
+  }, [fileType, open, numPages, zoom]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -248,29 +252,59 @@ export default function DigitalDocViewerButton({
             />
           ) : null}
           <div ref={viewerRef}>
-            <Document file={fileUrl} onLoadSuccess={handleLoadSuccess}>
-              {Array.from({ length: numPages }, (_, index) => {
-                const pageNumber = index + 1;
-                return (
-                  <div
-                    key={pageNumber}
-                    ref={(el) => {
-                      pageRefs.current[pageNumber] = el;
-                    }}
-                    style={{ marginBottom: 16, position: "relative" }}
-                  >
-                    <Page
-                      pageNumber={pageNumber}
-                      width={containerWidth > 0 ? containerWidth : undefined}
-                      scale={zoom}
-                      rotate={rotation}
-                      renderAnnotationLayer={false}
-                      renderTextLayer={false}
-                    />
-                  </div>
-                );
-              })}
-            </Document>
+            {fileType === "pdf" ? (
+              <Document file={fileUrl} onLoadSuccess={handleLoadSuccess}>
+                {Array.from({ length: numPages }, (_, index) => {
+                  const pageNumber = index + 1;
+                  return (
+                    <div
+                      key={pageNumber}
+                      ref={(el) => {
+                        pageRefs.current[pageNumber] = el;
+                      }}
+                      style={{ marginBottom: 16, position: "relative" }}
+                    >
+                      <Page
+                        pageNumber={pageNumber}
+                        width={containerWidth > 0 ? containerWidth : undefined}
+                        scale={zoom}
+                        rotate={rotation}
+                        renderAnnotationLayer={false}
+                        renderTextLayer={false}
+                      />
+                    </div>
+                  );
+                })}
+              </Document>
+            ) : (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: "100%",
+                }}
+              >
+                <img
+                  src={fileUrl}
+                  alt="첨부 이미지"
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                    transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                    transformOrigin: "center center",
+                  }}
+                  onLoad={(e) => {
+                    const target = e.currentTarget;
+                    setOrientation(
+                      target.naturalWidth >= target.naturalHeight
+                        ? "landscape"
+                        : "portrait",
+                    );
+                  }}
+                />
+              </Box>
+            )}
           </div>
         </DialogContent>
         <DialogActions sx={{ position: "relative", zIndex: 3 }}>
@@ -326,27 +360,33 @@ export default function DigitalDocViewerButton({
           <Button variant="outlined" onClick={() => setZoom(1)}>
             100%
           </Button>
-          <Typography sx={{ ml: 1 }}>
-            {currentPage} / {numPages || "-"} 페이지
-          </Typography>
-          <TextField
-            size="small"
-            type="number"
-            value={pageInput}
-            onChange={(e) => setPageInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleMovePage();
-            }}
-            slotProps={{ htmlInput: { min: 1, max: numPages || undefined } }}
-            sx={{ width: 100, ml: 1 }}
-          />
-          <Button
-            variant="outlined"
-            onClick={handleMovePage}
-            sx={{ mr: "auto" }}
-          >
-            페이지 이동
-          </Button>
+          {fileType === "pdf" ? (
+            <React.Fragment>
+              <Typography sx={{ ml: 1 }}>
+                {currentPage} / {numPages || "-"} 페이지
+              </Typography>
+              <TextField
+                size="small"
+                type="number"
+                value={pageInput}
+                onChange={(e) => setPageInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleMovePage();
+                }}
+                slotProps={{ htmlInput: { min: 1, max: numPages || undefined } }}
+                sx={{ width: 100, ml: 1 }}
+              />
+              <Button
+                variant="outlined"
+                onClick={handleMovePage}
+                sx={{ mr: "auto" }}
+              >
+                페이지 이동
+              </Button>
+            </React.Fragment>
+          ) : (
+            <Box sx={{ mr: "auto" }} />
+          )}
           <Button variant="contained" onClick={() => setOpen(false)}>
             닫기
           </Button>
