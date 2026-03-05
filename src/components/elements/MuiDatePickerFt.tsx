@@ -24,8 +24,8 @@ export function MuiDatePickerFt({
   error,
   helperText,
 }: Props) {
-  const dayjsValue = value ? dayjs(value, "YYYY-MM-DD") : null;
-  const dayjsMinDate = minDate ? dayjs(minDate, "YYYY-MM-DD") : undefined;
+  const dayjsValue = value ? dayjs(value, "YYYYMMDD") : null;
+  const dayjsMinDate = minDate ? dayjs(minDate, "YYYYMMDD") : undefined;
 
   return (
     <DatePicker
@@ -36,7 +36,7 @@ export function MuiDatePickerFt({
       minDate={dayjsMinDate}
       value={dayjsValue}
       onChange={(date) =>
-        onChange(date ? dayjs(date).format("YYYY-MM-DD") : "")
+        onChange(date ? dayjs(date).format("YYYYMMDD") : "")
       }
       slotProps={{
         textField: {
