@@ -5,6 +5,7 @@ import { listDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-p
 import DialogTrigger from "../dialog/DialogTrigger";
 import AgGridTable from "../grid/AgGridTable";
 import { ColDef } from "ag-grid-community";
+import { printElement } from "@/utils/print";
 
 type Destruction = {
   no: string;
@@ -73,46 +74,20 @@ export default function DocDestructionManagementPrintDialog({
   }, [open, loadData]);
 
   const handlePrint = () => {
-    if (!printAreaRef2.current) return;
+    const root = printAreaRef2.current;
+    if (!root) return;
 
-    const printContents = printAreaRef2.current.innerHTML;
-    const printWindow = window.open("", "_blank", "width=1024,height=768");
-
-    if (!printWindow) return;
-    // 현재 문서의 CSS(스타일/링크)를 복사
-    const styles = Array.from(
-      document.querySelectorAll('link[rel="stylesheet"], style'),
-    )
-      .map((node) => node.outerHTML)
-      .join("\n");
-
-    printWindow.document.open();
-    printWindow.document.write(`
-      <!doctype html>
-      <html>
-        <head>
-          <title>파기관리대장 출력</title>
-          ${styles}
-          <style>
-            /* 인쇄 기본 여백/배경 보정 (필요 시 조정) */
-            @page { size: auto; margin: 12mm; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            @media print {
-              body {
-                zoom: 0.6; /* 0.7~0.95 범위에서 조정 */
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${printContents}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+    printElement(root, {
+      title: "파기관리대장 출력",
+      popupFeatures: "width=1024,height=768",
+      zoom: 0.6,
+      pageMarginMm: 12,
+      gridColumns: listDefs.map((col) => ({
+        headerName: col.headerName,
+        field: typeof col.field === "string" ? col.field : undefined,
+      })),
+      gridRows: rowData.rows as unknown as Array<Record<string, unknown>>,
+    });
   };
 
   return (

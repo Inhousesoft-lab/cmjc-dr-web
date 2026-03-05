@@ -33,6 +33,7 @@ import type { SearchValues } from "@/types/docDestruction";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import DocDestructionReqButton from "@/components/actionButtons/DocDestructionReqButton";
 import DocDestructionAppvButton from "@/components/actionButtons/DocDestructionAppvButton";
+import { printElement } from "@/utils/print";
 
 const buildSearchValues = (
   docLclsfNo: string,
@@ -69,7 +70,6 @@ export default function DocDestructionList() {
 
   const printAreaRef = useRef<HTMLDivElement | null>(null);
 
-  const [printOn, setPrintOn] = useState(false);
   const [docLclsfNo, setDocLclsfNo] = useState("");
   const [docMclsfNo, setDocMclsfNo] = useState("");
   const [docSclsfNo, setDocSclsfNo] = useState("");
@@ -136,78 +136,20 @@ export default function DocDestructionList() {
   }, [listError, notifications]);
 
   const handlePrintCurrentList = () => {
-    setPrintOn(true);
-
-    setTimeout(() => {
-      setPrintOn(false);
-    }, 500);
-  };
-
-  useEffect(() => {
-    if (!printOn) return;
     const el = printAreaRef.current;
     if (!el) return;
-
-    // innerHTML 대신 outerHTML 권장 (컨테이너 포함)
-    const printContents = el.outerHTML;
-
-    const printWindow = window.open("", "_blank", "width=1200,height=800");
-    if (!printWindow) return;
-
-    // 현재 문서의 CSS(스타일/링크)를 복사
-    const styles = Array.from(
-      document.querySelectorAll('link[rel="stylesheet"], style'),
-    )
-      .map((node) => node.outerHTML)
-      .join("\n");
-
-    printWindow.document.open();
-    printWindow.document.write(`
-      <!doctype html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>파기목록대장 출력</title>
-          ${styles}
-          <style>
-            /* 인쇄 기본 여백/배경 보정 (필요 시 조정) */
-            @page { size: auto; margin: 12mm; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            @media print {
-              body {
-                zoom: 0.44; /* 0.7~0.95 범위에서 조정 */
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${printContents}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-
-    // 렌더링 완료 후 print
-    const doPrint = () => {
-      printWindow.focus();
-      printWindow.print();
-    };
-
-    // afterprint로 닫기 (print() 직후 close하면 출력이 취소되는 브라우저가 있음)
-    printWindow.addEventListener("afterprint", () => {
-      printWindow.close();
+    printElement(el, {
+      title: "파기목록대장 출력",
+      popupFeatures: "width=1200,height=800",
+      zoom: 0.44,
+      pageMarginMm: 10,
+      gridColumns: listDefs.map((col) => ({
+        headerName: col.headerName,
+        field: typeof col.field === "string" ? col.field : undefined,
+      })),
+      gridRows: rows as unknown as Array<Record<string, unknown>>,
     });
-
-    // 로드 대기(폰트/스타일 반영)
-    printWindow.onload = () => {
-      // 한 번 더 프레임을 넘겨 레이아웃 확정
-      printWindow.requestAnimationFrame(() => {
-        printWindow.requestAnimationFrame(doPrint);
-      });
-    };
-
-    setPrintOn(false);
-  }, [printOn]);
+  };
 
   const handleRowClick = (row: DocDestruction) => {
     if (!row.eldocNo) return;
@@ -289,7 +231,6 @@ export default function DocDestructionList() {
           <IconButton
             aria-label="검색 초기화 및 새로고침"
             onClick={handleRefresh}
-            sx={{ mt: 1, border: "1px solid", borderColor: "divider" }}
           >
             <RefreshIcon />
           </IconButton>
@@ -297,9 +238,7 @@ export default function DocDestructionList() {
       </Stack>
       <div className="btn_wrapper">
         <DocDestructionReqButton selectedRows={selectedRows} />
-
         <DocDestructionAppvButton selectedRows={selectedRows} />
-
         <Button variant="contained" onClick={handlePrintCurrentList}>
           파기목록출력
         </Button>

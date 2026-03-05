@@ -1,5 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import type { DocDestruction } from "@/types/docDestruction";
+import { formatRegDate } from "@/utils/formater";
 
 export const listDefs: ColDef<DocDestruction>[] = [
   {
@@ -60,5 +61,6 @@ export const listDefs: ColDef<DocDestruction>[] = [
     headerName: "등록일자",
     field: "regDate",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => formatRegDate(params?.value),
   },
 ];
