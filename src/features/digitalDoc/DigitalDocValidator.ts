@@ -137,3 +137,16 @@ export function digitalDocFormValidator(data: unknown) {
     ? { success: true as const, data: result.data, issues: [] }
     : { success: false as const, data: null, issues: result.error.issues };
 }
+
+export const digitalDocUpdateSchema = z.object({
+  eldocNo: z.string().trim().min(1, "전자문서 번호가 없습니다."),
+  docClsfNo: z.string().trim().min(1, "문서분류를 선택해 주세요."),
+  gvbkYn: z.string().trim().min(1, "반환여부를 선택해 주세요."),
+});
+
+export function digitalDocUpdateValidator(data: unknown) {
+  const result = digitalDocUpdateSchema.safeParse(data);
+  return result.success
+    ? { success: true as const, data: result.data, issues: [] }
+    : { success: false as const, data: null, issues: result.error.issues };
+}

@@ -7,6 +7,7 @@ import {
   selectEDocAuthrtListApiPath,
   selectEDocDetailApiPath,
   selectEDocListApiPath,
+  updateEDocApiPath,
 } from "@/api/digitalDoc/DigitalDocApiPaths";
 import {
   digitalAuthrtCreateValidator,
@@ -15,6 +16,7 @@ import {
   digitalDocFormValidator,
   digitalDocListSchema,
   digitalDocRowSchema,
+  digitalDocUpdateValidator,
 } from "./DigitalDocValidator";
 import type { DigitalAuthrt, DigitalDoc, SearchValues } from "@/types/digitalDoc";
 import { toChar8Date } from "@/utils/formater";
@@ -173,6 +175,33 @@ export const createDigitalDoc = createAsyncThunk<
     const res = await https.post(insertEDocApiPath(), requestBody);
     const eldocNo = (res as any)?.data?.data?.eldocNo ?? "";
     return String(eldocNo);
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export type DigitalDocUpdatePayload = {
+  eldocNo: string;
+  docClsfNo: string;
+  gvbkYn: string;
+};
+
+export const updateDigitalDoc = createAsyncThunk<
+  number,
+  DigitalDocUpdatePayload,
+  { rejectValue: string }
+>("digitalDoc/update", async (payload, { rejectWithValue }) => {
+  const validated = digitalDocUpdateValidator(payload);
+  if (!validated.success) {
+    const firstIssue = validated.issues[0];
+    return rejectWithValue(
+      firstIssue?.message ?? "수정 입력값 검증에 실패했습니다.",
+    );
+  }
+
+  try {
+    await https.post(updateEDocApiPath(), validated.data);
+    return 1;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }

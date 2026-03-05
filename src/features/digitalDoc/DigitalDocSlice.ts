@@ -5,6 +5,7 @@ import {
   fetchDigitalDocAuthrtList,
   fetchDigitalDocDetail,
   fetchDigitalDocList,
+  updateDigitalDoc,
 } from "./DigitalDocThunk";
 import type { DigitalAuthrt, DigitalDoc } from "@/types/digitalDoc";
 
@@ -19,11 +20,13 @@ export interface DigitalDocListState {
   detailLoading: boolean;
   saving: boolean;
   saveSuccess: boolean;
+  updateSuccess: boolean;
   error: string | null;
   authrtError: string | null;
   authrtSaveError: string | null;
   detailError: string | null;
   saveError: string | null;
+  updateError: string | null;
 }
 
 const initialState: DigitalDocListState = {
@@ -37,11 +40,13 @@ const initialState: DigitalDocListState = {
   detailLoading: false,
   saving: false,
   saveSuccess: false,
+  updateSuccess: false,
   error: null,
   authrtError: null,
   authrtSaveError: null,
   detailError: null,
   saveError: null,
+  updateError: null,
 };
 
 const digitalDocSlice = createSlice({
@@ -52,6 +57,8 @@ const digitalDocSlice = createSlice({
       state.saving = false;
       state.saveSuccess = false;
       state.saveError = null;
+      state.updateSuccess = false;
+      state.updateError = null;
     },
   },
   extraReducers: (builder) => {
@@ -129,6 +136,22 @@ const digitalDocSlice = createSlice({
         state.saveSuccess = false;
         state.saveError =
           action.payload || action.error.message || "전자문서 등록 실패";
+      })
+      .addCase(updateDigitalDoc.pending, (state) => {
+        state.saving = true;
+        state.updateSuccess = false;
+        state.updateError = null;
+      })
+      .addCase(updateDigitalDoc.fulfilled, (state) => {
+        state.saving = false;
+        state.updateSuccess = true;
+        state.updateError = null;
+      })
+      .addCase(updateDigitalDoc.rejected, (state, action) => {
+        state.saving = false;
+        state.updateSuccess = false;
+        state.updateError =
+          action.payload || action.error.message || "전자문서 수정 실패";
       });
   },
 });

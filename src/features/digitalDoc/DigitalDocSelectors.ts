@@ -77,3 +77,18 @@ export const selectDigitalDocSaveError = createSelector(
   [selectDigitalDocListState],
   (s) => s.saveError,
 );
+
+export const selectDigitalDocUpdating = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.saving,
+);
+
+export const selectDigitalDocUpdateSuccess = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.updateSuccess,
+);
+
+export const selectDigitalDocUpdateError = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.updateError,
+);

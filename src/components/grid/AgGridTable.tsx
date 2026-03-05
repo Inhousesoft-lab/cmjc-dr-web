@@ -23,6 +23,7 @@ export default function AgGridTable<TData extends object>({
 }: AgGridTableProps<TData>) {
   const defaultColDef = useMemo<ColDef<TData>>(
     () => ({
+      flex: 1,
       resizable: true,
       sortable: true,
       filter: false,

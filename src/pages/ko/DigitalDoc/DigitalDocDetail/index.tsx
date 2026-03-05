@@ -20,11 +20,15 @@ import LabelCell from "@/components/table/LabelCell";
 import MuiSelect from "@/components/elements/MuiSelect";
 import UploadFiles from "@/components/file/UploadFiles";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { fetchDigitalDocDetail } from "@/features/digitalDoc/DigitalDocThunk";
+import {
+  fetchDigitalDocDetail,
+  updateDigitalDoc,
+} from "@/features/digitalDoc/DigitalDocThunk";
 import {
   selectDigitalDocDetail,
   selectDigitalDocDetailError,
   selectDigitalDocDetailLoading,
+  selectDigitalDocUpdating,
 } from "@/features/digitalDoc/DigitalDocSelectors";
 import useNotifications from "@/hooks/useNotifications";
 import PageStatus from "@/components/common/PageStatus";
@@ -57,6 +61,7 @@ export default function DigitalDocDetail() {
   const detail = useAppSelector(selectDigitalDocDetail);
   const isLoading = useAppSelector(selectDigitalDocDetailLoading);
   const detailError = useAppSelector(selectDigitalDocDetailError);
+  const isUpdating = useAppSelector(selectDigitalDocUpdating);
   const [selectedDocLclsfNo, setSelectedDocLclsfNo] = React.useState("");
   const [selectedDocMclsfNo, setSelectedDocMclsfNo] = React.useState("");
   const [selectedDocSclsfNo, setSelectedDocSclsfNo] = React.useState("");
@@ -93,6 +98,45 @@ export default function DigitalDocDetail() {
   const handleBack = React.useCallback(() => {
     navigate(langPath(URL.DIGITAL_DOC_LIST, curLang));
   }, [curLang, navigate]);
+
+  const handleUpdate = React.useCallback(async () => {
+    if (!eldocNo) {
+      notifications.show("전자문서 번호가 없습니다.", {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+      return;
+    }
+
+    const payload = {
+      eldocNo,
+      docClsfNo:
+        selectedDocSclsfNo || selectedDocMclsfNo || selectedDocLclsfNo || "",
+      gvbkYn: selectedGvbkYn,
+    };
+
+    try {
+      await dispatch(updateDigitalDoc(payload)).unwrap();
+      notifications.show("전자문서가 수정되었습니다.", {
+        severity: "success",
+        autoHideDuration: 3000,
+      });
+      dispatch(fetchDigitalDocDetail(eldocNo));
+    } catch (error) {
+      notifications.show(getErrorMessage(error), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    }
+  }, [
+    dispatch,
+    eldocNo,
+    notifications,
+    selectedDocLclsfNo,
+    selectedDocMclsfNo,
+    selectedDocSclsfNo,
+    selectedGvbkYn,
+  ]);
 
   if (isLoading) {
     return <PageStatus isLoading={isLoading} />;
@@ -139,7 +183,9 @@ export default function DigitalDocDetail() {
         <GridField item={12} label="비고" value={detail?.addExpln || "-"} />
         <GridField
           label="첨부파일"
-          value={eldocNo ? <UploadFiles taskSeTrgtId={eldocNo} readOnly /> : "-"}
+          value={
+            eldocNo ? <UploadFiles taskSeTrgtId={eldocNo} readOnly /> : "-"
+          }
         />
       </Grid>
 
@@ -154,7 +200,7 @@ export default function DigitalDocDetail() {
               aria-label="문서분류/반환여부 수정"
               colgroup={
                 <colgroup>
-                  <col style={{ width: "80px" }} />
+                  <col className="tbl-col-w-100" />
                   <col />
                 </colgroup>
               }
@@ -193,9 +239,10 @@ export default function DigitalDocDetail() {
               </TableRow>
               <TableRow>
                 <LabelCell>반환여부</LabelCell>
-                <TableCell>
+                <TableCell colSpan={3}>
                   <FormControl component="fieldset">
                     <RadioGroup
+                      row
                       value={selectedGvbkYn}
                       onChange={(e) =>
                         setSelectedGvbkYn((e.target.value as "Y" | "N") ?? "N")
@@ -217,9 +264,13 @@ export default function DigitalDocDetail() {
               </TableRow>
             </TableWrapper>
           </div>
-          {/* TODO: 수정 API 연결 필요 */}
           <Box display="flex" justifyContent="flex-end" marginTop={2}>
-            <Button variant="contained" color="primary">
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleUpdate}
+              disabled={isUpdating}
+            >
               수정
             </Button>
           </Box>
