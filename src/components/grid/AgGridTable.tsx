@@ -54,12 +54,13 @@ export default function AgGridTable<TData extends object>({
           rowData={rowData}
           columnDefs={colDefs}
           loading={isLoading}
-          rowHeight={40}
-          headerHeight={40}
+          rowHeight={28}
+          headerHeight={28}
           defaultColDef={defaultColDef}
           animateRows
           pagination
-          paginationPageSize={20}
+          paginationPageSize={10}
+          paginationPageSizeSelector={false}
           suppressCellFocus
           onRowClicked={onRowClicked}
         />

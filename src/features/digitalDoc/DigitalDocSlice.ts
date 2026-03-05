@@ -2,29 +2,46 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   createDigitalDocAuthrt,
   createDigitalDoc,
+  fetchDigitalDocAuthrtHistoryList,
   fetchDigitalDocAuthrtList,
+  fetchDigitalDocDialogDetail,
   fetchDigitalDocDetail,
+  fetchDigitalDocHistoryList,
   fetchDigitalDocList,
   updateDigitalDoc,
 } from "./DigitalDocThunk";
-import type { DigitalAuthrt, DigitalDoc } from "@/types/digitalDoc";
+import type {
+  DigitalAuthrt,
+  DigitalAuthrtHistory,
+  DigitalDoc,
+  DigitalDocHistory,
+} from "@/types/digitalDoc";
 
 export interface DigitalDocListState {
   rows: DigitalDoc[];
   authrtRows: DigitalAuthrt[];
+  authrtHistoryRows: DigitalAuthrtHistory[];
+  docHistoryRows: DigitalDocHistory[];
   detail: DigitalDoc | null;
+  dialogDetail: DigitalDoc | null;
   rowCount: number;
   loading: boolean;
   authrtLoading: boolean;
   authrtSaving: boolean;
+  authrtHistoryLoading: boolean;
+  docHistoryLoading: boolean;
   detailLoading: boolean;
+  dialogDetailLoading: boolean;
   saving: boolean;
   saveSuccess: boolean;
   updateSuccess: boolean;
   error: string | null;
   authrtError: string | null;
   authrtSaveError: string | null;
+  authrtHistoryError: string | null;
+  docHistoryError: string | null;
   detailError: string | null;
+  dialogDetailError: string | null;
   saveError: string | null;
   updateError: string | null;
 }
@@ -32,19 +49,28 @@ export interface DigitalDocListState {
 const initialState: DigitalDocListState = {
   rows: [],
   authrtRows: [],
+  authrtHistoryRows: [],
+  docHistoryRows: [],
   detail: null,
+  dialogDetail: null,
   rowCount: 0,
   loading: false,
   authrtLoading: false,
   authrtSaving: false,
+  authrtHistoryLoading: false,
+  docHistoryLoading: false,
   detailLoading: false,
+  dialogDetailLoading: false,
   saving: false,
   saveSuccess: false,
   updateSuccess: false,
   error: null,
   authrtError: null,
   authrtSaveError: null,
+  authrtHistoryError: null,
+  docHistoryError: null,
   detailError: null,
+  dialogDetailError: null,
   saveError: null,
   updateError: null,
 };
@@ -93,6 +119,21 @@ const digitalDocSlice = createSlice({
         state.authrtError =
           action.payload || action.error.message || "공람 목록 조회 실패";
       })
+      .addCase(fetchDigitalDocAuthrtHistoryList.pending, (state) => {
+        state.authrtHistoryLoading = true;
+        state.authrtHistoryError = null;
+      })
+      .addCase(fetchDigitalDocAuthrtHistoryList.fulfilled, (state, action) => {
+        state.authrtHistoryLoading = false;
+        state.authrtHistoryRows = action.payload;
+        state.authrtHistoryError = null;
+      })
+      .addCase(fetchDigitalDocAuthrtHistoryList.rejected, (state, action) => {
+        state.authrtHistoryLoading = false;
+        state.authrtHistoryRows = [];
+        state.authrtHistoryError =
+          action.payload || action.error.message || "공람 이력 조회 실패";
+      })
       .addCase(createDigitalDocAuthrt.pending, (state) => {
         state.authrtSaving = true;
         state.authrtSaveError = null;
@@ -120,6 +161,36 @@ const digitalDocSlice = createSlice({
         state.detail = null;
         state.detailError =
           action.payload || action.error.message || "전자문서 상세 조회 실패";
+      })
+      .addCase(fetchDigitalDocDialogDetail.pending, (state) => {
+        state.dialogDetailLoading = true;
+        state.dialogDetailError = null;
+      })
+      .addCase(fetchDigitalDocDialogDetail.fulfilled, (state, action) => {
+        state.dialogDetailLoading = false;
+        state.dialogDetail = action.payload;
+        state.dialogDetailError = null;
+      })
+      .addCase(fetchDigitalDocDialogDetail.rejected, (state, action) => {
+        state.dialogDetailLoading = false;
+        state.dialogDetail = null;
+        state.dialogDetailError =
+          action.payload || action.error.message || "전자문서 상세 조회 실패";
+      })
+      .addCase(fetchDigitalDocHistoryList.pending, (state) => {
+        state.docHistoryLoading = true;
+        state.docHistoryError = null;
+      })
+      .addCase(fetchDigitalDocHistoryList.fulfilled, (state, action) => {
+        state.docHistoryLoading = false;
+        state.docHistoryRows = action.payload;
+        state.docHistoryError = null;
+      })
+      .addCase(fetchDigitalDocHistoryList.rejected, (state, action) => {
+        state.docHistoryLoading = false;
+        state.docHistoryRows = [];
+        state.docHistoryError =
+          action.payload || action.error.message || "문서 이력 조회 실패";
       })
       .addCase(createDigitalDoc.pending, (state) => {
         state.saving = true;

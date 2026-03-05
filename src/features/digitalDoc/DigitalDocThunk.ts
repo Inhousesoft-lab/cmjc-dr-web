@@ -4,21 +4,33 @@ import https from "@/api/axiosInstance";
 import {
   insertEDocApiPath,
   insertEDocAuthrtApiPath,
+  selectEDocAuthrtHistoryApiPath,
   selectEDocAuthrtListApiPath,
   selectEDocDetailApiPath,
+  selectEDocHistoryApiPath,
   selectEDocListApiPath,
   updateEDocApiPath,
 } from "@/api/digitalDoc/DigitalDocApiPaths";
 import {
   digitalAuthrtCreateValidator,
+  digitalAuthrtHistoryListSchema,
+  digitalAuthrtHistoryRowSchema,
   digitalAuthrtListSchema,
   digitalAuthrtRowSchema,
   digitalDocFormValidator,
+  digitalDocHistoryListSchema,
+  digitalDocHistoryRowSchema,
   digitalDocListSchema,
   digitalDocRowSchema,
   digitalDocUpdateValidator,
 } from "./DigitalDocValidator";
-import type { DigitalAuthrt, DigitalDoc, SearchValues } from "@/types/digitalDoc";
+import type {
+  DigitalAuthrt,
+  DigitalAuthrtHistory,
+  DigitalDoc,
+  DigitalDocHistory,
+  SearchValues,
+} from "@/types/digitalDoc";
 import { toChar8Date } from "@/utils/formater";
 
 export interface DigitalDocListPayload {
@@ -82,6 +94,59 @@ export const fetchDigitalDocDetail = createAsyncThunk<
   }
 });
 
+export const fetchDigitalDocDialogDetail = createAsyncThunk<
+  DigitalDoc,
+  string,
+  { rejectValue: string }
+>("digitalDoc/dialogDetail", async (eldocNo, { rejectWithValue }) => {
+  try {
+    const res = await https.get(selectEDocDetailApiPath(eldocNo));
+    const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
+    const parsed = digitalDocRowSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return rejectWithValue("전자문서 상세 응답 형식이 올바르지 않습니다.");
+    }
+
+    return parsed.data as DigitalDoc;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const fetchDigitalDocHistoryList = createAsyncThunk<
+  DigitalDocHistory[],
+  string,
+  { rejectValue: string }
+>("digitalDoc/historyList", async (eldocNo, { rejectWithValue }) => {
+  try {
+    const res = await https.get(selectEDocHistoryApiPath(eldocNo), {
+      params: {
+        pageNum: 1,
+        pageSize: 10,
+      },
+    });
+    const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
+
+    if (Array.isArray(payload)) {
+      const parsedRows = z.array(digitalDocHistoryRowSchema).safeParse(payload);
+      if (!parsedRows.success) {
+        return rejectWithValue("문서 이력 응답 형식이 올바르지 않습니다.");
+      }
+      return parsedRows.data as DigitalDocHistory[];
+    }
+
+    const parsed = digitalDocHistoryListSchema.safeParse(payload);
+    if (!parsed.success) {
+      return rejectWithValue("문서 이력 응답 형식이 올바르지 않습니다.");
+    }
+
+    return parsed.data.list as DigitalDocHistory[];
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
 export const fetchDigitalDocAuthrtList = createAsyncThunk<
   DigitalAuthrt[],
   string,
@@ -105,6 +170,34 @@ export const fetchDigitalDocAuthrtList = createAsyncThunk<
     }
 
     return parsed.data.list as DigitalAuthrt[];
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const fetchDigitalDocAuthrtHistoryList = createAsyncThunk<
+  DigitalAuthrtHistory[],
+  string,
+  { rejectValue: string }
+>("digitalDoc/authrtHistoryList", async (eldocNo, { rejectWithValue }) => {
+  try {
+    const res = await https.get(selectEDocAuthrtHistoryApiPath(eldocNo));
+    const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
+
+    if (Array.isArray(payload)) {
+      const parsedRows = z.array(digitalAuthrtHistoryRowSchema).safeParse(payload);
+      if (!parsedRows.success) {
+        return rejectWithValue("공람 이력 응답 형식이 올바르지 않습니다.");
+      }
+      return parsedRows.data as DigitalAuthrtHistory[];
+    }
+
+    const parsed = digitalAuthrtHistoryListSchema.safeParse(payload);
+    if (!parsed.success) {
+      return rejectWithValue("공람 이력 응답 형식이 올바르지 않습니다.");
+    }
+
+    return parsed.data.list as DigitalAuthrtHistory[];
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
@@ -144,7 +237,7 @@ export type DigitalDocCreatePayload = {
   docNo: string;
   docTtl: string;
   clctYmd: string;
-  hldPrdDfyrs: string;
+  hldPrdDfyrs: string | number;
   hldPrdMmCnt: string;
   endYmd: string;
   addExpln: string;

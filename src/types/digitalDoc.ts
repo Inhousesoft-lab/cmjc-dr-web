@@ -27,8 +27,8 @@ export interface DigitalDoc {
   unqNo: string; // 고유번호
   docTtl: string; // 문서제목
   clctYmd: string; // 수집일자
-  hldPrdDfyrs: string; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
-  hldPrdMmCnt: string; // 보유기간 월
+  hldPrdDfyrs: any; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
+  hldPrdMmCnt: any; // 보유기간 월
   endYmd: string; // 종료일자
   prvcInclYn: string; // 개인정보포함여부
   gvbkYn: string; // 반환여부(Y:반환,N:미반환)
@@ -84,7 +84,7 @@ export interface DigitalDocHistory {
   unqNo: string; // 고유번호
   docTtl: string; // 문서제목
   clctYmd: string; // 수집일자
-  hldPrdDfyrs: string; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
+  hldPrdDfyrs: string | number; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
   hldPrdMmCnt: string; // 보유기간 월
   endYmd: string; // 종료일자
   prvcInclYn: string; // 개인정보포함여부

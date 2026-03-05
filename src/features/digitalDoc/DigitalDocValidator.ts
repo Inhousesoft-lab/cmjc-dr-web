@@ -55,6 +55,48 @@ export const digitalDocListSchema = z.looseObject({
   rowCount: numberField,
 });
 
+export const digitalDocHistoryRowSchema = z.looseObject({
+  docLclsfNo: stringField,
+  docMclsfNo: stringField,
+  docSclsfNo: stringField,
+  docLclsfNm: stringField,
+  docMclsfNm: stringField,
+  docSclsfNm: stringField,
+  eldocNo: stringField,
+  eldocHstryNo: stringField,
+  docClsfNo: stringField,
+  docNo: stringField,
+  unqNo: stringField,
+  docTtl: stringField,
+  clctYmd: stringField,
+  hldPrdDfyrs: stringField,
+  hldPrdMmCnt: stringField,
+  endYmd: stringField,
+  prvcInclYn: stringField,
+  gvbkYn: stringField,
+  addExpln: stringField,
+  eldocYn: stringField,
+  atchFileSn: stringField,
+  deptId: stringField,
+  dstrcPrcsPrstCd: stringField,
+  dstrcAplyDt: stringField,
+  dstrcAplcntId: stringField,
+  rsn: stringField,
+  dstrcAprvDt: stringField,
+  dstrcAutzrId: stringField,
+  prvcDstrcAprvDt: stringField,
+  prvcDstrcAutzrId: stringField,
+  regDt: stringField,
+  rgtrId: stringField,
+  actCn: stringField,
+  acsrIpAddr: stringField,
+  eqpmntNm: stringField,
+});
+
+export const digitalDocHistoryListSchema = z.looseObject({
+  list: z.array(digitalDocHistoryRowSchema).optional().default([]),
+});
+
 export const digitalAuthrtRowSchema = z.looseObject({
   eldocNo: stringField,
   inqAuthrtNo: stringField,
@@ -69,6 +111,22 @@ export const digitalAuthrtRowSchema = z.looseObject({
 
 export const digitalAuthrtListSchema = z.looseObject({
   list: z.array(digitalAuthrtRowSchema).optional().default([]),
+});
+
+export const digitalAuthrtHistoryRowSchema = z.looseObject({
+  eldocNo: stringField,
+  inqAuthrtNo: stringField,
+  inqAuthrtHstryNo: stringField,
+  deptId: stringField,
+  indvId: stringField,
+  actCn: stringField,
+  delYn: stringField,
+  regDt: stringField,
+  rgtrId: stringField,
+});
+
+export const digitalAuthrtHistoryListSchema = z.looseObject({
+  list: z.array(digitalAuthrtHistoryRowSchema).optional().default([]),
 });
 
 export const digitalAuthrtCreateSchema = z.object({
@@ -101,7 +159,10 @@ export const digitalDocFormSchema = z
     docNo: z.string().trim().min(1, "문서번호를 입력하세요."),
     docTtl: z.string().trim().min(1, "문서제목을 입력하세요."),
     clctYmd: dateField,
-    hldPrdDfyrs: z.string().trim().min(1, "보존연한을 선택하세요."),
+    hldPrdDfyrs: z.preprocess(
+      (v) => (v == null ? "" : String(v)),
+      z.string().trim().min(1, "보존연한을 선택하세요."),
+    ),
     hldPrdMmCnt: optionalString,
     endYmd: optionalString,
     addExpln: optionalString,
