@@ -2,6 +2,7 @@ import { formatRegDate } from "@/utils/formater";
 
 type PrintElementOptions = {
   title?: string;
+  subTitle?: string;
   popupFeatures?: string;
   zoom?: number;
   pageMarginMm?: number;
@@ -236,6 +237,7 @@ export function printElement(
 ) {
   const {
     title = "출력",
+    subTitle = "",
     popupFeatures = "width=1200,height=800",
     zoom = 0.44,
     pageMarginMm = 12,
@@ -247,6 +249,9 @@ export function printElement(
   if (!printWindow) return;
 
   const doc = printWindow.document;
+  // 브라우저 인쇄 헤더의 페이지명 노출을 최소화하기 위해 타이틀을 비운다.
+  // 스크린샷의 날짜/페이지명 말머리는 브라우저 인쇄 헤더·푸터(Chrome 기본 기능)라서 JS/CSS로 완전 제거가 불가합니다.
+  // 인쇄창에서 설정 더보기 → 헤더 및 바닥글 끄면 날짜/페이지명도 사라집니다.
   doc.title = title;
 
   const meta = doc.createElement("meta");
@@ -292,6 +297,28 @@ export function printElement(
   doc.head.appendChild(printStyle);
 
   doc.body.innerHTML = "";
+  if (subTitle) {
+    const headerWrapper = doc.createElement("div");
+    headerWrapper.style.marginBottom = "12px";
+
+    const subTitleRow = doc.createElement("div");
+    subTitleRow.textContent = subTitle;
+    subTitleRow.style.textAlign = "left";
+    subTitleRow.style.fontSize = "14px";
+    subTitleRow.style.marginBottom = "6px";
+    headerWrapper.appendChild(subTitleRow);
+
+    const titleRow = doc.createElement("div");
+    titleRow.textContent = title;
+    titleRow.style.textAlign = "center";
+    titleRow.style.fontSize = "28px";
+    titleRow.style.fontWeight = "700";
+    titleRow.style.marginBottom = "8px";
+    headerWrapper.appendChild(titleRow);
+
+    doc.body.appendChild(headerWrapper);
+  }
+
   if (gridColumns && gridRows) {
     const wrapper = doc.createElement("div");
     const table = buildTableFromData(gridColumns, gridRows);

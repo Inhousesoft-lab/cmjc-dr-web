@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import type { SearchValues } from "@/types/docDestruction";
 import { listDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
 import DialogTrigger from "../dialog/DialogTrigger";
@@ -79,6 +79,7 @@ export default function DocDestructionManagementPrintDialog({
 
     printElement(root, {
       title: "파기관리대장 출력",
+      subTitle: "[별지 제 5호 서식]",
       popupFeatures: "width=1024,height=768",
       zoom: 0.6,
       pageMarginMm: 12,
@@ -92,7 +93,7 @@ export default function DocDestructionManagementPrintDialog({
 
   return (
     <DialogTrigger
-      buttonLabel="파기관리대장 출력"
+      buttonLabel="개인정보파일 파기관리대장 출력"
       title="파기관리대장 출력"
       maxWidth="md"
       actionsPosition="top"
@@ -100,13 +101,25 @@ export default function DocDestructionManagementPrintDialog({
       onOpen={handleClickOpen}
       onClose={handleClose}
       actions={
-        <>
-          <Typography variant="subtitle2">[별지 제 5호 서식]</Typography>
-          <Typography variant="h6">개인정보파일 파기 관리대장</Typography>
-          <Button variant="contained" onClick={handlePrint}>
-            출력
-          </Button>
-        </>
+        <Stack direction="row" alignItems="center" sx={{ width: "100%" }}>
+          <Box sx={{ minWidth: 180 }}>
+            <Typography variant="subtitle2">[별지 제 5호 서식]</Typography>
+          </Box>
+          <Box sx={{ flex: 1, textAlign: "center" }}>
+            <Typography variant="h6">개인정보파일 파기 관리대장</Typography>
+          </Box>
+          <Box
+            sx={{
+              minWidth: 180,
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Button variant="contained" onClick={handlePrint}>
+              출력
+            </Button>
+          </Box>
+        </Stack>
       }
     >
       <Box ref={printAreaRef2} id="print-area" sx={{ width: "100%" }}>
