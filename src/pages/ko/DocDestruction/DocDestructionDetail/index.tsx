@@ -45,9 +45,70 @@ export default function DocDestructionDetail() {
     return String(value);
   };
 
+  const formatDateOnly = (value: unknown) => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "-";
+
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (digits.length < 8) return "-";
+
+    const yyyy = digits.slice(0, 4);
+    const mm = digits.slice(4, 6);
+    const dd = digits.slice(6, 8);
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const formatDateTime = (value: unknown) => {
+    const raw = String(value ?? "").trim();
+    if (!raw) return "-";
+
+    const m = raw.match(
+      /^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2}):(\d{2})/,
+    );
+    if (m) return `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]}`;
+
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (digits.length < 14) return formatDateOnly(raw);
+
+    const yyyy = digits.slice(0, 4);
+    const mm = digits.slice(4, 6);
+    const dd = digits.slice(6, 8);
+    const hh = digits.slice(8, 10);
+    const mi = digits.slice(10, 12);
+    const ss = digits.slice(12, 14);
+    return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+  };
+
+  const formatCollectDate = (
+    clctYmd: unknown,
+    hldPrdDfyrs: unknown,
+    hldPrdMmCnt: unknown,
+    collectDateLabel: unknown,
+  ) => {
+    const dateText = formatDateOnly(clctYmd);
+    let years = String(hldPrdDfyrs ?? "").trim();
+    let months = String(hldPrdMmCnt ?? "").trim();
+
+    if (!years || !months) {
+      const raw = String(collectDateLabel ?? "");
+      const m = raw.match(/(\d+)\s*년\s*(\d+)\s*개월/);
+      if (m) {
+        if (!years) years = m[1];
+        if (!months) months = m[2];
+      }
+    }
+
+    if (dateText === "-" && !years && !months) return "-";
+    if (!years && !months) return dateText;
+
+    const y = years || "0";
+    const mm = months || "0";
+    return `${dateText}(${y}년 ${mm}개월)`;
+  };
+
   const formatActorAndDate = (actor: unknown, date: unknown) => {
     const actorText = showValue(actor);
-    const dateText = showValue(date);
+    const dateText = formatDateTime(date);
     if (actorText === "-" && dateText === "-") return "-";
     if (actorText === "-") return dateText;
     if (dateText === "-") return actorText;
@@ -108,7 +169,7 @@ export default function DocDestructionDetail() {
           <LabelCell>문서번호</LabelCell>
           <TableCell>{showValue(detail?.docNo)}</TableCell>
           <LabelCell>파기일자</LabelCell>
-          <TableCell>{showValue(detail?.dstrcAprvDt)}</TableCell>
+          <TableCell>{formatDateTime(detail?.dstrcAprvDt)}</TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>문서제목</LabelCell>
@@ -116,9 +177,16 @@ export default function DocDestructionDetail() {
         </TableRow>
         <TableRow>
           <LabelCell>수집일자</LabelCell>
-          <TableCell>{showValue(detail?.collectDateLabel)}</TableCell>
+          <TableCell>
+            {formatCollectDate(
+              detail?.clctYmd,
+              detail?.hldPrdDfyrs,
+              detail?.hldPrdMmCnt,
+              detail?.collectDateLabel,
+            )}
+          </TableCell>
           <LabelCell>종료일자</LabelCell>
-          <TableCell>{showValue(detail?.endYmd)}</TableCell>
+          <TableCell>{formatDateOnly(detail?.endYmd)}</TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>신청자</LabelCell>

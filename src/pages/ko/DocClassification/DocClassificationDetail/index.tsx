@@ -5,7 +5,7 @@ import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
 import DocClassificationHistoryButton from "@/components/biz/DocClassificationHistoryDialog";
 import LabelCell from "@/components/table/LabelCell";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageStatus from "@/components/common/PageStatus";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
@@ -19,8 +19,10 @@ import {
   selectDocClassificationDetailLoading,
 } from "@/features/classification/DocClassificationListSelectors";
 import { dateLabel, holdPeriodLabel, ynLabel } from "@/utils/formater";
+import { getLangFromPathname, langPath } from "@/routes/lang";
 
 export default function DocClassificationDetail() {
+  const location = useLocation();
   const { docClsfNo } = useParams();
   const targetDocClsfNo = docClsfNo ?? "";
   const dispatch = useAppDispatch();
@@ -28,6 +30,7 @@ export default function DocClassificationDetail() {
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const notifications = useNotifications();
+  const curLang = getLangFromPathname(location.pathname);
 
   const detailData = useAppSelector(selectDocClassificationDetail);
   const isLoading = useAppSelector(selectDocClassificationDetailLoading);
@@ -48,8 +51,8 @@ export default function DocClassificationDetail() {
   }, [detailError, notifications]);
 
   const handleViewDataEdit = React.useCallback(() => {
-    navigate(`/docClassification/${targetDocClsfNo}/modify`);
-  }, [navigate, targetDocClsfNo]);
+    navigate(langPath(`/docClassification/${targetDocClsfNo}/modify`, curLang));
+  }, [curLang, navigate, targetDocClsfNo]);
 
   const handleViewDataDelete = React.useCallback(async () => {
     if (!detailData) {
@@ -71,7 +74,7 @@ export default function DocClassificationDetail() {
           severity: "success",
           autoHideDuration: 3000,
         });
-        navigate("/docClassification/list");
+        navigate(langPath("/docClassification/list", curLang));
       } catch (e) {
         notifications.show(getErrorMessage(e), {
           severity: "error",
@@ -79,10 +82,17 @@ export default function DocClassificationDetail() {
         });
       }
     }
-  }, [detailData, dialogs, dispatch, navigate, notifications, targetDocClsfNo]);
+  }, [curLang, detailData, dialogs, dispatch, navigate, notifications, targetDocClsfNo]);
 
   const handleBack = () => {
-    navigate("/docClassification/list");
+    const listState = (
+      location.state as { listState?: Record<string, unknown> } | null
+    )?.listState;
+    navigate(langPath("/docClassification/list", curLang), {
+      state: {
+        restoreListState: listState,
+      },
+    });
   };
 
   if (isLoading) {
