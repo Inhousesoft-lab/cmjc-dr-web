@@ -90,13 +90,45 @@ const menuItems: Menu[] = [
     menu: false,
   },
   {
-    path: "destruction/list",
+    path: "destruction",
     label: "파기문서 관리",
     menuType: "MENU",
     element: {
       ko: "DocDestructionList",
       en: "DocDestructionList",
     },
+    children: [
+      {
+        path: "destruction/reqList",
+        label: "문서파기 신청",
+        menuType: "MENU",
+        element: {
+          ko: "DocDestructionReqList",
+          en: "DocDestructionReqList",
+        },
+        menu: true,
+      },
+      {
+        path: "destruction/appvList",
+        label: "문서 파기 승인",
+        menuType: "MENU",
+        element: {
+          ko: "DocDestructionAppvList",
+          en: "DocDestructionAppvList",
+        },
+        menu: true,
+      },
+      {
+        path: "destruction/list",
+        label: "문서 파기 내역",
+        menuType: "MENU",
+        element: {
+          ko: "DocDestructionList",
+          en: "DocDestructionList",
+        },
+        menu: true,
+      },
+    ],
     menu: true,
   },
   {

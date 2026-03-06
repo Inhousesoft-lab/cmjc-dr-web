@@ -5,8 +5,13 @@ import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import { listDefs } from "./col-def";
 
-import DocDestructionManagementPrintButton from "@/components/biz/DocDestructionManagementPrintDialog";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import dayjs from "dayjs";
 import MuiSelect from "@/components/elements/MuiSelect";
 import { useNavigate } from "react-router";
@@ -25,7 +30,7 @@ import {
 } from "@/features/docDestruction/DocDestructionSelectors";
 import type { SearchValues } from "@/types/docDestruction";
 import { getLangFromPathname, langPath } from "@/routes/lang";
-import { printElement } from "@/utils/print";
+import DocDestructionReqButton from "@/components/actionButtons/DocDestructionReqButton";
 
 const buildSearchValues = (
   docLclsfNo: string,
@@ -79,6 +84,12 @@ export default function DocDestructionList() {
   const isLoading = useAppSelector(selectDocDestructionLoading);
   const listError = useAppSelector(selectDocDestructionError);
 
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
+
+  const handleSelectionChange = useCallback((rows: any[]) => {
+    setSelectedRows(rows);
+  }, []);
+
   const searchValues = useMemo(
     () => ({
       ...buildSearchValues(docLclsfNo, docMclsfNo, docSclsfNo),
@@ -120,22 +131,6 @@ export default function DocDestructionList() {
       autoHideDuration: 3000,
     });
   }, [listError, notifications]);
-
-  const handlePrintCurrentList = () => {
-    const el = printAreaRef.current;
-    if (!el) return;
-    printElement(el, {
-      title: "파기목록대장 출력",
-      popupFeatures: "width=1200,height=800",
-      zoom: 0.44,
-      pageMarginMm: 10,
-      gridColumns: listDefs.map((col) => ({
-        headerName: col.headerName,
-        field: typeof col.field === "string" ? col.field : undefined,
-      })),
-      gridRows: rows as unknown as Array<Record<string, unknown>>,
-    });
-  };
 
   const handleRowClick = (row: DocDestruction) => {
     if (!row.eldocNo) return;
@@ -223,21 +218,20 @@ export default function DocDestructionList() {
         </Box>
       </Stack>
       <div className="btn_wrapper">
-        <Button variant="contained" onClick={handlePrintCurrentList}>
-          파기목록출력
-        </Button>
-        <DocDestructionManagementPrintButton searchValues={searchValues} />
+        <DocDestructionReqButton selectedRows={selectedRows} />
       </div>
 
       <Box ref={printAreaRef} sx={{ width: "100%" }}>
         <AgGridContainer
           isLoading={isLoading}
+          enableRowSelection={true}
           colDefs={columnDefs}
           rowData={rows}
           pageNum={pageNum}
           pageSize={pageSize}
           count={rowCount}
           onRowClick={handleRowClick}
+          onSelectionChange={handleSelectionChange}
           onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {
             setPageNum(nextPage);
             setPageSize(nextSize);
