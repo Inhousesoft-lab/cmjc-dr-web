@@ -5,6 +5,19 @@ export const displayDate = (value: string) => {
   return formatDate(value.replaceAll("-", ""));
 };
 
+export const formatDateDash = (value: unknown) => {
+  const raw = String(value ?? "").trim();
+  if (!raw) return "-";
+
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (digits.length < 8) return "-";
+
+  const yyyy = digits.slice(0, 4);
+  const mm = digits.slice(4, 6);
+  const dd = digits.slice(6, 8);
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 export const ynLabel = (
   value: string | undefined,
   yesLabel: string,

@@ -22,6 +22,7 @@ import {
 } from "@/features/digitalDoc/DigitalDocSelectors";
 import useNotifications from "@/hooks/useNotifications";
 import DocDetailTable from "../table/DocDetailTable";
+import { formatDateDash } from "@/utils/formater";
 
 const docListDefs = [
   {
@@ -34,6 +35,7 @@ const docListDefs = [
     headerName: "행위일자",
     field: "regDt",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "행위자",
@@ -180,7 +182,7 @@ export default function DigitalDocHistoryButton({
                   <TableCell align="center">{row.indvId || "-"}</TableCell>
                   <TableCell align="center">{row.actCn || "-"}</TableCell>
                   <TableCell align="center">{row.rgtrId || "-"}</TableCell>
-                  <TableCell align="center">{row.regDt || "-"}</TableCell>
+                  <TableCell align="center">{formatDateDash(row.regDt)}</TableCell>
                 </TableRow>
               ))}
               {authrtHistoryRows.length === 0 && (

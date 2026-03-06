@@ -1,3 +1,5 @@
+import { formatDateDash } from "@/utils/formater";
+
 export const listDefs = [
   {
     headerName: "번호",
@@ -65,7 +67,7 @@ export const listDefs = [
     headerName: "등록일자",
     field: "regDt",
     valueFormatter: (params: { value: string }) => {
-      return formatDate(params.value.replaceAll("-", "")); // null/undefined 대비
+      return formatDateDash(params.value); // null/undefined 대비
     },
 
     cellStyle: { textAlign: "center" },

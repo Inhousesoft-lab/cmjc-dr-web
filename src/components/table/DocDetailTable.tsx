@@ -2,7 +2,7 @@ import { Grid } from "@mui/material";
 import GridField from "../common/GridField";
 import UploadFiles from "../file/UploadFiles";
 import {
-  displayDate,
+  formatDateDash,
   gvbkLabel,
   holdPeriodLabel,
   prvcLabel,
@@ -30,7 +30,7 @@ export default function DocDetailTable({
     detail?.hldPrdMmCnt ?? "",
   );
   const clctLabel = detail?.endYmd
-    ? `${displayDate(detail.endYmd)}${holdLabel !== "-" ? ` (${holdLabel})` : ""}`
+    ? `${formatDateDash(detail.endYmd)}${holdLabel !== "-" ? ` (${holdLabel})` : ""}`
     : "-";
   const mappedGvbkLabel = gvbkLabel(detail?.gvbkYn);
   const mappedPrvcLabel = prvcLabel(detail?.prvcInclYn);
@@ -41,7 +41,7 @@ export default function DocDetailTable({
       <GridField label="문서번호" value={detail?.docNo || "-"} />
       <GridField label="기본권한" value={detail?.deptId || "-"} />
       <GridField item={12} label="문서제목" value={detail?.docTtl || "-"} />
-      <GridField label="수집일자" value={displayDate(detail?.clctYmd ?? "")} />
+      <GridField label="수집일자" value={formatDateDash(detail?.clctYmd ?? "")} />
       <GridField label="종료일자" value={clctLabel} />
       <GridField label="개인정보" value={mappedPrvcLabel} />
       <GridField label="반환여부" value={mappedGvbkLabel} />
