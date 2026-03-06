@@ -18,7 +18,7 @@ import {
   selectDocClassificationDetailError,
   selectDocClassificationDetailLoading,
 } from "@/features/classification/DocClassificationListSelectors";
-import { dateLabel, holdPeriodLabel, ynLabel } from "@/utils/formater";
+import { formatDateDash, holdPeriodLabel, ynLabel } from "@/utils/formater";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 
 export default function DocClassificationDetail() {
@@ -166,7 +166,7 @@ export default function DocClassificationDetail() {
         </TableRow>
         <TableRow>
           <LabelCell>등록일자</LabelCell>
-          <TableCell>{dateLabel(detailData?.regDt)}</TableCell>
+          <TableCell>{formatDateDash(detailData?.regDt)}</TableCell>
           <LabelCell>등록자</LabelCell>
           <TableCell>{detailData?.rgtrId || "-"}</TableCell>
         </TableRow>

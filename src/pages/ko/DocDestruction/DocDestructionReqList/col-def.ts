@@ -1,6 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import type { DocDestruction } from "@/types/docDestruction";
-import { formatRegDate } from "@/utils/formater";
+import { formatDateDash, formatPeriod } from "@/utils/formater";
 
 export const listDefs: ColDef<DocDestruction>[] = [
   {
@@ -41,11 +41,23 @@ export const listDefs: ColDef<DocDestruction>[] = [
     headerName: "수집일자\n(보존연한)",
     field: "collectDateLabel",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      const ymd = formatDateDash(params?.data?.clctYmd);
+      const period = formatPeriod(
+        params?.data?.hldPrdDfyrs,
+        params?.data?.hldPrdMmCnt,
+      );
+      if (ymd === "-" && period === "-") return "-";
+      if (period === "-") return ymd;
+      if (ymd === "-") return `(${period})`;
+      return `${ymd}(${period})`;
+    },
   },
   {
     headerName: "종료일자",
     field: "endDate",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "종류",
@@ -61,6 +73,6 @@ export const listDefs: ColDef<DocDestruction>[] = [
     headerName: "등록일자",
     field: "regDate",
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => formatRegDate(params?.value),
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
 ];

@@ -1,4 +1,4 @@
-import { formatPeriod, formatRegDate, formatYmd } from "@/utils/formater";
+import { formatDateDash, formatPeriod } from "@/utils/formater";
 
 export const listDefs = [
   {
@@ -46,7 +46,7 @@ export const listDefs = [
     field: "clctYmd",
     width: 120,
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => formatYmd(params?.value),
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "변경 전",
@@ -65,7 +65,7 @@ export const listDefs = [
         field: "endYmd",
         width: 120,
         cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => formatYmd(params?.value),
+        valueFormatter: (params: any) => formatDateDash(params?.value),
       },
     ],
   },
@@ -89,7 +89,7 @@ export const listDefs = [
         field: "endYmdAfterChanged",
         width: 120,
         cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => formatYmd(params?.value),
+        valueFormatter: (params: any) => formatDateDash(params?.value),
       },
     ],
   },
@@ -109,6 +109,6 @@ export const listDefs = [
     field: "regDt",
     width: 120,
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => formatRegDate(params?.value),
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
 ];

@@ -1,5 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import type { DigitalDoc } from "@/types/digitalDoc";
+import { formatDateDash } from "@/utils/formater";
 
 export const listDefs: ColDef<DigitalDoc>[] = [
   {
@@ -55,7 +56,7 @@ export const listDefs: ColDef<DigitalDoc>[] = [
     field: "clctYmd",
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      const v = formatYYMMDD(params.value);
+      const v = formatDateDash(params.value);
 
       let nextVal = "\n";
       if (params.data.hldPrdDfyrs === "0") {
@@ -77,7 +78,7 @@ export const listDefs: ColDef<DigitalDoc>[] = [
     field: "endYmd",
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      return formatYYMMDD(params.value);
+      return formatDateDash(params.value);
     },
   },
   {
@@ -101,8 +102,7 @@ export const listDefs: ColDef<DigitalDoc>[] = [
     field: "regDt",
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      return formatYYMMDD(params.value.split("T")[0].replaceAll("-", ""));
-      //console.log(params.value.split("T")[0]);
+      return formatDateDash(params?.value);
     },
   },
 ];

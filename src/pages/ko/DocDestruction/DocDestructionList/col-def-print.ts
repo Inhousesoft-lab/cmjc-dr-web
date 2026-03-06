@@ -1,8 +1,8 @@
-import { formatPeriod, formatYmd } from "@/utils/formater";
+import { formatDateDash, formatPeriod } from "@/utils/formater";
 
 const formatActorWithDate = (actor: unknown, date: unknown) => {
   const actorLabel = String(actor ?? "").trim();
-  const dateLabel = formatYmd(date);
+  const dateLabel = formatDateDash(date);
 
   if (!actorLabel && dateLabel === "-") return "-";
   if (!actorLabel) return "-";
@@ -38,7 +38,7 @@ export const listDefs = [
     field: "collectDateLabel",
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      const ymd = formatYmd(params?.data?.clctYmd);
+      const ymd = formatDateDash(params?.data?.clctYmd);
       const period = formatPeriod(params?.data?.hldPrdDfyrs, params?.data?.hldPrdMmCnt);
       if (ymd === "-" && period === "-") return "-";
       if (period === "-") return ymd;
@@ -53,7 +53,7 @@ export const listDefs = [
     valueFormatter: (params: any) => {
       const prstCd = String(params?.data?.dstrcPrcsPrstCd ?? "");
       if (prstCd !== "02" && prstCd !== "04") return "-";
-      return formatYmd(params?.value);
+      return formatDateDash(params?.value);
     },
   },
   {
