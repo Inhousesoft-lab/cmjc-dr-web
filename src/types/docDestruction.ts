@@ -5,6 +5,7 @@ export interface DocDestructionSearchState {
 }
 
 export interface SearchValues extends Paging {
+  reqCd?: string;              // 조회구분(APLY/APRV/CMPLT)
   docLclsfNo: string;           // 문서대분류번호
   docMclsfNo: string;           // 문서중분류번호 
   docSclsfNo: string;           // 문서소분류번호
@@ -40,6 +41,7 @@ export interface DocDestruction {
   collectDateLabel: string; // 수집일자(보존연한) 라벨
   dstrcAprvDt: string; // 파기일자
   rsn: string; // 폐기사유
+  dstrcPrcsPrstCd: string; // 파기처리현황코드
   dstrcAplcntId: string; // 처리담당자
   dstrcAplyDt: string; // 파기신청일자
   dstrcAutzrId: string; // 처리부서장

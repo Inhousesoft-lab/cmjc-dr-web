@@ -4,8 +4,13 @@ import https from "@/api/axiosInstance";
 import {
   selectDocDestructionDetailApiPath,
   selectDocDestructionListApiPath,
+  updateDocDestructionApiPath,
 } from "@/api/docDestruction/DocDestructionApiPaths";
-import type { DocDestruction, SearchValues } from "@/types/docDestruction";
+import type {
+  DocDestruction,
+  DocDestructionUpdate,
+  SearchValues,
+} from "@/types/docDestruction";
 import {
   docDestructionDetailSchema,
   docDestructionListRowSchema,
@@ -13,6 +18,8 @@ import {
   type DocDestructionDetailRaw,
   type DocDestructionListRowRaw,
 } from "./DocDestructionValidator";
+import { getErrorMessage } from "@/utils/globalFunc";
+import type { RootState } from "@/app/store";
 
 export interface DocDestructionListPayload {
   rows: DocDestruction[];
@@ -20,6 +27,9 @@ export interface DocDestructionListPayload {
 }
 
 export type DocDestructionDetailPayload = Record<string, any>;
+
+const toListParamsKey = (params: Partial<SearchValues> | undefined) =>
+  JSON.stringify(params ?? {});
 
 const getPersonalInfoLabel = (value: string) => {
   if (value === "Y") return "포함";
@@ -55,6 +65,7 @@ const normalizeDocDestructionRow = (
     collectDateLabel,
     dstrcAprvDt: raw.dstrcAprvDt || raw.dstrcAprvYmd,
     rsn: raw.rsn,
+    dstrcPrcsPrstCd: raw.dstrcPrcsPrstCd,
     dstrcAplcntId: raw.dstrcAplcntId || raw.rgtrId,
     dstrcAplyDt: raw.dstrcAplyDt,
     dstrcAutzrId: raw.dstrcAutzrId,
@@ -70,7 +81,9 @@ export const fetchDocDestructionList = createAsyncThunk<
   DocDestructionListPayload,
   Partial<SearchValues> | undefined,
   { rejectValue: string }
->("docDestruction/list", async (params, { rejectWithValue }) => {
+>(
+  "docDestruction/list",
+  async (params, { rejectWithValue }) => {
   try {
     const requestParams = {
       ...(params ?? {}),
@@ -152,3 +165,49 @@ export const fetchDocDestructionDetail = createAsyncThunk<
     return rejectWithValue(getErrorMessage(error));
   }
 });
+
+export const updateDocDestruction = createAsyncThunk<
+  void,
+  DocDestructionUpdate,
+  { rejectValue: string }
+>("docDestruction/update", async (payload, { rejectWithValue }) => {
+  try {
+    const requestBody = {
+      ...payload,
+      docs: payload.docs.map((doc) => ({
+        eldocNo: doc.eldocNo,
+      })),
+    };
+    const res = await https.post(updateDocDestructionApiPath(), requestBody);
+    const body = (res as any)?.data ?? {};
+    const resultMsg = String(
+      body?.resultMsg ?? body?.data?.resultMsg ?? body?.result?.resultMsg ?? "",
+    ).trim();
+    const resultCode = String(
+      body?.resultCode ?? body?.data?.resultCode ?? body?.result?.resultCode ?? "",
+    ).trim();
+
+    // 일부 API는 HTTP 200에서도 업무 실패(resultMsg=success.common.fail)를 반환함
+    if (resultMsg === "success.common.fail") {
+      if (resultCode === "PASSWORD_ERROR") {
+        return rejectWithValue("비밀번호가 일치하지 않습니다.");
+      }
+      return rejectWithValue("요청 처리에 실패했습니다.");
+    }
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+  },
+  {
+    condition: (params, { getState }) => {
+      const state = getState() as RootState;
+      const s = state.docDestructionList;
+      const nextKey = toListParamsKey(params);
+      // 동일 파라미터로 로딩 중인 중복 호출 차단
+      if (s.loading && s.currentListParamsKey === nextKey) {
+        return false;
+      }
+      return true;
+    },
+  },
+);

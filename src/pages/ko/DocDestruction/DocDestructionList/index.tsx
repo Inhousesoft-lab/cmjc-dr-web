@@ -32,6 +32,7 @@ const buildSearchValues = (
   docMclsfNo: string,
   docSclsfNo: string,
 ): SearchValues => ({
+  reqCd: "CMPLT",
   docLclsfNo,
   docMclsfNo,
   docSclsfNo,

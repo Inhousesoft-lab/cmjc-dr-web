@@ -50,7 +50,11 @@ export const listDefs = [
     headerName: "파기일자",
     field: "dstrcAprvDt",
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => formatYmd(params?.value),
+    valueFormatter: (params: any) => {
+      const prstCd = String(params?.data?.dstrcPrcsPrstCd ?? "");
+      if (prstCd !== "02" && prstCd !== "04") return "-";
+      return formatYmd(params?.value);
+    },
   },
   {
     headerName: "폐기사유",

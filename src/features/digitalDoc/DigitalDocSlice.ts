@@ -26,6 +26,8 @@ export interface DigitalDocListState {
   dialogDetail: DigitalDoc | null;
   rowCount: number;
   loading: boolean;
+  currentListRequestId: string | null;
+  currentListParamsKey: string | null;
   authrtLoading: boolean;
   authrtSaving: boolean;
   authrtHistoryLoading: boolean;
@@ -55,6 +57,8 @@ const initialState: DigitalDocListState = {
   dialogDetail: null,
   rowCount: 0,
   loading: false,
+  currentListRequestId: null,
+  currentListParamsKey: null,
   authrtLoading: false,
   authrtSaving: false,
   authrtHistoryLoading: false,
@@ -89,18 +93,32 @@ const digitalDocSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchDigitalDocList.pending, (state) => {
+      .addCase(fetchDigitalDocList.pending, (state, action) => {
+        const nextParamsKey = JSON.stringify(action.meta.arg ?? {});
+        const isDifferentQuery =
+          state.currentListParamsKey !== null &&
+          state.currentListParamsKey !== nextParamsKey;
+        if (isDifferentQuery) {
+          state.rows = [];
+          state.rowCount = 0;
+        }
         state.loading = true;
+        state.currentListRequestId = action.meta.requestId;
+        state.currentListParamsKey = nextParamsKey;
         state.error = null;
       })
       .addCase(fetchDigitalDocList.fulfilled, (state, action) => {
+        if (state.currentListRequestId !== action.meta.requestId) return;
         state.loading = false;
+        state.currentListRequestId = null;
         state.rows = action.payload.rows;
         state.rowCount = action.payload.rowCount;
         state.error = null;
       })
       .addCase(fetchDigitalDocList.rejected, (state, action) => {
+        if (state.currentListRequestId !== action.meta.requestId) return;
         state.loading = false;
+        state.currentListRequestId = null;
         state.error =
           action.payload || action.error.message || "전자문서 목록 조회 실패";
       })

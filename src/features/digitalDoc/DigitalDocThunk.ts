@@ -32,17 +32,23 @@ import type {
   SearchValues,
 } from "@/types/digitalDoc";
 import { toChar8Date } from "@/utils/formater";
+import type { RootState } from "@/app/store";
 
 export interface DigitalDocListPayload {
   rows: DigitalDoc[];
   rowCount: number;
 }
 
+const toListParamsKey = (params: Partial<SearchValues> | undefined) =>
+  JSON.stringify(params ?? {});
+
 export const fetchDigitalDocList = createAsyncThunk<
   DigitalDocListPayload,
   Partial<SearchValues> | undefined,
   { rejectValue: string }
->("digitalDoc/list", async (params, { rejectWithValue }) => {
+>(
+  "digitalDoc/list",
+  async (params, { rejectWithValue }) => {
   try {
     const requestParams = {
       ...(params ?? {}),
@@ -72,7 +78,17 @@ export const fetchDigitalDocList = createAsyncThunk<
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
-});
+  },
+  {
+    condition: (params, { getState }) => {
+      const state = getState() as RootState;
+      const s = state.digitalDocList;
+      const nextKey = toListParamsKey(params);
+      if (s.loading && s.currentListParamsKey === nextKey) return false;
+      return true;
+    },
+  },
+);
 
 export const fetchDigitalDocDetail = createAsyncThunk<
   DigitalDoc,

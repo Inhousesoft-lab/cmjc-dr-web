@@ -4,6 +4,8 @@ import type {
   DocDestructionUpdate,
 } from "@/types/docDestruction";
 import useNotifications from "@/hooks/useNotifications";
+import { useAppDispatch } from "@/app/hooks";
+import { updateDocDestruction } from "@/features/docDestruction/DocDestructionThunk";
 import {
   Button,
   Dialog,
@@ -19,10 +21,12 @@ import LabelCell from "../table/LabelCell";
 
 type ButtonProps = {
   selectedRows: DocDestruction[];
+  onSuccess?: () => void | Promise<void>;
 };
 
 export default function DocDestructionReqButton(prop: ButtonProps) {
-  const { selectedRows } = prop;
+  const { selectedRows, onSuccess } = prop;
+  const dispatch = useAppDispatch();
 
   const notifications = useNotifications();
 
@@ -45,7 +49,6 @@ export default function DocDestructionReqButton(prop: ButtonProps) {
 
   const handleSubmit = React.useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
-      console.log("문서파기신청 SUBMIT  클릭");
       event.preventDefault();
 
       const formData = new FormData(event.currentTarget);
@@ -59,16 +62,27 @@ export default function DocDestructionReqButton(prop: ButtonProps) {
         docs: selectedRows,
       };
       try {
-        notifications.show("update done", {
+        await dispatch(updateDocDestruction(request)).unwrap();
+        await onSuccess?.();
+        notifications.show("문서파기 신청이 완료되었습니다.", {
           severity: "success",
           autoHideDuration: 3000,
         });
         handleClose();
-      } catch (e) {
-        console.log(e);
+      } catch (e: unknown) {
+        const message =
+          e instanceof Error
+            ? e.message
+            : typeof e === "string"
+              ? e
+              : "문서파기 신청 처리 중 오류가 발생했습니다.";
+        notifications.show(message, {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
       }
     },
-    [notifications, selectedRows],
+    [dispatch, notifications, onSuccess, selectedRows],
   );
 
   return (

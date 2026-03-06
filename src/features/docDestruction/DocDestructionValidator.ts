@@ -23,6 +23,7 @@ export const docDestructionListRowSchema = z.looseObject({
   hldPrdMmCnt: stringField.optional().default(""),
   dstrcAprvDt: stringField.optional().default(""),
   dstrcAprvYmd: stringField.optional().default(""),
+  dstrcPrcsPrstCd: stringField.optional().default(""),
   rsn: stringField.optional().default(""),
   dstrcAplcntId: stringField.optional().default(""),
   dstrcAplyDt: stringField.optional().default(""),
