@@ -8,6 +8,7 @@ import LabelCell from "@/components/table/LabelCell";
 import { useNavigate, useParams } from "react-router-dom";
 import PageStatus from "@/components/common/PageStatus";
 import { deleteDocClassificationApiPath } from "@/api/docClassification/DocClassificationApiPaths";
+import https from "@/api/axiosInstance";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { fetchDocClassificationDetail } from "@/features/classification/DocClassificationListThunk";
 import {
@@ -61,7 +62,7 @@ export default function DocClassificationDetail() {
 
     if (confirmed) {
       try {
-        await deleteDocClassificationApiPath(targetDocClsfNo);
+        await https.post(deleteDocClassificationApiPath(targetDocClsfNo));
 
         notifications.show("삭제 되었습니다..", {
           severity: "success",
