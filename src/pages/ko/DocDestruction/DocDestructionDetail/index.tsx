@@ -2,7 +2,7 @@ import React from "react";
 import LabelCell from "@/components/table/LabelCell";
 import TableWrapper from "@/components/table/TableWrapper";
 import { Box, Button, TableCell, TableRow } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import DigitalDocHistoryButton from "@/components/actionButtons/DigitalDocHistoryButton";
 import useNotifications from "@/hooks/useNotifications";
@@ -16,6 +16,7 @@ import {
 } from "@/features/docDestruction/DocDestructionSelectors";
 
 export default function DocDestructionDetail() {
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const notifications = useNotifications();
@@ -54,7 +55,25 @@ export default function DocDestructionDetail() {
   };
 
   const handleBack = () => {
-    navigate(langPath("docDestruction/list", curLang));
+    const listState = (
+      location.state as
+        | {
+            listState?: {
+              docLclsfNo: string;
+              docMclsfNo: string;
+              docSclsfNo: string;
+              pageNum: number;
+              pageSize: number;
+            };
+          }
+        | null
+    )?.listState;
+
+    navigate(langPath("destruction/list", curLang), {
+      state: {
+        restoreListState: listState,
+      },
+    });
   };
 
   if (isLoading) {

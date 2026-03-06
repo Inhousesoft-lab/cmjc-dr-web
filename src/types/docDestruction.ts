@@ -34,7 +34,16 @@ export interface DocDestruction {
   docNo: string; // 문서번호
   docTitle: string; // 문서제목
   hasPersonalInfo: string; // 개인정보 ("포함" / "미포함")
+  clctYmd: string; // 수집일자
+  hldPrdDfyrs: string; // 보존연한(년)
+  hldPrdMmCnt: string; // 보존연한(월)
   collectDateLabel: string; // 수집일자(보존연한) 라벨
+  dstrcAprvDt: string; // 파기일자
+  rsn: string; // 폐기사유
+  dstrcAplcntId: string; // 처리담당자
+  dstrcAplyDt: string; // 파기신청일자
+  dstrcAutzrId: string; // 처리부서장
+  prvcDstrcAutzrId: string; // 개인정보 담당자
   endDate: string; // 종료일자
   docType: string; // 종류 (문서 / 파일 등)
   registrantDept: string; // 등록자(부서)

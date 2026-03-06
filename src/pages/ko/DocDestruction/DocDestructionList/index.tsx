@@ -9,7 +9,7 @@ import DocDestructionManagementPrintButton from "@/components/biz/DocDestruction
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import MuiSelect from "@/components/elements/MuiSelect";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import useNotifications from "@/hooks/useNotifications";
 import { DocDestruction } from "@/types/docDestruction";
 import { ColDef } from "ag-grid-community";
@@ -54,7 +54,16 @@ const buildSearchValues = (
   pageSize: 10,
 });
 
+interface DocDestructionListState {
+  docLclsfNo: string;
+  docMclsfNo: string;
+  docSclsfNo: string;
+  pageNum: number;
+  pageSize: number;
+}
+
 export default function DocDestructionList() {
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
@@ -62,11 +71,15 @@ export default function DocDestructionList() {
 
   const printAreaRef = useRef<HTMLDivElement | null>(null);
 
-  const [docLclsfNo, setDocLclsfNo] = useState("");
-  const [docMclsfNo, setDocMclsfNo] = useState("");
-  const [docSclsfNo, setDocSclsfNo] = useState("");
-  const [pageNum, setPageNum] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const restoredState = (
+    location.state as { restoreListState?: DocDestructionListState } | null
+  )?.restoreListState;
+
+  const [docLclsfNo, setDocLclsfNo] = useState(restoredState?.docLclsfNo ?? "");
+  const [docMclsfNo, setDocMclsfNo] = useState(restoredState?.docMclsfNo ?? "");
+  const [docSclsfNo, setDocSclsfNo] = useState(restoredState?.docSclsfNo ?? "");
+  const [pageNum, setPageNum] = useState(restoredState?.pageNum ?? 1);
+  const [pageSize, setPageSize] = useState(restoredState?.pageSize ?? 10);
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     docLclsfNo,
     docMclsfNo,
@@ -110,7 +123,14 @@ export default function DocDestructionList() {
   };
 
   useEffect(() => {
-    dispatch(fetchDocDestructionList(buildSearchValues("", "", "")));
+    dispatch(
+      fetchDocDestructionList({
+        ...buildSearchValues(docLclsfNo, docMclsfNo, docSclsfNo),
+        pageNum,
+        pageSize,
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   useEffect(() => {
@@ -139,7 +159,17 @@ export default function DocDestructionList() {
 
   const handleRowClick = (row: DocDestruction) => {
     if (!row.eldocNo) return;
-    navigate(langPath(`docDestruction/${row.eldocNo}`, curLang));
+    navigate(langPath(`docDestruction/${row.eldocNo}`, curLang), {
+      state: {
+        listState: {
+          docLclsfNo,
+          docMclsfNo,
+          docSclsfNo,
+          pageNum,
+          pageSize,
+        } satisfies DocDestructionListState,
+      },
+    });
   };
 
   return (
