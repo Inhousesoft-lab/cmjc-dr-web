@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -28,6 +28,7 @@ import {
 } from "@/types/docClassification";
 import { listDefs } from "./col-def";
 import GridField from "@/components/common/GridField";
+import { getLangFromPathname, langPath } from "@/routes/lang";
 
 const INITIAL_SEARCH_PARAMS: DocClassificationSearch = {
   docLclsfNo: "",
@@ -41,13 +42,19 @@ const INITIAL_SEARCH_PARAMS: DocClassificationSearch = {
 };
 
 export default function DocClassificationList() {
+  const location = useLocation();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dispatch = useAppDispatch();
+  const curLang = getLangFromPathname(location.pathname);
 
   const [columnDefs] = React.useState<ColDef[]>(listDefs);
-  const [searchParams, setSearchParams] =
-    React.useState<DocClassificationSearch>(INITIAL_SEARCH_PARAMS);
+  const restoredState = (
+    location.state as { restoreListState?: DocClassificationSearch } | null
+  )?.restoreListState;
+  const [searchParams, setSearchParams] = React.useState<DocClassificationSearch>(
+    restoredState ?? INITIAL_SEARCH_PARAMS,
+  );
 
   const useEnItems = [
     { name: "전체", code: "" },
@@ -67,7 +74,8 @@ export default function DocClassificationList() {
   const listError = useAppSelector(selectDocClassificationError);
 
   React.useEffect(() => {
-    dispatch(fetchDocClassificationList(INITIAL_SEARCH_PARAMS));
+    dispatch(fetchDocClassificationList(searchParams));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   React.useEffect(() => {
@@ -99,11 +107,15 @@ export default function DocClassificationList() {
   }, [dispatch]);
 
   const handleCreateClick = () => {
-    navigate(`/docClassification/create`);
+    navigate(langPath("/docClassification/create", curLang));
   };
 
   const handleRowClick = (row: DocClassificationVO) => {
-    navigate(`/docClassification/${row.docClsfNo}`);
+    navigate(langPath(`/docClassification/${row.docClsfNo}`, curLang), {
+      state: {
+        listState: searchParams,
+      },
+    });
   };
 
   return (
