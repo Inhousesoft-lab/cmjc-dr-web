@@ -113,3 +113,43 @@ export const holdingInstitutionListSchema = z.looseObject({
   list: z.array(holdingInstitutionRowSchema).optional().default([]),
   total: numberField,
 });
+
+export const holdingInstitutionHldprdUpdateSchema = z.object({
+  eldocNos: z
+    .array(z.preprocess((v) => (v == null ? "" : String(v)), z.string().trim().min(1)))
+    .min(1, "선택된 문서가 없습니다."),
+});
+
+export function holdingInstitutionHldprdUpdateValidator(data: unknown) {
+  const result = holdingInstitutionHldprdUpdateSchema.safeParse(data);
+  return result.success
+    ? { success: true as const, data: result.data, issues: [] }
+    : { success: false as const, data: null, issues: result.error.issues };
+}
+
+const searchStringField = z.preprocess((v) => (v == null ? "" : String(v)), z.string());
+
+export const holdingInstitutionHldprdAllUpdateSchema = z.object({
+  docLclsfNo: searchStringField,
+  docMclsfNo: searchStringField,
+  docSclsfNo: searchStringField,
+  docNo: searchStringField,
+  docTtl: searchStringField,
+  infoMnbdAgreYn: searchStringField,
+  hldPrdDfyrs: z.preprocess((v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }, z.number()),
+  hldPrdChangedOnly: z.preprocess((v) => Boolean(v), z.boolean()),
+  fromClctYmd: searchStringField,
+  toClctYmd: searchStringField,
+  fromEndYmd: searchStringField,
+  toEndYmd: searchStringField,
+});
+
+export function holdingInstitutionHldprdAllUpdateValidator(data: unknown) {
+  const result = holdingInstitutionHldprdAllUpdateSchema.safeParse(data);
+  return result.success
+    ? { success: true as const, data: result.data, issues: [] }
+    : { success: false as const, data: null, issues: result.error.issues };
+}

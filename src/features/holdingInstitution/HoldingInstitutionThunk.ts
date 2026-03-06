@@ -1,7 +1,13 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import https from "@/api/axiosInstance";
-import { selectHoldingInstitutionListApiPath } from "@/api/holdingInstitution/HoldingInstitutionApiPaths";
 import {
+  selectHoldingInstitutionListApiPath,
+  updateHoldingInstitutionHldprdApiPath,
+  updateHoldingInstitutionHldprdallApiPath,
+} from "@/api/holdingInstitution/HoldingInstitutionApiPaths";
+import {
+  holdingInstitutionHldprdAllUpdateValidator,
+  holdingInstitutionHldprdUpdateValidator,
   holdingInstitutionListSchema,
   holdingInstitutionRowSchema,
 } from "./HoldingInstitutionValidator";
@@ -10,6 +16,25 @@ import type { HoldingInstitution, SearchValues } from "@/types/holdingInstitutio
 export interface HoldingInstitutionListPayload {
   rows: HoldingInstitution[];
   rowCount: number;
+}
+
+export interface HoldingInstitutionHldprdUpdatePayload {
+  eldocNos: string[];
+}
+
+export interface HoldingInstitutionHldprdAllUpdatePayload {
+  docLclsfNo: string;
+  docMclsfNo: string;
+  docSclsfNo: string;
+  docNo: string;
+  docTtl: string;
+  infoMnbdAgreYn: string;
+  hldPrdDfyrs: number | string;
+  hldPrdChangedOnly: boolean;
+  fromClctYmd: string;
+  toClctYmd: string;
+  fromEndYmd: string;
+  toEndYmd: string;
 }
 
 const toStr = (value: unknown): string => (value == null ? "" : String(value));
@@ -216,6 +241,48 @@ export const fetchHoldingInstitutionList = createAsyncThunk<
       rows: normalizedRows.map(mapHoldingInstitutionRow),
       rowCount: extractedTotal ?? normalizedRows.length,
     };
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const updateHoldingInstitutionHldprd = createAsyncThunk<
+  number,
+  HoldingInstitutionHldprdUpdatePayload,
+  { rejectValue: string }
+>("holdingInstitution/updateHldprd", async (payload, { rejectWithValue }) => {
+  const validated = holdingInstitutionHldprdUpdateValidator(payload);
+  if (!validated.success) {
+    const firstIssue = validated.issues[0];
+    return rejectWithValue(
+      firstIssue?.message ?? "보유기간 변경 요청값이 올바르지 않습니다.",
+    );
+  }
+
+  try {
+    await https.post(updateHoldingInstitutionHldprdApiPath(), validated.data);
+    return 1;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const updateHoldingInstitutionHldprdAll = createAsyncThunk<
+  number,
+  HoldingInstitutionHldprdAllUpdatePayload,
+  { rejectValue: string }
+>("holdingInstitution/updateHldprdAll", async (payload, { rejectWithValue }) => {
+  const validated = holdingInstitutionHldprdAllUpdateValidator(payload);
+  if (!validated.success) {
+    const firstIssue = validated.issues[0];
+    return rejectWithValue(
+      firstIssue?.message ?? "보유기간 일괄 변경 요청값이 올바르지 않습니다.",
+    );
+  }
+
+  try {
+    await https.post(updateHoldingInstitutionHldprdallApiPath(), validated.data);
+    return 1;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }

@@ -20,14 +20,18 @@ import MuiSelect from "@/components/elements/MuiSelect";
 import GridField from "@/components/common/GridField";
 import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { fetchHoldingInstitutionList } from "@/features/holdingInstitution/HoldingInstitutionThunk";
+import {
+  fetchHoldingInstitutionList,
+  updateHoldingInstitutionHldprd,
+  updateHoldingInstitutionHldprdAll,
+} from "@/features/holdingInstitution/HoldingInstitutionThunk";
 import {
   selectHoldingInstitutionError,
   selectHoldingInstitutionLoading,
   selectHoldingInstitutionRowCount,
   selectHoldingInstitutionRows,
 } from "@/features/holdingInstitution/HoldingInstitutionSelectors";
-import type { SearchValues } from "@/types/holdingInstitution";
+import type { HoldingInstitution, SearchValues } from "@/types/holdingInstitution";
 
 const INITIAL_SEARCH_PARAMS: SearchValues = {
   fromClctYmd: "",
@@ -97,13 +101,21 @@ export default function HoldingInstitutionList() {
     });
   }, [lclsfError, notifications]);
 
-  const [selectedRows, setSelectedRows] = React.useState<any[]>([]);
+  const [selectedRows, setSelectedRows] = React.useState<HoldingInstitution[]>([]);
 
-  const handleSelectionChange = React.useCallback((nextRows: any[]) => {
+  const handleSelectionChange = React.useCallback((nextRows: HoldingInstitution[]) => {
     setSelectedRows(nextRows);
   }, []);
 
   const handleApplySelectedRows = React.useCallback(async () => {
+    if (selectedRows.length === 0) {
+      notifications.show("선택된 문서가 없습니다.", {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+      return;
+    }
+
     const confirmed = await dialogs.confirm(
       "선택된 파일에 대한 문서분류의 현재 보유기간으로 변경됩니다. 변경하시겠습니까? (※ 정보주체 동의를 받아 수집한 경우, 반드시 변경된 보유기간으로 재동의를 받으셔야 합니다. )",
       {
@@ -116,11 +128,26 @@ export default function HoldingInstitutionList() {
 
     if (!confirmed) return;
 
-    notifications.show("변경되었습니다", {
-      severity: "success",
-      autoHideDuration: 3000,
-    });
-  }, [dialogs, notifications, selectedRows]);
+    try {
+      await dispatch(
+        updateHoldingInstitutionHldprd({
+          eldocNos: selectedRows.map((row) => row.eldocNo).filter(Boolean),
+        }),
+      ).unwrap();
+
+      notifications.show("변경되었습니다", {
+        severity: "success",
+        autoHideDuration: 3000,
+      });
+      dispatch(fetchHoldingInstitutionList(searchParams));
+      setSelectedRows([]);
+    } catch (error) {
+      notifications.show(getErrorMessage(error), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    }
+  }, [dialogs, dispatch, notifications, searchParams, selectedRows]);
 
   const handleApplyAllRows = React.useCallback(async () => {
     const confirmed = await dialogs.confirm(
@@ -135,11 +162,37 @@ export default function HoldingInstitutionList() {
 
     if (!confirmed) return;
 
-    notifications.show("변경되었습니다", {
-      severity: "success",
-      autoHideDuration: 3000,
-    });
-  }, [dialogs, notifications]);
+    try {
+      await dispatch(
+        updateHoldingInstitutionHldprdAll({
+          docLclsfNo: searchParams.docLclsfNo,
+          docMclsfNo: searchParams.docMclsfNo,
+          docSclsfNo: searchParams.docSclsfNo,
+          docNo: searchParams.docNo,
+          docTtl: searchParams.docTtl,
+          infoMnbdAgreYn: searchParams.infoMnbdAgreYn,
+          hldPrdDfyrs: searchParams.hldPrdDfyrs,
+          hldPrdChangedOnly: searchParams.hldPrdChangedOnly,
+          fromClctYmd: searchParams.fromClctYmd,
+          toClctYmd: searchParams.toClctYmd,
+          fromEndYmd: searchParams.fromEndYmd,
+          toEndYmd: searchParams.toEndYmd,
+        }),
+      ).unwrap();
+
+      notifications.show("변경되었습니다", {
+        severity: "success",
+        autoHideDuration: 3000,
+      });
+      dispatch(fetchHoldingInstitutionList(searchParams));
+      setSelectedRows([]);
+    } catch (error) {
+      notifications.show(getErrorMessage(error), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
+    }
+  }, [dialogs, dispatch, notifications, searchParams]);
 
   const handleSearch = React.useCallback(() => {
     const nextParams = { ...searchParams, pageNum: 1 };
