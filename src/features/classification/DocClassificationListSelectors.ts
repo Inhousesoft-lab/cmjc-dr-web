@@ -38,3 +38,13 @@ export const selectDocClassificationDetailError = createSelector(
   [selectDocClassificationListState],
   (s) => s.detailError,
 );
+
+export const selectDocClassificationDeleteLoading = createSelector(
+  [selectDocClassificationListState],
+  (s) => s.deleteLoading,
+);
+
+export const selectDocClassificationDeleteError = createSelector(
+  [selectDocClassificationListState],
+  (s) => s.deleteError,
+);

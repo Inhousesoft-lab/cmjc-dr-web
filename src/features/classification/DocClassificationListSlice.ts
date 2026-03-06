@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+  deleteDocClassification,
   fetchDocClassificationDetail,
   fetchDocClassificationList,
 } from "./DocClassificationListThunk";
@@ -11,8 +12,10 @@ export interface DocClassificationListState {
   rowCount: number;
   loading: boolean;
   detailLoading: boolean;
+  deleteLoading: boolean;
   error: string | null;
   detailError: string | null;
+  deleteError: string | null;
 }
 
 const initialState: DocClassificationListState = {
@@ -21,8 +24,10 @@ const initialState: DocClassificationListState = {
   rowCount: 0,
   loading: false,
   detailLoading: false,
+  deleteLoading: false,
   error: null,
   detailError: null,
+  deleteError: null,
 };
 
 const docClassificationListSlice = createSlice({
@@ -60,6 +65,20 @@ const docClassificationListSlice = createSlice({
         state.detail = null;
         state.detailError =
           action.payload || action.error.message || "문서분류 상세 조회 실패";
+      })
+      .addCase(deleteDocClassification.pending, (state) => {
+        state.deleteLoading = true;
+        state.deleteError = null;
+      })
+      .addCase(deleteDocClassification.fulfilled, (state) => {
+        state.deleteLoading = false;
+        state.deleteError = null;
+        state.detail = null;
+      })
+      .addCase(deleteDocClassification.rejected, (state, action) => {
+        state.deleteLoading = false;
+        state.deleteError =
+          action.payload || action.error.message || "문서분류 삭제 실패";
       });
   },
 });

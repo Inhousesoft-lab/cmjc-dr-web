@@ -7,11 +7,13 @@ import DocClassificationHistoryButton from "@/components/biz/DocClassificationHi
 import LabelCell from "@/components/table/LabelCell";
 import { useNavigate, useParams } from "react-router-dom";
 import PageStatus from "@/components/common/PageStatus";
-import { deleteDocClassificationApiPath } from "@/api/docClassification/DocClassificationApiPaths";
-import https from "@/api/axiosInstance";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { fetchDocClassificationDetail } from "@/features/classification/DocClassificationListThunk";
 import {
+  deleteDocClassification,
+  fetchDocClassificationDetail,
+} from "@/features/classification/DocClassificationListThunk";
+import {
+  selectDocClassificationDeleteLoading,
   selectDocClassificationDetail,
   selectDocClassificationDetailError,
   selectDocClassificationDetailLoading,
@@ -30,6 +32,7 @@ export default function DocClassificationDetail() {
   const detailData = useAppSelector(selectDocClassificationDetail);
   const isLoading = useAppSelector(selectDocClassificationDetailLoading);
   const detailError = useAppSelector(selectDocClassificationDetailError);
+  const isDeleteLoading = useAppSelector(selectDocClassificationDeleteLoading);
 
   React.useEffect(() => {
     if (!targetDocClsfNo) return;
@@ -62,7 +65,7 @@ export default function DocClassificationDetail() {
 
     if (confirmed) {
       try {
-        await https.post(deleteDocClassificationApiPath(targetDocClsfNo));
+        await dispatch(deleteDocClassification(targetDocClsfNo)).unwrap();
 
         notifications.show("삭제 되었습니다..", {
           severity: "success",
@@ -76,7 +79,7 @@ export default function DocClassificationDetail() {
         });
       }
     }
-  }, [detailData, dialogs, navigate, notifications, targetDocClsfNo]);
+  }, [detailData, dialogs, dispatch, navigate, notifications, targetDocClsfNo]);
 
   const handleBack = () => {
     navigate("/docClassification/list");
@@ -118,6 +121,7 @@ export default function DocClassificationDetail() {
             variant="contained"
             color="error"
             onClick={handleViewDataDelete}
+            disabled={isDeleteLoading}
           >
             삭제
           </Button>

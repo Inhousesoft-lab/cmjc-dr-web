@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import https from "@/api/axiosInstance";
 import {
+  deleteDocClassificationApiPath,
   selectDocClassificationDetailApiPath,
   selectDocClassificationListApiPath,
 } from "@/api/docClassification/DocClassificationApiPaths";
@@ -187,6 +188,18 @@ export const fetchDocClassificationDetail = createAsyncThunk<
     }
 
     return parsed.data as unknown as DocClassDetail;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const deleteDocClassification = createAsyncThunk<
+  void,
+  string,
+  { rejectValue: string }
+>("docClassification/delete", async (docClsfNo, { rejectWithValue }) => {
+  try {
+    await https.post(deleteDocClassificationApiPath(docClsfNo));
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
