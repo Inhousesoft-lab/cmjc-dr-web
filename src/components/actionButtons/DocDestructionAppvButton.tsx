@@ -9,17 +9,21 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
-import type { DocDestruction } from "@/types/docDestruction";
+import type { DocDestruction, DocDestructionUpdate } from "@/types/docDestruction";
 import useNotifications from "@/hooks/useNotifications";
 import LabelCell from "../table/LabelCell";
 import TableWrapper from "../table/TableWrapper";
+import { useAppDispatch } from "@/app/hooks";
+import { updateDocDestruction } from "@/features/docDestruction/DocDestructionThunk";
 
 type ButtonProps = {
   selectedRows: DocDestruction[];
+  onSuccess?: () => void | Promise<void>;
 };
 
 export default function DocDestructionAppvButton(prop: ButtonProps) {
-  const { selectedRows } = prop;
+  const { selectedRows, onSuccess } = prop;
+  const dispatch = useAppDispatch();
   const notifications = useNotifications();
 
   const [open, setOpen] = React.useState(false);
@@ -43,18 +47,68 @@ export default function DocDestructionAppvButton(prop: ButtonProps) {
   const handleSubmit = React.useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      const password = String(formData.get("password") ?? "");
+
+      const aprv01Docs = selectedRows
+        .filter((row) => row.dstrcPrcsPrstCd === "01")
+        .map((row) => ({ eldocNo: row.eldocNo }));
+      const aprv02Docs = selectedRows
+        .filter((row) => row.dstrcPrcsPrstCd === "03")
+        .map((row) => ({ eldocNo: row.eldocNo }));
 
       try {
+        const requests: DocDestructionUpdate[] = [];
+
+        if (aprv01Docs.length > 0) {
+          requests.push({
+            password,
+            rsn: "",
+            reqCd: "APRV01",
+            docs: aprv01Docs,
+          });
+        }
+        if (aprv02Docs.length > 0) {
+          requests.push({
+            password,
+            rsn: "",
+            reqCd: "APRV02",
+            docs: aprv02Docs,
+          });
+        }
+
+        if (requests.length === 0) {
+          notifications.show("승인 가능한 상태의 문서가 없습니다.", {
+            severity: "error",
+            autoHideDuration: 3000,
+          });
+          return;
+        }
+
+        for (const req of requests) {
+          await dispatch(updateDocDestruction(req)).unwrap();
+        }
+
+        await onSuccess?.();
         notifications.show("승인되었습니다.", {
           severity: "success",
           autoHideDuration: 3000,
         });
         handleClose();
-      } catch (e) {
-        console.error(e);
+      } catch (e: unknown) {
+        const message =
+          e instanceof Error
+            ? e.message
+            : typeof e === "string"
+              ? e
+              : "문서파기 승인 처리 중 오류가 발생했습니다.";
+        notifications.show(message, {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
       }
     },
-    [notifications, selectedRows],
+    [dispatch, notifications, onSuccess, selectedRows],
   );
 
   return (

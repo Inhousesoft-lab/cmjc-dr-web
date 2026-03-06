@@ -12,11 +12,15 @@ import {
   holdingInstitutionRowSchema,
 } from "./HoldingInstitutionValidator";
 import type { HoldingInstitution, SearchValues } from "@/types/holdingInstitution";
+import type { RootState } from "@/app/store";
 
 export interface HoldingInstitutionListPayload {
   rows: HoldingInstitution[];
   rowCount: number;
 }
+
+const toListParamsKey = (params: Partial<SearchValues> | undefined) =>
+  JSON.stringify(params ?? {});
 
 export interface HoldingInstitutionHldprdUpdatePayload {
   eldocNos: string[];
@@ -199,7 +203,9 @@ export const fetchHoldingInstitutionList = createAsyncThunk<
   HoldingInstitutionListPayload,
   Partial<SearchValues> | undefined,
   { rejectValue: string }
->("holdingInstitution/list", async (params, { rejectWithValue }) => {
+>(
+  "holdingInstitution/list",
+  async (params, { rejectWithValue }) => {
   try {
     const rawParams = { ...(params ?? {}) } as Record<string, unknown>;
     const requestParams = Object.fromEntries(
@@ -244,7 +250,17 @@ export const fetchHoldingInstitutionList = createAsyncThunk<
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
-});
+  },
+  {
+    condition: (params, { getState }) => {
+      const state = getState() as RootState;
+      const s = state.holdingInstitutionList;
+      const nextKey = toListParamsKey(params);
+      if (s.loading && s.currentListParamsKey === nextKey) return false;
+      return true;
+    },
+  },
+);
 
 export const updateHoldingInstitutionHldprd = createAsyncThunk<
   number,

@@ -37,6 +37,7 @@ const buildSearchValues = (
   docMclsfNo: string,
   docSclsfNo: string,
 ): SearchValues => ({
+  reqCd: "APRV",
   docLclsfNo,
   docMclsfNo,
   docSclsfNo,
@@ -98,6 +99,10 @@ export default function DocDestructionList() {
     }),
     [docLclsfNo, docMclsfNo, docSclsfNo, pageNum, pageSize],
   );
+
+  const handleAppvSuccess = useCallback(() => {
+    dispatch(fetchDocDestructionList(searchValues));
+  }, [dispatch, searchValues]);
 
   const loadData = () => {
     const nextParams = { ...searchValues, pageNum: 1 };
@@ -218,7 +223,10 @@ export default function DocDestructionList() {
         </Box>
       </Stack>
       <div className="btn_wrapper">
-        <DocDestructionAppvButton selectedRows={selectedRows} />
+        <DocDestructionAppvButton
+          selectedRows={selectedRows}
+          onSuccess={handleAppvSuccess}
+        />
       </div>
 
       <Box ref={printAreaRef} sx={{ width: "100%" }}>

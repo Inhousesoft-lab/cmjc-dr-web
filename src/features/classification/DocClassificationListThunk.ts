@@ -11,11 +11,15 @@ import type {
   DocClassificationSearch,
   DocClassificationVO,
 } from "@/types/docClassification";
+import type { RootState } from "@/app/store";
 
 export interface DocClassificationListPayload {
   rows: DocClassificationVO[];
   rowCount: number;
 }
+
+const toListParamsKey = (params: DocClassificationSearch | undefined) =>
+  JSON.stringify(params ?? {});
 
 const stringField = z.preprocess((v) => (v == null ? "" : String(v)), z.string());
 
@@ -141,7 +145,9 @@ export const fetchDocClassificationList = createAsyncThunk<
   DocClassificationListPayload,
   DocClassificationSearch | undefined,
   { rejectValue: string }
->("docClassification/list", async (params, { rejectWithValue }) => {
+>(
+  "docClassification/list",
+  async (params, { rejectWithValue }) => {
   try {
     const requestParams = {
       ...(params ?? {}),
@@ -171,7 +177,17 @@ export const fetchDocClassificationList = createAsyncThunk<
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
-});
+  },
+  {
+    condition: (params, { getState }) => {
+      const state = getState() as RootState;
+      const s = state.docClassificationList;
+      const nextKey = toListParamsKey(params);
+      if (s.loading && s.currentListParamsKey === nextKey) return false;
+      return true;
+    },
+  },
+);
 
 export const fetchDocClassificationDetail = createAsyncThunk<
   DocClassDetail,

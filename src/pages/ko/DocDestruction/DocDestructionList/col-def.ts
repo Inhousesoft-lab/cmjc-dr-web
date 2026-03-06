@@ -1,6 +1,16 @@
 import type { ColDef } from "ag-grid-community";
 import type { DocDestruction } from "@/types/docDestruction";
-import { formatRegDate } from "@/utils/formater";
+import { formatPeriod, formatYmd } from "@/utils/formater";
+
+const formatActorWithDate = (actor: unknown, date: unknown) => {
+  const actorLabel = String(actor ?? "").trim();
+  const dateLabel = formatYmd(date);
+
+  if (!actorLabel && dateLabel === "-") return "-";
+  if (!actorLabel) return "-";
+  if (dateLabel === "-") return actorLabel;
+  return `${actorLabel}(${dateLabel})`;
+};
 
 export const listDefs: ColDef<DocDestruction>[] = [
   {
@@ -26,41 +36,52 @@ export const listDefs: ColDef<DocDestruction>[] = [
     cellStyle: { textAlign: "center" },
   },
   {
-    headerName: "개인정보",
-    field: "hasPersonalInfo",
-    cellStyle: (params: any) => {
-      const isIncluded = params.value === "포함";
-      return {
-        textAlign: "center",
-        color: isIncluded ? "red" : "",
-        fontWeight: isIncluded ? "600" : "400",
-      };
-    },
-  },
-  {
     headerName: "수집일자\n(보존연한)",
     field: "collectDateLabel",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      const ymd = formatYmd(params?.data?.clctYmd);
+      const period = formatPeriod(params?.data?.hldPrdDfyrs, params?.data?.hldPrdMmCnt);
+      if (ymd === "-" && period === "-") return "-";
+      if (period === "-") return ymd;
+      if (ymd === "-") return `(${period})`;
+      return `${ymd}(${period})`;
+    },
   },
   {
-    headerName: "종료일자",
-    field: "endDate",
+    headerName: "파기일자",
+    field: "dstrcAprvDt",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => {
+      const prstCd = String(params?.data?.dstrcPrcsPrstCd ?? "");
+      if (prstCd !== "02" && prstCd !== "04") return "-";
+      return formatYmd(params?.value);
+    },
   },
   {
-    headerName: "종류",
-    field: "docType",
+    headerName: "폐기사유",
+    field: "rsn",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => params?.value || "-",
   },
   {
-    headerName: "등록자(부서)",
-    field: "registrantDept",
+    headerName: "처리담당자\n(신청일자)",
+    field: "dstrcAplcntId",
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) =>
+      formatActorWithDate(params?.value, params?.data?.dstrcAplyDt),
   },
   {
-    headerName: "등록일자",
-    field: "regDate",
+    headerName: "처리부서장\n(승인일자)",
+    field: "dstrcAutzrId",
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => formatRegDate(params?.value),
+    valueFormatter: (params: any) =>
+      formatActorWithDate(params?.value, params?.data?.dstrcAprvDt),
+  },
+  {
+    headerName: "개인정보 담당자",
+    field: "prvcDstrcAutzrId",
+    cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) => params?.value || "-",
   },
 ];

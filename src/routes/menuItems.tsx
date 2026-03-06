@@ -100,7 +100,7 @@ const menuItems: Menu[] = [
     children: [
       {
         path: "destruction/reqList",
-        label: "문서파기 신청",
+        label: "문서 파기 신청",
         menuType: "MENU",
         element: {
           ko: "DocDestructionReqList",
