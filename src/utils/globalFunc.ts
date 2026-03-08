@@ -57,12 +57,19 @@ export function uniqueArray<T>(arr: T[]): T[] {
 }
 
 export function getErrorMessage(error: unknown): string {
+  if (typeof error === "string") {
+    return error;
+  }
+
   const safeError = error as any;
   return (
     safeError.displayMessage ||
-    safeError.message ||
+    safeError.data?.message ||
+    safeError.data?.data?.message ||
+    safeError.response?.data?.data?.message ||
     safeError.response?.data?.message ||
     safeError.response?.data?.result?.errors?.message ||
+    safeError.message ||
     "알 수 없는 오류가 발생했습니다."
   );
 }

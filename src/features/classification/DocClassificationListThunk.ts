@@ -215,7 +215,7 @@ export const deleteDocClassification = createAsyncThunk<
   { rejectValue: string }
 >("docClassification/delete", async (docClsfNo, { rejectWithValue }) => {
   try {
-    await https.post(deleteDocClassificationApiPath(docClsfNo));
+    await https.delete(deleteDocClassificationApiPath(docClsfNo));
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
