@@ -351,27 +351,26 @@ export default function UploadFiles({
       {!readOnly && (
         <Box
           ref={dropZoneRef}
+          className="upload-container"
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          sx={{
-            border: "2px dashed",
-            borderColor: isDragging ? "primary.main" : "grey.300",
-            borderRadius: 2,
-            p: 4,
-            textAlign: "center",
-            cursor: "pointer",
-            backgroundColor: isDragging ? "action.hover" : "background.paper",
-            transition: "all 0.3s",
-            "&:hover": {
-              borderColor: "primary.main",
-              backgroundColor: "action.hover",
-            },
-          }}
+          sx={(theme) => ({
+            "--upload-border-color": isDragging
+              ? theme.palette.primary.main
+              : theme.palette.grey[300],
+            "--upload-background-color": isDragging
+              ? theme.palette.action.hover
+              : theme.palette.background.paper,
+            "--upload-hover-border-color": theme.palette.primary.main,
+            "--upload-hover-background-color": theme.palette.action.hover,
+          })}
         >
-          <CloudUploadIcon sx={{ fontSize: 64, color: "primary.main", mb: 2 }} />
+          <CloudUploadIcon
+            sx={{ fontSize: 64, color: "primary.main", mb: 2 }}
+          />
           <Typography variant="h6" gutterBottom>
             클릭하거나 파일을 드래그하여 업로드
           </Typography>
@@ -382,7 +381,9 @@ export default function UploadFiles({
             ref={fileInputRef}
             type="file"
             multiple
-            style={{ display: "none" }}
+            className="file-input"
+            aria-label="파일 업로드"
+            title="파일 업로드"
             onChange={handleFileInputChange}
           />
         </Box>
@@ -458,11 +459,15 @@ export default function UploadFiles({
                         <ListItemText
                           primary={file.fileNm}
                           secondary={formatFileSize(file.fileSz)}
-                          primaryTypographyProps={{
-                            noWrap: true,
-                            title: file.fileNm || "",
+                          slotProps={{
+                            primary: {
+                              noWrap: true,
+                              title: file.fileNm || "",
+                            },
+                            secondary: {
+                              noWrap: true,
+                            },
                           }}
-                          secondaryTypographyProps={{ noWrap: true }}
                         />
                       </Box>
                       <Box
@@ -524,7 +529,7 @@ export default function UploadFiles({
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Alert
           onClose={() => setSnackbar({ ...snackbar, open: false })}

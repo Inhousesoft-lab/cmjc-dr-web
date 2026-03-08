@@ -1,19 +1,17 @@
-.upload-file-page {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.upload-file-page h1 {
-  margin-bottom: 2rem;
-  color: #333;
-}
-
 .upload-container {
-  background: #f9f9f9;
-  padding: 2rem;
+  border: 2px dashed;
+  border-color: var(--upload-border-color, #e0e0e0);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--upload-background-color, #fff);
+  transition: all 0.3s;
+}
+
+.upload-container:hover {
+  border-color: var(--upload-hover-border-color, #1976d2);
+  background-color: var(--upload-hover-background-color, #f5f5f5);
 }
 
 .file-input-wrapper {
@@ -201,4 +199,3 @@
   padding: 2rem;
   color: #999;
 }
-
