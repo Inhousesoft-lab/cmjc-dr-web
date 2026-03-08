@@ -47,16 +47,9 @@ export default function DigitalDocForm() {
     },
   });
 
-  const eldocYn = useWatch({ control, name: "eldocYn" });
-
   const eldocNo = useWatch({ control, name: "eldocNo" });
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-
-  const handleFileButtonClick = React.useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
 
   const handleBack = React.useCallback(() => {
     navigate(URL.DIGITAL_DOC_LIST);
@@ -87,26 +80,7 @@ export default function DigitalDocForm() {
         setIsSubmitting(false);
       }
     },
-    [navigate, notifications]
-  );
-
-  // handleFileChange 핸들러 추가 (주석 해제 및 수정)
-  const handleFileChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        // 파일명 설정 (atchFileSn 필드에 저장)
-        setValue("atchFileSn", file.name);
-        // 필요시 파일 객체도 저장하려면 별도 상태 사용
-        notifications.show(`${file.name} 파일이 선택되었습니다.`, {
-          severity: "info",
-          autoHideDuration: 2000,
-        });
-      }
-      // input 리셋 (중복 파일 선택 허용)
-      event.target.value = "";
-    },
-    [setValue, notifications]
+    [navigate, notifications],
   );
 
   if (isLoading) {
@@ -227,56 +201,48 @@ export default function DigitalDocForm() {
         <TableRow>
           <LabelCell>파일분류</LabelCell>
           <TableCell colSpan={3}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Controller
-                name="eldocYn"
-                control={control}
-                rules={{ required: "선택해주세요" }}
-                render={({ field, fieldState }) => (
-                  <FormControl error={!!fieldState.error} size="small">
-                    <RadioGroup
-                      row
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      <FormControlLabel
-                        value="Y"
-                        control={<Radio size="small" />}
-                        label="문서"
-                      />
-                      <FormControlLabel
-                        value="N"
-                        control={<Radio size="small" />}
-                        label="파일"
-                      />
-                    </RadioGroup>
-                    <FormHelperText>
-                      {fieldState.error?.message || ""}
-                    </FormHelperText>
-                  </FormControl>
-                )}
-              />
-            </Stack>
+            <Controller
+              name="eldocYn"
+              control={control}
+              rules={{ required: "선택해주세요" }}
+              render={({ field, fieldState }) => (
+                <FormControl error={!!fieldState.error} size="small">
+                  <RadioGroup row value={field.value} onChange={field.onChange}>
+                    <FormControlLabel
+                      value="Y"
+                      control={<Radio size="small" />}
+                      label="문서"
+                    />
+                    <FormControlLabel
+                      value="N"
+                      control={<Radio size="small" />}
+                      label="파일"
+                    />
+                  </RadioGroup>
+                  <FormHelperText>
+                    {fieldState.error?.message || ""}
+                  </FormHelperText>
+                </FormControl>
+              )}
+            />
           </TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>첨부파일</LabelCell>
           <TableCell colSpan={3}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Controller
-                name="atchFileSn"
-                control={control}
-                rules={{
-                  required: "파일 선택은 필수입니다.",
-                }}
-                render={({ field }) => (
-                  <UploadFiles
-                    taskSeTrgtId={eldocNo} //  수정/상세일 경우 해당 업무의 pk 등록만 쓸거면 안보내도됨
-                    setGroupId={field.onChange}
-                  />
-                )}
-              />
-            </Stack>
+            <Controller
+              name="atchFileSn"
+              control={control}
+              rules={{
+                required: "파일 선택은 필수입니다.",
+              }}
+              render={({ field }) => (
+                <UploadFiles
+                  taskSeTrgtId={eldocNo} //  수정/상세일 경우 해당 업무의 pk 등록만 쓸거면 안보내도됨
+                  setGroupId={field.onChange}
+                />
+              )}
+            />
           </TableCell>
         </TableRow>
       </TableWrapper>

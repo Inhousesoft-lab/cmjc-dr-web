@@ -144,7 +144,10 @@ export function digitalAuthrtCreateValidator(data: unknown) {
 const dateField = z
   .string()
   .trim()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "날짜 형식은 YYYY-MM-DD 입니다.");
+  .regex(
+    /^\d{4}-\d{2}-\d{2}$|^\d{8}$/,
+    "날짜 형식은 YYYY-MM-DD 또는 YYYYMMDD 입니다.",
+  );
 
 const optionalString = z.preprocess(
   (v) => (v == null ? "" : String(v)),
@@ -183,7 +186,7 @@ export const digitalDocFormSchema = z
       });
     }
 
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data.endYmd)) {
+    if (!/^\d{4}-\d{2}-\d{2}$|^\d{8}$/.test(data.endYmd)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["endYmd"],

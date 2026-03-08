@@ -28,13 +28,12 @@ import {
   selectDigitalDocSaveError,
   selectDigitalDocSaving,
 } from "@/features/digitalDoc/DigitalDocSelectors";
-import {
-  digitalDocFormValidator,
-} from "@/features/digitalDoc/DigitalDocValidator";
+import { digitalDocFormValidator } from "@/features/digitalDoc/DigitalDocValidator";
 import useNotifications from "@/hooks/useNotifications";
 import { useNavigate } from "react-router";
 import URL from "@/constants/url";
 import { resetDigitalDocSaveState } from "@/features/digitalDoc/DigitalDocSlice";
+import UploadFiles from "@/components/file/UploadFiles";
 
 type FormValues = DigitalDocCreatePayload;
 type FieldErrors = Partial<Record<keyof FormValues, string>>;
@@ -64,7 +63,6 @@ export default function DigitalDocForm() {
 
   const [values, setValues] = React.useState<FormValues>(INITIAL_FORM_VALUES);
   const [errors, setErrors] = React.useState<FieldErrors>({});
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     values.docLclsfNo,
@@ -135,23 +133,6 @@ export default function DigitalDocForm() {
     navigate(URL.DIGITAL_DOC_LIST);
   };
 
-  const handleFileButtonClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    handleFieldChange("atchFileSn", file.name);
-    notifications.show(`${file.name} 파일이 선택되었습니다.`, {
-      severity: "info",
-      autoHideDuration: 2000,
-    });
-
-    event.target.value = "";
-  };
-
   return (
     <form onSubmit={handleSave}>
       <TableWrapper
@@ -170,7 +151,7 @@ export default function DigitalDocForm() {
           <TableCell colSpan={3}>
             <Stack direction="row" spacing={1}>
               <Stack spacing={0.5} width="100%">
-                <FormLabel>대분류</FormLabel>
+                <FormLabel required>대분류</FormLabel>
                 <MuiSelect
                   id="docLclsfNo"
                   items={lclsfList}
@@ -188,7 +169,7 @@ export default function DigitalDocForm() {
                 )}
               </Stack>
               <Stack spacing={0.5} width="100%">
-                <FormLabel>중분류</FormLabel>
+                <FormLabel required>중분류</FormLabel>
                 <MuiSelect
                   id="docMclsfNo"
                   items={mclsfList}
@@ -205,12 +186,14 @@ export default function DigitalDocForm() {
                 )}
               </Stack>
               <Stack spacing={0.5} width="100%">
-                <FormLabel>소분류</FormLabel>
+                <FormLabel required>소분류</FormLabel>
                 <MuiSelect
                   id="docSclsfNo"
                   items={sclsfList}
                   value={values.docSclsfNo}
-                  onChange={(e) => handleFieldChange("docSclsfNo", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("docSclsfNo", e.target.value)
+                  }
                 />
                 {!!errors.docSclsfNo && (
                   <Typography variant="caption" color="error">
@@ -351,49 +334,42 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
+          <LabelCell>파일분류</LabelCell>
+          <TableCell colSpan={3}>
+            <FormControl>
+              <RadioGroup
+                row
+                name="eldocYn"
+                value={values.eldocYn}
+                onChange={(e) =>
+                  handleFieldChange("eldocYn", e.target.value as "Y" | "N")
+                }
+              >
+                <FormControlLabel
+                  value="Y"
+                  control={<Radio size="small" />}
+                  label="문서"
+                />
+                <FormControlLabel
+                  value="N"
+                  control={<Radio size="small" />}
+                  label="파일"
+                />
+              </RadioGroup>
+            </FormControl>
+          </TableCell>
+        </TableRow>
+        <TableRow>
           <LabelCell>첨부파일</LabelCell>
           <TableCell colSpan={3}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <FormControl>
-                <RadioGroup
-                  row
-                  name="eldocYn"
-                  value={values.eldocYn}
-                  onChange={(e) =>
-                    handleFieldChange("eldocYn", e.target.value as "Y" | "N")
-                  }
-                >
-                  <FormControlLabel
-                    value="Y"
-                    control={<Radio size="small" />}
-                    label="문서"
-                  />
-                  <FormControlLabel
-                    value="N"
-                    control={<Radio size="small" />}
-                    label="파일"
-                  />
-                </RadioGroup>
-              </FormControl>
-
-              <TextField
-                id="atchFileSn"
-                name="atchFileSn"
-                value={values.atchFileSn}
-                placeholder="전자문서파일.pdf"
-                size="small"
-                disabled
-              />
-              <Button variant="contained" onClick={handleFileButtonClick}>
-                파일
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                hidden
-                onChange={handleFileChange}
-              />
-            </Stack>
+            <UploadFiles
+              setGroupId={(id) => handleFieldChange("atchFileSn", id)}
+            />
+            {!!errors.atchFileSn && (
+              <Typography variant="caption" color="error">
+                {errors.atchFileSn}
+              </Typography>
+            )}
           </TableCell>
         </TableRow>
       </TableWrapper>
