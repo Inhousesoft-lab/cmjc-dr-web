@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Grid, TextField } from "@mui/material";
 import GridField from "../common/GridField";
 import UploadFiles from "../file/UploadFiles";
 import {
@@ -12,11 +12,21 @@ import type { DigitalDoc } from "@/types/digitalDoc";
 interface DocDetailTableProps {
   eldocNo: string;
   detail: DigitalDoc | null;
+  docNo?: string;
+  docTtl?: string;
+  editable?: boolean;
+  onDocNoChange?: (value: string) => void;
+  onDocTtlChange?: (value: string) => void;
 }
 
 export default function DocDetailTable({
   eldocNo,
   detail,
+  docNo,
+  docTtl,
+  editable = false,
+  onDocNoChange,
+  onDocTtlChange,
 }: DocDetailTableProps) {
   const classification = [
     detail?.docLclsfNm,
@@ -38,9 +48,40 @@ export default function DocDetailTable({
   return (
     <Grid container spacing={0} className="table-view-grid">
       <GridField item={12} label="문서분류" value={classification || "-"} />
-      <GridField label="문서번호" value={detail?.docNo || "-"} />
+      <GridField
+        label="문서번호"
+        value={
+          editable ? (
+            <TextField
+              fullWidth
+              size="small"
+              value={docNo ?? detail?.docNo ?? ""}
+              onChange={(e) => onDocNoChange?.(e.target.value)}
+              placeholder="문서번호"
+            />
+          ) : (
+            detail?.docNo || "-"
+          )
+        }
+      />
       <GridField label="기본권한" value={detail?.deptId || "-"} />
-      <GridField item={12} label="문서제목" value={detail?.docTtl || "-"} />
+      <GridField
+        item={12}
+        label="문서제목"
+        value={
+          editable ? (
+            <TextField
+              fullWidth
+              size="small"
+              value={docTtl ?? detail?.docTtl ?? ""}
+              onChange={(e) => onDocTtlChange?.(e.target.value)}
+              placeholder="문서제목"
+            />
+          ) : (
+            detail?.docTtl || "-"
+          )
+        }
+      />
       <GridField label="수집일자" value={formatDateDash(detail?.clctYmd ?? "")} />
       <GridField label="종료일자" value={clctLabel} />
       <GridField label="개인정보" value={mappedPrvcLabel} />
