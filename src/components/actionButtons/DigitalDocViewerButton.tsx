@@ -7,9 +7,9 @@ import {
   DialogContent,
   Divider,
   IconButton,
-  Typography,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
@@ -20,7 +20,7 @@ import workerSrc from "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mj
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface DigitalDocViewerButtonProps {
-  fileUrl: string;
+  fileUrl: string | string[];
   label?: string;
   fileType?: "pdf" | "image";
 }
@@ -30,7 +30,10 @@ export default function DigitalDocViewerButton({
   label = "열람",
   fileType = "pdf",
 }: DigitalDocViewerButtonProps) {
-  // const authUser = useAppSelector((state) => state.auth.user);
+  const fileUrls = React.useMemo(
+    () => (Array.isArray(fileUrl) ? fileUrl : [fileUrl]).filter(Boolean),
+    [fileUrl],
+  );
   const [open, setOpen] = React.useState(false);
   const [numPages, setNumPages] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -38,14 +41,18 @@ export default function DigitalDocViewerButton({
   const [rotation, setRotation] = React.useState(0);
   const [shieldActive, setShieldActive] = React.useState(false);
   const [watermarkAt, setWatermarkAt] = React.useState(() => new Date());
-  const [orientation, setOrientation] = React.useState<
-    "portrait" | "landscape"
-  >("portrait");
+  const [orientation, setOrientation] = React.useState<"portrait" | "landscape">(
+    "portrait",
+  );
   const [pageInput, setPageInput] = React.useState("1");
   const [containerWidth, setContainerWidth] = React.useState(0);
+  const [currentUrlIndex, setCurrentUrlIndex] = React.useState(0);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
   const viewerRef = React.useRef<HTMLDivElement | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const pageRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+
+  const activeFileUrl = fileUrls[currentUrlIndex] ?? "";
 
   const handleOpen = () => {
     setNumPages(0);
@@ -54,8 +61,14 @@ export default function DigitalDocViewerButton({
     setRotation(0);
     setOrientation("portrait");
     setPageInput("1");
+    setCurrentUrlIndex(0);
+    setLoadError(null);
     setOpen(true);
   };
+
+  const moveToNextUrl = React.useCallback(() => {
+    setCurrentUrlIndex((prev) => (prev + 1 < fileUrls.length ? prev + 1 : prev));
+  }, [fileUrls.length]);
 
   const handleMovePage = () => {
     if (fileType !== "pdf") return;
@@ -155,8 +168,8 @@ export default function DigitalDocViewerButton({
         };
       }>;
     }) => {
-      const loadedPages = pdf.numPages;
-      setNumPages(loadedPages);
+      setNumPages(pdf.numPages);
+      setLoadError(null);
 
       try {
         const firstPage = await pdf.getPage(1);
@@ -170,6 +183,14 @@ export default function DigitalDocViewerButton({
     },
     [],
   );
+
+  const handlePdfLoadError = React.useCallback(() => {
+    if (currentUrlIndex + 1 < fileUrls.length) {
+      moveToNextUrl();
+      return;
+    }
+    setLoadError("파일을 불러오지 못했습니다.");
+  }, [currentUrlIndex, fileUrls.length, moveToNextUrl]);
 
   const clientIp = "0.0.0.1";
 
@@ -253,29 +274,37 @@ export default function DigitalDocViewerButton({
           ) : null}
           <div ref={viewerRef}>
             {fileType === "pdf" ? (
-              <Document file={fileUrl} onLoadSuccess={handleLoadSuccess}>
-                {Array.from({ length: numPages }, (_, index) => {
-                  const pageNumber = index + 1;
-                  return (
-                    <div
-                      key={pageNumber}
-                      ref={(el) => {
-                        pageRefs.current[pageNumber] = el;
-                      }}
-                      style={{ marginBottom: 16, position: "relative" }}
-                    >
-                      <Page
-                        pageNumber={pageNumber}
-                        width={containerWidth > 0 ? containerWidth : undefined}
-                        scale={zoom}
-                        rotate={rotation}
-                        renderAnnotationLayer={false}
-                        renderTextLayer={false}
-                      />
-                    </div>
-                  );
-                })}
-              </Document>
+              loadError ? (
+                <Typography color="error">{loadError}</Typography>
+              ) : (
+                <Document
+                  file={activeFileUrl}
+                  onLoadSuccess={handleLoadSuccess}
+                  onLoadError={handlePdfLoadError}
+                >
+                  {Array.from({ length: numPages }, (_, index) => {
+                    const pageNumber = index + 1;
+                    return (
+                      <div
+                        key={pageNumber}
+                        ref={(el) => {
+                          pageRefs.current[pageNumber] = el;
+                        }}
+                        style={{ marginBottom: 16, position: "relative" }}
+                      >
+                        <Page
+                          pageNumber={pageNumber}
+                          width={containerWidth > 0 ? containerWidth : undefined}
+                          scale={zoom}
+                          rotate={rotation}
+                          renderAnnotationLayer={false}
+                          renderTextLayer={false}
+                        />
+                      </div>
+                    );
+                  })}
+                </Document>
+              )
             ) : (
               <Box
                 sx={{
@@ -285,24 +314,36 @@ export default function DigitalDocViewerButton({
                   minHeight: "100%",
                 }}
               >
-                <img
-                  src={fileUrl}
-                  alt="첨부 이미지"
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                    transform: `scale(${zoom}) rotate(${rotation}deg)`,
-                    transformOrigin: "center center",
-                  }}
-                  onLoad={(e) => {
-                    const target = e.currentTarget;
-                    setOrientation(
-                      target.naturalWidth >= target.naturalHeight
-                        ? "landscape"
-                        : "portrait",
-                    );
-                  }}
-                />
+                {loadError ? (
+                  <Typography color="error">{loadError}</Typography>
+                ) : (
+                  <img
+                    src={activeFileUrl}
+                    alt="첨부 이미지"
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                      transformOrigin: "center center",
+                    }}
+                    onLoad={(e) => {
+                      const target = e.currentTarget;
+                      setLoadError(null);
+                      setOrientation(
+                        target.naturalWidth >= target.naturalHeight
+                          ? "landscape"
+                          : "portrait",
+                      );
+                    }}
+                    onError={() => {
+                      if (currentUrlIndex + 1 < fileUrls.length) {
+                        moveToNextUrl();
+                        return;
+                      }
+                      setLoadError("파일을 불러오지 못했습니다.");
+                    }}
+                  />
+                )}
               </Box>
             )}
           </div>
@@ -323,9 +364,7 @@ export default function DigitalDocViewerButton({
             </Tooltip>
             <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
             <Tooltip title="시계 방향으로 회전" placement="bottom" arrow>
-              <IconButton
-                onClick={() => setRotation((prev) => (prev + 90) % 360)}
-              >
+              <IconButton onClick={() => setRotation((prev) => (prev + 90) % 360)}>
                 <RotateRightIcon />
               </IconButton>
             </Tooltip>
@@ -376,11 +415,7 @@ export default function DigitalDocViewerButton({
                 slotProps={{ htmlInput: { min: 1, max: numPages || undefined } }}
                 sx={{ width: 100, ml: 1 }}
               />
-              <Button
-                variant="outlined"
-                onClick={handleMovePage}
-                sx={{ mr: "auto" }}
-              >
+              <Button variant="outlined" onClick={handleMovePage} sx={{ mr: "auto" }}>
                 페이지 이동
               </Button>
             </React.Fragment>
