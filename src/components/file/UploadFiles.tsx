@@ -405,9 +405,8 @@ export default function UploadFiles({
           )}
           <List dense>
             {savedFileList.map((file) => {
-              const downloadUrl = `/api/dr/file/downloadStream?filename=${encodeURIComponent(
-                file.srvrFileNm || "",
-              )}&originalName=${encodeURIComponent(file.fileNm || "")}`;
+              const downloadUrls = FileApi.getDownloadStreamUrls(file);
+              const downloadUrl = downloadUrls[0] ?? "";
               const ext =
                 (file.fileExtnNm ??
                   file.fileNm?.split(".").pop() ??
@@ -484,19 +483,31 @@ export default function UploadFiles({
                           justifyContent="flex-end"
                           flexWrap="nowrap"
                         >
-                          {isPdf && <DigitalDocViewerButton fileUrl={downloadUrl} />}
+                          {isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
                           {!isPdf && isImage && (
                             <DigitalDocViewerButton
-                              fileUrl={downloadUrl}
+                              fileUrl={downloadUrls}
                               fileType="image"
                             />
                           )}
                           <Button
-                            component="a"
-                            href={downloadUrl}
-                            download={file.fileNm || undefined}
                             variant="outlined"
                             size="small"
+                            onClick={async () => {
+                              try {
+                                await FileApi.downloadFromUrls(
+                                  downloadUrls,
+                                  file.fileNm || "download",
+                                );
+                              } catch (error) {
+                                showSnackbar(
+                                  error instanceof Error
+                                    ? error.message
+                                    : "다운로드에 실패했습니다.",
+                                  "error",
+                                );
+                              }
+                            }}
                           >
                             다운로드
                           </Button>
