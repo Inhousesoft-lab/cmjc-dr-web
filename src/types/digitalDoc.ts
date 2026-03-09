@@ -55,6 +55,8 @@ export interface DigitalDocUpdate {
   docMclsfNo: string;
   eldocNo: string; // 전자문서번호
   docClsfNo: string; // 문서분류번호
+  docNo: string; // 문서번호
+  docTtl: string; // 문서제목
   gvbkYn: string; // 반환여부(Y:반환,N:미반환)
 }
 

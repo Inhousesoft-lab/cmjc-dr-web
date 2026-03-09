@@ -205,6 +205,8 @@ export function digitalDocFormValidator(data: unknown) {
 export const digitalDocUpdateSchema = z.object({
   eldocNo: z.string().trim().min(1, "전자문서 번호가 없습니다."),
   docClsfNo: z.string().trim().min(1, "문서분류를 선택해 주세요."),
+  docNo: z.string().trim().min(1, "문서번호를 입력해 주세요."),
+  docTtl: z.string().trim().min(1, "문서제목을 입력해 주세요."),
   gvbkYn: z.string().trim().min(1, "반환여부를 선택해 주세요."),
 });
 

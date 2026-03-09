@@ -292,6 +292,8 @@ export const createDigitalDoc = createAsyncThunk<
 export type DigitalDocUpdatePayload = {
   eldocNo: string;
   docClsfNo: string;
+  docNo: string;
+  docTtl: string;
   gvbkYn: string;
 };
 
