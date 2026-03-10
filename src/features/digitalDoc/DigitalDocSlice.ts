@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   createDigitalDocAuthrt,
   createDigitalDoc,
+  deleteDigitalDocAuthrt,
   fetchDigitalDocAuthrtHistoryList,
   fetchDigitalDocAuthrtList,
   fetchDigitalDocDialogDetail,
@@ -164,6 +165,19 @@ const digitalDocSlice = createSlice({
         state.authrtSaving = false;
         state.authrtSaveError =
           action.payload || action.error.message || "공람 등록 실패";
+      })
+      .addCase(deleteDigitalDocAuthrt.pending, (state) => {
+        state.authrtSaving = true;
+        state.authrtSaveError = null;
+      })
+      .addCase(deleteDigitalDocAuthrt.fulfilled, (state) => {
+        state.authrtSaving = false;
+        state.authrtSaveError = null;
+      })
+      .addCase(deleteDigitalDocAuthrt.rejected, (state, action) => {
+        state.authrtSaving = false;
+        state.authrtSaveError =
+          action.payload || action.error.message || "공람 삭제 실패";
       })
       .addCase(fetchDigitalDocDetail.pending, (state) => {
         state.detailLoading = true;

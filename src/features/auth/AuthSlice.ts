@@ -1,15 +1,14 @@
 import { AppDispatch } from "@/app/store";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { https } from "@shared/utils/https";
-// import {
-//   clearMyStudy,
-//   fetchCurrentStudy,
-//   fetchMyStudyList,
-// } from "@/features/studyMy/StudyMySlice";
 
 interface User {
-  username: string;
-  authorities: Record<string, string>;
+  authenticated: boolean;
+  userId: string;
+  userNm: string;
+  instId?: string;
+  instNm?: string;
+  roles: string[];
 }
 
 interface AuthState {
@@ -26,25 +25,61 @@ const initialState: AuthState = {
   loading: false,
 };
 
-// ✅ 실제 로그인 API 연동
 export const login = createAsyncThunk<
-  any,
+  User,
   { userId: string; password: string },
   { dispatch: AppDispatch; rejectValue: string }
 >("auth/login", async ({ userId, password }, thunkAPI) => {
   try {
-    const res = await https.post("/api/ecrf/temp/auth/login", {
+    const res = await https.post("/api/dr/temp/auth/login", {
       userId,
       password,
     });
 
-    // thunkAPI.dispatch(fetchMyStudyList());
-    // thunkAPI.dispatch(fetchCurrentStudy());
-
-    return res.data;
+    const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
+    return {
+      authenticated: Boolean(payload.authenticated ?? true),
+      userId: String(payload.userId ?? ""),
+      userNm: String(payload.userNm ?? ""),
+      instId: payload.instId ? String(payload.instId) : undefined,
+      instNm: payload.instNm ? String(payload.instNm) : undefined,
+      roles: Array.isArray(payload.roles)
+        ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
+        : [],
+    };
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
       err.response?.data?.message ?? "로그인 실패",
+    );
+  }
+});
+
+export const checkSession = createAsyncThunk<
+  User | null,
+  void,
+  { dispatch: AppDispatch; rejectValue: string }
+>("auth/checkSession", async (_, thunkAPI) => {
+  try {
+    const res = await https.get("/api/dr/temp/auth/me");
+    const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
+
+    if (!payload.authenticated || !payload.userId) {
+      return null;
+    }
+
+    return {
+      authenticated: true,
+      userId: String(payload.userId ?? ""),
+      userNm: String(payload.userNm ?? ""),
+      instId: payload.instId ? String(payload.instId) : undefined,
+      instNm: payload.instNm ? String(payload.instNm) : undefined,
+      roles: Array.isArray(payload.roles)
+        ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
+        : [],
+    };
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err.response?.data?.message ?? "세션 확인 실패",
     );
   }
 });
@@ -57,7 +92,6 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
       state.accessToken = null;
-      //localStorage.removeItem("accessToken");
     },
   },
   extraReducers(builder) {
@@ -69,32 +103,50 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload;
-        // state.accessToken = action.payload.accessToken;
-
-        // // 🔐 토큰 저장
-        // localStorage.setItem("accessToken", action.payload.accessToken);
       })
       .addCase(login.rejected, (state) => {
         state.loading = false;
+      })
+      .addCase(checkSession.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(checkSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = Boolean(action.payload);
+        state.user = action.payload;
+        if (!action.payload) {
+          state.accessToken = null;
+        }
+      })
+      .addCase(checkSession.rejected, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.accessToken = null;
       });
   },
 });
 
 export const { logout } = authSlice.actions;
+
 export const requestLogout = createAsyncThunk<
   void,
   void,
   { dispatch: AppDispatch; rejectValue: string }
 >("auth/logout", async (_, thunkAPI) => {
+  let errorMessage: string | null = null;
+
   try {
-    await https.post("/api/ecrf/auth/logout");
+    await https.post("/api/dr/auth/logout");
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(
-      err.response?.data?.message ?? "Logout failed",
-    );
+    errorMessage = err.response?.data?.message ?? "Logout failed";
   } finally {
     thunkAPI.dispatch(logout());
-    // thunkAPI.dispatch(clearMyStudy());
+  }
+
+  if (errorMessage) {
+    throw thunkAPI.rejectWithValue(errorMessage);
   }
 });
+
 export default authSlice.reducer;

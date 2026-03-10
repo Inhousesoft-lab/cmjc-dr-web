@@ -45,7 +45,6 @@ export default function Layout() {
     const mediaQuery = window.matchMedia("(max-width: 900px)");
 
     const applySidebarMode = (isMobile: boolean) => {
-      // 900 이하: 기본 닫힘 / 900 초과: 기본 열림
       setIsNavigationExpanded(!isMobile);
     };
 
@@ -63,13 +62,13 @@ export default function Layout() {
     setIsNavigationExpanded((prev) => !prev);
   };
 
-  const _menuItems = convertToMenuItems(menuItems);
+  const sidebarItems = convertToMenuItems(menuItems);
 
   return (
     <div id="wrap" className={isNavigationExpanded ? "" : "collapsed"}>
       <AdminSidebar
         expanded={isNavigationExpanded}
-        items={_menuItems}
+        items={sidebarItems}
         onToggle={handleToggleSidebar}
       />
       <SimpleHeader />

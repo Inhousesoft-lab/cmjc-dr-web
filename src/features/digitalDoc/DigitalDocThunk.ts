@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { z } from "zod";
 import https from "@/api/axiosInstance";
 import {
+  deleteEDocAuthrtApiPath,
   insertEDocApiPath,
   insertEDocAuthrtApiPath,
   selectEDocAuthrtHistoryApiPath,
@@ -225,6 +226,11 @@ export type DigitalDocAuthrtCreatePayload = {
   indvId: string;
 };
 
+export type DigitalDocAuthrtDeletePayload = {
+  eldocNo: string;
+  inqAuthrtNo: string;
+};
+
 export const createDigitalDocAuthrt = createAsyncThunk<
   number,
   DigitalDocAuthrtCreatePayload,
@@ -239,6 +245,25 @@ export const createDigitalDocAuthrt = createAsyncThunk<
 
   try {
     await https.post(insertEDocAuthrtApiPath(eldocNo), validated.data);
+    return 1;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
+export const deleteDigitalDocAuthrt = createAsyncThunk<
+  number,
+  DigitalDocAuthrtDeletePayload,
+  { rejectValue: string }
+>("digitalDoc/authrtDelete", async (payload, { rejectWithValue }) => {
+  const { eldocNo, inqAuthrtNo } = payload;
+
+  if (!eldocNo || !inqAuthrtNo) {
+    return rejectWithValue("삭제할 공람 정보가 없습니다.");
+  }
+
+  try {
+    await https.post(deleteEDocAuthrtApiPath(eldocNo, inqAuthrtNo));
     return 1;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));

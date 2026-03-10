@@ -20,6 +20,12 @@ import {
 } from "./DocDestructionValidator";
 import { getErrorMessage } from "@/utils/globalFunc";
 import type { RootState } from "@/app/store";
+import {
+  getMockDocDestructionDetail,
+  getMockDocDestructionList,
+  isDocDestructionMockEnabled,
+  updateMockDocDestruction,
+} from "./docDestructionMock";
 
 export interface DocDestructionListPayload {
   rows: DocDestruction[];
@@ -85,6 +91,10 @@ export const fetchDocDestructionList = createAsyncThunk<
   "docDestruction/list",
   async (params, { rejectWithValue }) => {
   try {
+    if (isDocDestructionMockEnabled()) {
+      return getMockDocDestructionList(params);
+    }
+
     const requestParams = {
       ...(params ?? {}),
     };
@@ -152,6 +162,10 @@ export const fetchDocDestructionDetail = createAsyncThunk<
   { rejectValue: string }
 >("docDestruction/detail", async (eldocNo, { rejectWithValue }) => {
   try {
+    if (isDocDestructionMockEnabled()) {
+      return getMockDocDestructionDetail(eldocNo);
+    }
+
     const res = await https.get(selectDocDestructionDetailApiPath(eldocNo));
     const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
     const parsed = docDestructionDetailSchema.safeParse(payload);
@@ -172,6 +186,11 @@ export const updateDocDestruction = createAsyncThunk<
   { rejectValue: string }
 >("docDestruction/update", async (payload, { rejectWithValue }) => {
   try {
+    if (isDocDestructionMockEnabled()) {
+      updateMockDocDestruction(payload);
+      return;
+    }
+
     const requestBody = {
       ...payload,
       docs: payload.docs.map((doc) => ({

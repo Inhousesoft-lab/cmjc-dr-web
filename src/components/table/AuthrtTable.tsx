@@ -15,6 +15,7 @@ import LabelCell from "./LabelCell";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
   createDigitalDocAuthrt,
+  deleteDigitalDocAuthrt,
   fetchDigitalDocAuthrtList,
 } from "@/features/digitalDoc/DigitalDocThunk";
 import {
@@ -23,21 +24,29 @@ import {
   selectDigitalDocAuthrtRows,
   selectDigitalDocAuthrtSaving,
 } from "@/features/digitalDoc/DigitalDocSelectors";
+import https from "@/api/axiosInstance";
 
 const styleGroup = {
-  container: { width: "100%", margin: "auto", borderRadius: "0" },
-  label: {
-    height: "50px",
-    backgroundColor: "white",
-    "& .MuiTableCell-body": {
-      textAlign: "center",
-    },
-  },
   content: {
     "& .MuiTableCell-body": {
       textAlign: "center",
     },
   },
+};
+
+type InstitutionOption = {
+  brno: string;
+  instNm: string;
+};
+
+type ResearcherOption = {
+  mbrNo: string;
+  mbrNm: string;
+};
+
+const ALL_INDIVIDUAL_OPTION: ResearcherOption = {
+  mbrNo: "ALL",
+  mbrNm: "전체",
 };
 
 export interface AuthrtTableProps {
@@ -59,11 +68,60 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
 
   const [deptId, setDeptId] = useState<string>("");
   const [indvId, setIndvId] = useState<string>("");
+  const [institutions, setInstitutions] = useState<InstitutionOption[]>([]);
+  const [researchers, setResearchers] = useState<ResearcherOption[]>([]);
 
   React.useEffect(() => {
     if (!eldocNo) return;
     dispatch(fetchDigitalDocAuthrtList(eldocNo));
   }, [dispatch, eldocNo]);
+
+  React.useEffect(() => {
+    const fetchInstitutions = async () => {
+      try {
+        const res = await https.get("/api/dr/portal/institutions", {
+          params: { pageNum: 1, pageSize: 1000 },
+        });
+        const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
+        setInstitutions((payload.list ?? []) as InstitutionOption[]);
+      } catch (error) {
+        notifications.show(getErrorMessage(error), {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    };
+
+    fetchInstitutions();
+  }, [notifications]);
+
+  React.useEffect(() => {
+    if (!deptId) {
+      setResearchers([]);
+      setIndvId("");
+      return;
+    }
+
+    const fetchResearchers = async () => {
+      try {
+        const res = await https.get("/api/dr/portal/researchers", {
+          params: { brno: deptId, pageNum: 1, pageSize: 1000 },
+        });
+        const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
+        setResearchers([
+          ALL_INDIVIDUAL_OPTION,
+          ...((payload.list ?? []) as ResearcherOption[]),
+        ]);
+      } catch (error) {
+        notifications.show(getErrorMessage(error), {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    };
+
+    fetchResearchers();
+  }, [deptId, notifications]);
 
   React.useEffect(() => {
     if (!authrtError) return;
@@ -73,23 +131,41 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
     });
   }, [authrtError, notifications]);
 
-  const handleDelete = useCallback(async () => {
-    const confirmed = await dialogs.confirm(`공람 이력을 삭제 할까요?`, {
-      title: "삭제 확인",
-      severity: "error",
-      okText: "삭제",
-      cancelText: "취소",
-    });
+  const handleDelete = useCallback(
+    async (inqAuthrtNo: string) => {
+      if (isEmpty(inqAuthrtNo)) {
+        await dialogs.alert("삭제할 공람 정보가 없습니다.", {
+          title: "알림",
+          okText: "확인",
+        });
+        return;
+      }
 
-    if (!confirmed) {
-      return;
-    }
+      const confirmed = await dialogs.confirm("공람 이력을 삭제 할까요?", {
+        title: "삭제 확인",
+        severity: "error",
+        okText: "삭제",
+        cancelText: "취소",
+      });
 
-    notifications.show("삭제되었습니다.", {
-      severity: "success",
-      autoHideDuration: 3000,
-    });
-  }, [eldocNo, notifications]);
+      if (!confirmed) return;
+
+      try {
+        await dispatch(deleteDigitalDocAuthrt({ eldocNo, inqAuthrtNo })).unwrap();
+        notifications.show("삭제했습니다.", {
+          severity: "success",
+          autoHideDuration: 3000,
+        });
+        dispatch(fetchDigitalDocAuthrtList(eldocNo));
+      } catch (error) {
+        notifications.show(getErrorMessage(error), {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [dialogs, dispatch, eldocNo, notifications],
+  );
 
   const handleSave = useCallback(async () => {
     if (isEmpty(deptId) || isEmpty(indvId)) {
@@ -104,12 +180,13 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
       await dispatch(
         createDigitalDocAuthrt({ eldocNo, deptId, indvId }),
       ).unwrap();
-      notifications.show("등록 되었습니다.", {
+      notifications.show("등록했습니다.", {
         severity: "success",
         autoHideDuration: 3000,
       });
       setDeptId("");
       setIndvId("");
+      setResearchers([]);
       dispatch(fetchDigitalDocAuthrtList(eldocNo));
     } catch (error) {
       notifications.show(getErrorMessage(error), {
@@ -143,17 +220,18 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
           rows.map((row) => (
             <TableRow key={row.inqAuthrtNo || `${row.deptId}-${row.indvId}`}>
               <TableCell align="center" sx={styleGroup.content}>
-                {row.deptId || "-"}
+                {(row as any).deptNm || row.deptId || "-"}
               </TableCell>
               <TableCell align="center" sx={styleGroup.content}>
-                {row.indvId || "-"}
+                {(row as any).indvNm || (row.indvId === "ALL" ? "전체" : row.indvId) || "-"}
               </TableCell>
               <TableCell align="center" sx={styleGroup.content}>
                 <Button
                   variant="contained"
                   size="small"
                   color="error"
-                  onClick={handleDelete}
+                  onClick={() => handleDelete(row.inqAuthrtNo)}
+                  disabled={authrtSaving}
                 >
                   삭제
                 </Button>
@@ -168,7 +246,6 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
           </TableRow>
         )}
 
-        {/* 새로운 공람자 추가/등록 행 */}
         <TableRow>
           <TableCell>
             <Select
@@ -179,13 +256,14 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
               onChange={(event) => setDeptId(event.target.value as string)}
               aria-label="추가할 부서 선택"
             >
-              {/* TODO: 부서 코드 연결 필요 */}
               <MenuItem value="">
                 <Typography>부서</Typography>
               </MenuItem>
-              <MenuItem value="정보화팀">정보화팀</MenuItem>
-              <MenuItem value="경영팀">경영팀</MenuItem>
-              <MenuItem value="기획팀">기획팀</MenuItem>
+              {institutions.map((institution) => (
+                <MenuItem key={institution.brno} value={institution.brno}>
+                  {institution.instNm}
+                </MenuItem>
+              ))}
             </Select>
           </TableCell>
           <TableCell>
@@ -196,14 +274,16 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
               value={indvId}
               onChange={(event) => setIndvId(event.target.value as string)}
               aria-label="추가할 이름 선택"
+              disabled={!deptId}
             >
-              {/* TODO: 공람 담당자 연결 필요 */}
               <MenuItem value="">
                 <Typography>이름</Typography>
               </MenuItem>
-              <MenuItem value="전체">전체</MenuItem>
-              <MenuItem value="김길동">김길동</MenuItem>
-              <MenuItem value="홍길동">홍길동</MenuItem>
+              {researchers.map((researcher) => (
+                <MenuItem key={researcher.mbrNo} value={researcher.mbrNo}>
+                  {researcher.mbrNm}
+                </MenuItem>
+              ))}
             </Select>
           </TableCell>
           <TableCell align="center">

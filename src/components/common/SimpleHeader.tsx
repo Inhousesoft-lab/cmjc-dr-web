@@ -1,29 +1,35 @@
 import * as React from "react";
-import { FormControl, MenuItem, Select } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { requestLogout } from "@/features/auth/AuthSlice";
+import { useTranslation } from "react-i18next";
+import { getLangFromPathname } from "@/routes/lang";
 
 export default function SimpleHeader() {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const user = useAppSelector((s) => s.auth.user);
   const [isNotifyOpen, setIsNotifyOpen] = React.useState(false);
+  const lang = getLangFromPathname(location.pathname);
+
+  const onLogout = React.useCallback(() => {
+    dispatch(requestLogout()).finally(() => {
+      navigate(`/${lang}/login`, { replace: true });
+    });
+  }, [dispatch, lang, navigate]);
 
   return (
     <div id="header">
-      {/* 상단 바(timeout) */}
-      {/* <div className="header-topbar">
-        <TimeExtensionBtn />
-      </div> */}
-
       <div className="inner">
         <div className="util_group">
           <div className="user_info">
-            {/* 유저 이름 */}
             <p className="user_name">
-              <span>admin</span>
+              <span>{user?.userNm ?? user?.userId ?? "-"}</span>
             </p>
 
-            {/* 케이스: 접속 시간 */}
-            {/* <p className="access">2025-10-21 09:03 접속</p> */}
-
-            {/* 케이스: 유저 권한 */}
-            <p className="user-role">ROLE_BASIC</p>
+            <p className="user-role">{(user?.roles ?? []).join(", ")}</p>
 
             <div
               className="notification"
@@ -44,8 +50,8 @@ export default function SimpleHeader() {
                 <p>새 알림 3</p>
               </div>
             </div>
-            <button type="button" className="btn_logout">
-              로그아웃
+            <button type="button" className="btn_logout" onClick={onLogout}>
+              {t("logout")}
             </button>
           </div>
         </div>
