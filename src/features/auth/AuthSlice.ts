@@ -54,6 +54,36 @@ export const login = createAsyncThunk<
   }
 });
 
+export const checkSession = createAsyncThunk<
+  User | null,
+  void,
+  { dispatch: AppDispatch; rejectValue: string }
+>("auth/checkSession", async (_, thunkAPI) => {
+  try {
+    const res = await https.get("/api/dr/temp/auth/me");
+    const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
+
+    if (!payload.authenticated || !payload.userId) {
+      return null;
+    }
+
+    return {
+      authenticated: true,
+      userId: String(payload.userId ?? ""),
+      userNm: String(payload.userNm ?? ""),
+      instId: payload.instId ? String(payload.instId) : undefined,
+      instNm: payload.instNm ? String(payload.instNm) : undefined,
+      roles: Array.isArray(payload.roles)
+        ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
+        : [],
+    };
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err.response?.data?.message ?? "세션 확인 실패",
+    );
+  }
+});
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -76,6 +106,23 @@ const authSlice = createSlice({
       })
       .addCase(login.rejected, (state) => {
         state.loading = false;
+      })
+      .addCase(checkSession.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(checkSession.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = Boolean(action.payload);
+        state.user = action.payload;
+        if (!action.payload) {
+          state.accessToken = null;
+        }
+      })
+      .addCase(checkSession.rejected, (state) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.accessToken = null;
       });
   },
 });

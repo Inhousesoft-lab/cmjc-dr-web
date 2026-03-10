@@ -29,6 +29,7 @@ export const resolveFallbackApiUrl = (path: string) => {
 
 const apiClient = axios.create({
   baseURL: getApiBaseURL(),
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 

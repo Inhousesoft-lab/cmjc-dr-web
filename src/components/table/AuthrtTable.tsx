@@ -44,6 +44,11 @@ type ResearcherOption = {
   mbrNm: string;
 };
 
+const ALL_INDIVIDUAL_OPTION: ResearcherOption = {
+  mbrNo: "ALL",
+  mbrNm: "전체",
+};
+
 export interface AuthrtTableProps {
   eldocNo: string;
   tableAriaLabel?: string;
@@ -103,7 +108,10 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
           params: { brno: deptId, pageNum: 1, pageSize: 1000 },
         });
         const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
-        setResearchers((payload.list ?? []) as ResearcherOption[]);
+        setResearchers([
+          ALL_INDIVIDUAL_OPTION,
+          ...((payload.list ?? []) as ResearcherOption[]),
+        ]);
       } catch (error) {
         notifications.show(getErrorMessage(error), {
           severity: "error",
@@ -215,7 +223,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
                 {(row as any).deptNm || row.deptId || "-"}
               </TableCell>
               <TableCell align="center" sx={styleGroup.content}>
-                {(row as any).indvNm || row.indvId || "-"}
+                {(row as any).indvNm || (row.indvId === "ALL" ? "전체" : row.indvId) || "-"}
               </TableCell>
               <TableCell align="center" sx={styleGroup.content}>
                 <Button
