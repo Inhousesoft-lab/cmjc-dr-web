@@ -1,5 +1,6 @@
 import i18n from "@/i18n/i18n";
 import { JSX, ReactElement, useEffect, useMemo } from "react";
+import { appBase } from "@/utils/appBase";
 import {
   BrowserRouter,
   Navigate,
@@ -88,9 +89,9 @@ const LangGuard = ({ children }: { children: JSX.Element }) => {
 
   if (params.lang && !urlLang) {
     const first = params.lang;
+    const segs = location.pathname.split("/");
 
     if (/^[a-zA-Z]{2}(-[a-zA-Z]{2})?$/.test(first)) {
-      const segs = location.pathname.split("/");
       segs[1] = FALLBACK_LANG;
       const fixed = segs.join("/");
       return (
@@ -132,7 +133,7 @@ export default function Router() {
   };
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={appBase || undefined}> 
       <Routes>
         <Route
           path="/:lang/login"
