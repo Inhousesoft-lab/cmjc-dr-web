@@ -1,4 +1,4 @@
-import { Box, Button, Grid, IconButton, Stack } from "@mui/material";
+import { Alert, Box, Button, Grid, IconButton, Stack } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
@@ -31,6 +31,7 @@ import {
 import type { SearchValues } from "@/types/docDestruction";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import DocDestructionAppvButton from "@/components/actionButtons/DocDestructionAppvButton";
+import { isDocDestructionMockEnabled } from "@/features/docDestruction/docDestructionMock";
 
 const buildSearchValues = (
   docLclsfNo: string,
@@ -86,6 +87,7 @@ export default function DocDestructionList() {
   const listError = useAppSelector(selectDocDestructionError);
 
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
+  const mockEnabled = isDocDestructionMockEnabled();
 
   const handleSelectionChange = useCallback((rows: any[]) => {
     setSelectedRows(rows);
@@ -144,6 +146,11 @@ export default function DocDestructionList() {
 
   return (
     <div>
+      {mockEnabled ? (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          테스트용 mock 승인 목록이 표시 중입니다. 실제 권한 없이 승인 화면과 승인 처리 흐름을 검증할 수 있습니다.
+        </Alert>
+      ) : null}
       <Stack direction="row" className="search-area" mb={2}>
         <Grid container spacing={0} className="table-view-grid">
           {/* 1행 */}

@@ -15,6 +15,7 @@ import LabelCell from "./LabelCell";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
   createDigitalDocAuthrt,
+  deleteDigitalDocAuthrt,
   fetchDigitalDocAuthrtList,
 } from "@/features/digitalDoc/DigitalDocThunk";
 import {
@@ -73,23 +74,41 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
     });
   }, [authrtError, notifications]);
 
-  const handleDelete = useCallback(async () => {
-    const confirmed = await dialogs.confirm(`공람 이력을 삭제 할까요?`, {
-      title: "삭제 확인",
-      severity: "error",
-      okText: "삭제",
-      cancelText: "취소",
-    });
+  const handleDelete = useCallback(
+    async (inqAuthrtNo: string) => {
+      if (isEmpty(inqAuthrtNo)) {
+        await dialogs.alert("삭제할 공람 정보가 없습니다.", {
+          title: "알림",
+          okText: "확인",
+        });
+        return;
+      }
 
-    if (!confirmed) {
-      return;
-    }
+      const confirmed = await dialogs.confirm("공람 이력을 삭제 할까요?", {
+        title: "삭제 확인",
+        severity: "error",
+        okText: "삭제",
+        cancelText: "취소",
+      });
 
-    notifications.show("삭제되었습니다.", {
-      severity: "success",
-      autoHideDuration: 3000,
-    });
-  }, [eldocNo, notifications]);
+      if (!confirmed) return;
+
+      try {
+        await dispatch(deleteDigitalDocAuthrt({ eldocNo, inqAuthrtNo })).unwrap();
+        notifications.show("삭제되었습니다.", {
+          severity: "success",
+          autoHideDuration: 3000,
+        });
+        dispatch(fetchDigitalDocAuthrtList(eldocNo));
+      } catch (error) {
+        notifications.show(getErrorMessage(error), {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [dialogs, dispatch, eldocNo, notifications],
+  );
 
   const handleSave = useCallback(async () => {
     if (isEmpty(deptId) || isEmpty(indvId)) {
@@ -104,7 +123,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
       await dispatch(
         createDigitalDocAuthrt({ eldocNo, deptId, indvId }),
       ).unwrap();
-      notifications.show("등록 되었습니다.", {
+      notifications.show("등록되었습니다.", {
         severity: "success",
         autoHideDuration: 3000,
       });
@@ -153,7 +172,8 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
                   variant="contained"
                   size="small"
                   color="error"
-                  onClick={handleDelete}
+                  onClick={() => handleDelete(row.inqAuthrtNo)}
+                  disabled={authrtSaving}
                 >
                   삭제
                 </Button>
@@ -168,7 +188,6 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
           </TableRow>
         )}
 
-        {/* 새로운 공람자 추가/등록 행 */}
         <TableRow>
           <TableCell>
             <Select
@@ -179,11 +198,10 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
               onChange={(event) => setDeptId(event.target.value as string)}
               aria-label="추가할 부서 선택"
             >
-              {/* TODO: 부서 코드 연결 필요 */}
               <MenuItem value="">
                 <Typography>부서</Typography>
               </MenuItem>
-              <MenuItem value="정보화팀">정보화팀</MenuItem>
+              <MenuItem value="정보팀">정보팀</MenuItem>
               <MenuItem value="경영팀">경영팀</MenuItem>
               <MenuItem value="기획팀">기획팀</MenuItem>
             </Select>
@@ -197,13 +215,12 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
               onChange={(event) => setIndvId(event.target.value as string)}
               aria-label="추가할 이름 선택"
             >
-              {/* TODO: 공람 담당자 연결 필요 */}
               <MenuItem value="">
                 <Typography>이름</Typography>
               </MenuItem>
-              <MenuItem value="전체">전체</MenuItem>
               <MenuItem value="김길동">김길동</MenuItem>
               <MenuItem value="홍길동">홍길동</MenuItem>
+              <MenuItem value="이담당">이담당</MenuItem>
             </Select>
           </TableCell>
           <TableCell align="center">
