@@ -21,6 +21,8 @@ import {
 import { formatDateDash, holdPeriodLabel, ynLabel } from "@/utils/formater";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 
+const DETAIL_LABEL_WIDTH = 180;
+
 export default function DocClassificationDetail() {
   const location = useLocation();
   const { docClsfNo } = useParams();
@@ -55,32 +57,29 @@ export default function DocClassificationDetail() {
   }, [curLang, navigate, targetDocClsfNo]);
 
   const handleViewDataDelete = React.useCallback(async () => {
-    if (!detailData) {
-      return;
-    }
+    if (!detailData) return;
 
     const confirmed = await dialogs.confirm("삭제하시겠습니까?", {
-      title: `삭제 확인`,
+      title: "삭제 확인",
       severity: "error",
       okText: "확인",
       cancelText: "취소",
     });
 
-    if (confirmed) {
-      try {
-        await dispatch(deleteDocClassification(targetDocClsfNo)).unwrap();
+    if (!confirmed) return;
 
-        notifications.show("삭제 되었습니다..", {
-          severity: "success",
-          autoHideDuration: 3000,
-        });
-        navigate(langPath("/docClassification/list", curLang));
-      } catch (e) {
-        notifications.show(getErrorMessage(e), {
-          severity: "error",
-          autoHideDuration: 3000,
-        });
-      }
+    try {
+      await dispatch(deleteDocClassification(targetDocClsfNo)).unwrap();
+      notifications.show("삭제되었습니다.", {
+        severity: "success",
+        autoHideDuration: 3000,
+      });
+      navigate(langPath("/docClassification/list", curLang));
+    } catch (e) {
+      notifications.show(getErrorMessage(e), {
+        severity: "error",
+        autoHideDuration: 3000,
+      });
     }
   }, [curLang, detailData, dialogs, dispatch, navigate, notifications, targetDocClsfNo]);
 
@@ -94,6 +93,33 @@ export default function DocClassificationDetail() {
       },
     });
   };
+
+  const renderFullRow = React.useCallback(
+    (label: string, value: React.ReactNode) => (
+      <TableRow>
+        <LabelCell width={DETAIL_LABEL_WIDTH}>{label}</LabelCell>
+        <TableCell colSpan={3}>{value}</TableCell>
+      </TableRow>
+    ),
+    [],
+  );
+
+  const renderPairRow = React.useCallback(
+    (
+      leftLabel: string,
+      leftValue: React.ReactNode,
+      rightLabel: string,
+      rightValue: React.ReactNode,
+    ) => (
+      <TableRow>
+        <LabelCell width={DETAIL_LABEL_WIDTH}>{leftLabel}</LabelCell>
+        <TableCell>{leftValue}</TableCell>
+        <LabelCell width={DETAIL_LABEL_WIDTH}>{rightLabel}</LabelCell>
+        <TableCell>{rightValue}</TableCell>
+      </TableRow>
+    ),
+    [],
+  );
 
   if (isLoading) {
     return <PageStatus isLoading={isLoading} />;
@@ -143,130 +169,99 @@ export default function DocClassificationDetail() {
         tableAriaLabel="문서분류 요약"
         colgroup={
           <colgroup>
-            <col className="tbl-col-w-200" />
+            <col style={{ width: `${DETAIL_LABEL_WIDTH}px` }} />
             <col />
-            <col className="tbl-col-w-200" />
+            <col style={{ width: `${DETAIL_LABEL_WIDTH}px` }} />
             <col />
           </colgroup>
         }
       >
-        <TableRow>
-          <LabelCell>문서분류</LabelCell>
-          <TableCell colSpan={3}>{classification || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>개인정보 포함</LabelCell>
-          <TableCell>
-            {ynLabel(detailData?.prvcInclYn, "포함", "미포함")}
-          </TableCell>
-          <LabelCell>사용여부</LabelCell>
-          <TableCell>
-            {ynLabel(detailData?.useEn, "사용", "사용안함")}
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>등록일자</LabelCell>
-          <TableCell>{formatDateDash(detailData?.regDt)}</TableCell>
-          <LabelCell>등록자</LabelCell>
-          <TableCell>{detailData?.rgtrId || "-"}</TableCell>
-        </TableRow>
+        {renderFullRow("문서분류", classification || "-")}
+        {renderPairRow(
+          "개인정보 포함",
+          ynLabel(detailData?.prvcInclYn, "포함", "미포함"),
+          "사용여부",
+          ynLabel(detailData?.useEn, "사용", "사용안함"),
+        )}
+        {renderPairRow(
+          "등록일자",
+          formatDateDash(detailData?.regDt),
+          "등록자",
+          detailData?.rgtrId || "-",
+        )}
       </TableWrapper>
 
       <TableWrapper
         tableAriaLabel="문서분류 상세 조회"
         colgroup={
           <colgroup>
-            <col className="tbl-col-w-200" />
+            <col style={{ width: `${DETAIL_LABEL_WIDTH}px` }} />
             <col />
-            <col className="tbl-col-w-200" />
+            <col style={{ width: `${DETAIL_LABEL_WIDTH}px` }} />
             <col />
           </colgroup>
         }
       >
-        <TableRow>
-          <LabelCell>부서명</LabelCell>
-          <TableCell>{sub.deptNm || "-"}</TableCell>
-          <LabelCell>파일명</LabelCell>
-          <TableCell>{sub.fileNm || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>보유목적</LabelCell>
-          <TableCell>{sub.hldPrpsExpln || "-"}</TableCell>
-          <LabelCell>사용부서(내부, 외부)</LabelCell>
-          <TableCell>{sub.useDeptNm || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>개인정보 처리방법</LabelCell>
-          <TableCell>{sub.prvcPrcsMthdExpln || "-"}</TableCell>
-          <LabelCell>보유기간</LabelCell>
-          <TableCell>
-            {holdPeriodLabel(sub.hldPrdDfyrs ?? null, sub.hldPrdMmCnt ?? null)}
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>정보주체의 개인정보항목</LabelCell>
-          <TableCell>{sub.infoMnbdPrvcMttr || "-"}</TableCell>
-          <LabelCell>법정대리인의 개인정보항목</LabelCell>
-          <TableCell>{sub.sttyAgtPrvcMttr || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>주민등록번호 수집여부</LabelCell>
-          <TableCell>{ynLabel(sub.rrnoClctYn, "수집", "미수집")}</TableCell>
-          <LabelCell>주민등록번호 수집 법령근거</LabelCell>
-          <TableCell>{sub.rrnoClctSttBssExpln || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>정보주체 동의여부</LabelCell>
-          <TableCell>{ynLabel(sub.infoMnbdAgreYn, "동의", "미동의")}</TableCell>
-          <LabelCell>정보주체 동의 없이 수집 법령근거</LabelCell>
-          <TableCell>{sub.infoMnbdDsagClctSttBssExpln || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>민감 정보 보유여부</LabelCell>
-          <TableCell>{ynLabel(sub.spiHldYn, "보유", "미보유")}</TableCell>
-          <LabelCell>민감 정보 별도동의 여부</LabelCell>
-          <TableCell>{ynLabel(sub.spiIndivAgrnYn, "동의", "미동의")}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>고유식별정보 보유여부</LabelCell>
-          <TableCell>{ynLabel(sub.uiiHldYn, "보유", "미보유")}</TableCell>
-          <LabelCell>고유식별정보 별도동의여부</LabelCell>
-          <TableCell>{ynLabel(sub.uiiIndivAgreYn, "동의", "미동의")}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>개인정보영향평가 대상여부</LabelCell>
-          <TableCell>{ynLabel(sub.prvcEvlTrgtYn, "대상", "미대상")}</TableCell>
-          <LabelCell>취급담당자</LabelCell>
-          <TableCell>{sub.hndlPicNm || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>제3자 제공받는 자</LabelCell>
-          <TableCell>{sub.tdptySplrcpNmCn || "-"}</TableCell>
-          <LabelCell>제3자 제공 근거</LabelCell>
-          <TableCell>{sub.tdptyPvsnBssExpln || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>제3자 제공 항목</LabelCell>
-          <TableCell>{sub.tdptyPvsnMttr || "-"}</TableCell>
-          <LabelCell>개인정보처리 위탁 업체명</LabelCell>
-          <TableCell>{sub.prvcPrcsCnsgnBzentyNmCn || "-"}</TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>개인정보위탁 계약서 여부</LabelCell>
-          <TableCell>{ynLabel(sub.prvcCnsgnCtrtYn, "있음", "없음")}</TableCell>
-          <LabelCell>개인정보위탁사실 게재여부</LabelCell>
-          <TableCell>
-            {ynLabel(sub.prvcCnsgnFactIndctYn, "게재", "미게재")}
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>목적 외 이용.제공 여부</LabelCell>
-          <TableCell>
-            {ynLabel(sub.prpsExclUtztnPvsnYn, "있음", "없음")}
-          </TableCell>
-          <LabelCell>목적 외 이용.제공 근거</LabelCell>
-          <TableCell>{sub.prpsExclUtztnPvsnBssExpln || "-"}</TableCell>
-        </TableRow>
+        {renderPairRow("부서명", sub.deptNm || "-", "파일명", sub.fileNm || "-")}
+        {renderFullRow("보유목적", sub.hldPrpsExpln || "-")}
+        {renderPairRow(
+          "사용부서(내부, 외부)",
+          sub.useDeptNm || "-",
+          "보유기간",
+          holdPeriodLabel(sub.hldPrdDfyrs ?? null, sub.hldPrdMmCnt ?? null),
+        )}
+        {renderFullRow("개인정보 처리방법", sub.prvcPrcsMthdExpln || "-")}
+        {renderFullRow("정보주체의 개인정보항목", sub.infoMnbdPrvcMttr || "-")}
+        {renderFullRow("법정대리인의 개인정보항목", sub.sttyAgtPrvcMttr || "-")}
+        {renderPairRow(
+          "주민등록번호 수집여부",
+          ynLabel(sub.rrnoClctYn, "수집", "미수집"),
+          "주민등록번호 수집 법령근거",
+          sub.rrnoClctSttBssExpln || "-",
+        )}
+        {renderPairRow(
+          "정보주체 동의여부",
+          ynLabel(sub.infoMnbdAgreYn, "동의", "미동의"),
+          "동의 없이 수집 법령근거",
+          sub.infoMnbdDsagClctSttBssExpln || "-",
+        )}
+        {renderPairRow(
+          "민감정보 보유여부",
+          ynLabel(sub.spiHldYn, "보유", "미보유"),
+          "민감정보 별도동의 여부",
+          ynLabel(sub.spiIndivAgrnYn, "동의", "미동의"),
+        )}
+        {renderPairRow(
+          "고유식별정보 보유여부",
+          ynLabel(sub.uiiHldYn, "보유", "미보유"),
+          "고유식별정보 별도동의여부",
+          ynLabel(sub.uiiIndivAgreYn, "동의", "미동의"),
+        )}
+        {renderPairRow(
+          "개인정보영향평가 대상여부",
+          ynLabel(sub.prvcEvlTrgtYn, "대상", "미대상"),
+          "취급담당자",
+          sub.hndlPicNm || "-",
+        )}
+        {renderFullRow("제3자 제공받는 자", sub.tdptySplrcpNmCn || "-")}
+        {renderFullRow("제3자 제공 근거", sub.tdptyPvsnBssExpln || "-")}
+        {renderFullRow("제3자 제공 항목", sub.tdptyPvsnMttr || "-")}
+        {renderFullRow(
+          "개인정보처리 위탁 업체명",
+          sub.prvcPrcsCnsgnBzentyNmCn || "-",
+        )}
+        {renderPairRow(
+          "개인정보위탁 계약서 여부",
+          ynLabel(sub.prvcCnsgnCtrtYn, "있음", "없음"),
+          "개인정보위탁사실 게재여부",
+          ynLabel(sub.prvcCnsgnFactIndctYn, "게재", "미게재"),
+        )}
+        {renderPairRow(
+          "목적 외 이용·제공 여부",
+          ynLabel(sub.prpsExclUtztnPvsnYn, "있음", "없음"),
+          "목적 외 이용·제공 근거",
+          sub.prpsExclUtztnPvsnBssExpln || "-",
+        )}
       </TableWrapper>
     </div>
   );

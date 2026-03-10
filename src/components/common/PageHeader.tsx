@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Menu } from "@/features/menu/MenuSlice";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Breadcrumbs, Link, Typography } from "@mui/material";
+import { getLangFromPathname } from "@/routes/lang";
 import menuItems from "@/routes/menuItems";
 
 interface PageHeaderProps {
@@ -17,6 +18,7 @@ type BreadcrumbItem = {
 
 export default function PageHeader({ children }: PageHeaderProps) {
   const { pathname } = useLocation();
+  const lang = getLangFromPathname(pathname);
   const normalizedPath = pathname.replace(/^\/(ko|en)(\/|$)/, "");
 
   const isPathMatch = (routePath: string, currentPath: string): boolean => {
@@ -62,25 +64,26 @@ export default function PageHeader({ children }: PageHeaderProps) {
   };
 
   const breadcrumbs = findBreadcrumbs(menuItems) ?? [];
-
   const pageTitle =
     breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].label : "Home";
 
   return (
     <div className="content_wrap">
       <div className="location">
-        {/* 1. 상단 로케이션/타이틀 바 */}
         <div className="page_path">
           <h2 className="tit">{pageTitle}</h2>
         </div>
 
-        {/* 1-2. Breadcrumbs */}
         <div className="local">
           <Breadcrumbs
             separator={<NavigateNextIcon className="breadcrumbs_icon" />}
             className="breadcrumbs"
           >
-            <Link component={NavLink} to="/ko/home" className="home_icon">
+            <Link
+              component={NavLink}
+              to={`/${lang}/docClassification/list`}
+              className="home_icon"
+            >
               <span className="home">
                 <span className="blind">홈</span>
               </span>
@@ -98,7 +101,7 @@ export default function PageHeader({ children }: PageHeaderProps) {
                 <Link
                   key={key}
                   component={NavLink}
-                  to={`/ko/${item.path}`}
+                  to={`/${lang}/${item.path}`}
                   className="current_text"
                 >
                   {item.label}
@@ -109,7 +112,6 @@ export default function PageHeader({ children }: PageHeaderProps) {
         </div>
       </div>
 
-      {/* 2. 하단 컨텐츠 영역 (Outlet이 렌더링되는 곳) */}
       <div className="content">{children}</div>
     </div>
   );
