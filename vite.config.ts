@@ -5,10 +5,11 @@ import { fileURLToPath, URL } from "node:url";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const proxyTarget = "http://localhost:8080";
+  const appBase = env.VITE_APP_BASE?.trim() || "/";
 
   return {
     plugins: [react()],
-    base: "/",
+    base: appBase,
     server: {
       port: 3000,
       proxy: {

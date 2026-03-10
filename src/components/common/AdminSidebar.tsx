@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { getLangFromPathname, langPath, SupportedLang } from "@/routes/lang";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { stripAppBase, withAppBase } from "@/utils/appBase";
 
 type MenuItem = {
   key: string;
@@ -68,6 +69,13 @@ export default function AdminSidebar({
     () => getLangFromPathname(location.pathname),
     [location.pathname],
   );
+
+  const normalizedPathname = React.useMemo(
+    () => stripAppBase(location.pathname),
+    [location.pathname],
+  );
+  const logoSrc = withAppBase("/img/logo.png");
+  const homeHref = withAppBase(`/${curLang}/home`);
 
   const matchPathPrefix = (pathname: string, target: string) => {
     return pathname === target || pathname?.startsWith(target + "/");
@@ -138,14 +146,14 @@ export default function AdminSidebar({
   React.useEffect(() => {
     const { sectionKey, rootKey, openKeys, activeKey } = findMenuPath(
       items,
-      location.pathname,
+      normalizedPathname,
       curLang,
     );
     setOpenRootKey(rootKey);
     setOpenKeys(new Set(openKeys));
     setActiveKey(activeKey);
     setOpenSectionKeys(new Set(sectionKey ? [sectionKey] : []));
-  }, [location.pathname, items, curLang]);
+  }, [normalizedPathname, items, curLang]);
 
   const resolveTo = React.useCallback(
     (item: { path: string }, hasChildren: boolean) => {
@@ -245,8 +253,8 @@ export default function AdminSidebar({
       {/* 로고 + 버튼 */}
       <div className="sidebar_top">
         <h1 className={`logo ${expanded ? "" : "collapsed"}`.trim()}>
-          <a href="/">
-            <img src="/img/logo.png" alt="한국의약품안전관리원" />
+          <a href={homeHref}>
+            <img src={logoSrc} alt="한국의약품안전관리원" />
             <span className="logo_text">통합관리시스템</span>
           </a>
         </h1>

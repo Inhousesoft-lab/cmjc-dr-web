@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/ko";
 
 import "./utils/globalFunc";
+import { appBase, stripAppBase, withAppBase } from "./utils/appBase";
 
 const rootEl = document.getElementById("root");
 
@@ -33,23 +34,28 @@ function resolveInitialLang() {
 
 // ✅ ReactDOM.render 이전에 실행
 const lang = resolveInitialLang();
+const normalizedPath = stripAppBase(window.location.pathname);
 
-if (window.location.pathname === "/") {
+if (
+  window.location.pathname === "/" ||
+  normalizedPath === "/" ||
+  window.location.pathname === appBase
+) {
   window.history.replaceState(
     null,
     "",
-    `/${lang}${window.location.search}${window.location.hash}`,
+    `${withAppBase(`/${lang}`)}${window.location.search}${window.location.hash}`,
   );
 }
 
 dayjs.locale("ko"); // 전역 로케일을 한국으로 설정
 
 ReactDOM.createRoot(rootEl).render(
-  <React.StrictMode>
+  <React.Fragment>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <App />
       </PersistGate>
     </Provider>
-  </React.StrictMode>,
+  </React.Fragment>,
 );

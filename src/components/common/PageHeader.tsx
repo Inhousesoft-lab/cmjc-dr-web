@@ -3,8 +3,10 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Menu } from "@/features/menu/MenuSlice";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Breadcrumbs, Link, Typography } from "@mui/material";
+import { stripAppBase } from "@/utils/appBase";
 import { getLangFromPathname } from "@/routes/lang";
 import menuItems from "@/routes/menuItems";
+
 
 interface PageHeaderProps {
   children?: React.ReactNode;
@@ -16,11 +18,17 @@ type BreadcrumbItem = {
   hasPage: boolean;
 };
 
+function normalizePath(path: string): string {
+  return path.replace(/^\/+|\/+$/g, "");
+}
+
 export default function PageHeader({ children }: PageHeaderProps) {
   const { pathname } = useLocation();
+  const normalizedLocationPath = stripAppBase(pathname);
   const lang = getLangFromPathname(pathname);
-  const normalizedPath = pathname.replace(/^\/(ko|en)(\/|$)/, "");
-
+  const normalizedPath = normalizePath(
+    normalizedLocationPath.replace(/^\/(ko|en|ja|zh)(\/|$)/, ""),
+  );
   const isPathMatch = (routePath: string, currentPath: string): boolean => {
     const escaped = routePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pathPattern = escaped.replace(/:([^/]+)/g, "[^/]+");

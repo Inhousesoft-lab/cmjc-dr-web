@@ -1,4 +1,5 @@
 import { LOCALE_KEY } from "@/i18n/i18n";
+import { stripAppBase } from "@/utils/appBase";
 
 export const SUPPORTED_LANGS = ["ko", "en", "ja", "zh"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
@@ -29,7 +30,7 @@ export function detectBrowserLang(): SupportedLang {
 }
 
 export function getLangFromPathname(pathname: string): SupportedLang {
-  const seg = pathname.split("/")[1]; // '' | 'ko' | 'en' | ...
+  const seg = stripAppBase(pathname).split("/")[1]; // '' | 'ko' | 'en' | ...
   return normalizeLang(seg) ?? FALLBACK_LANG;
 }
 
