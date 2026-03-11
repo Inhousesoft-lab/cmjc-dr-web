@@ -32,6 +32,7 @@ interface DialogTriggerProps {
   actionsPosition?: ActionsPosition;
   isEmpty?: boolean;
   emptyText?: string;
+  triggerButtonClassName?: string;
 }
 
 export default function DialogTrigger({
@@ -50,6 +51,7 @@ export default function DialogTrigger({
   paperSx,
   actions,
   actionsPosition = "bottom",
+  triggerButtonClassName,
 }: DialogTriggerProps) {
   const [dragOffset, setDragOffset] = React.useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = React.useState(false);
@@ -111,7 +113,11 @@ export default function DialogTrigger({
             {triggerIcon || <SearchIcon />}
           </IconButton>
         ) : (
-          <Button variant="outlined" onClick={onOpen}>
+          <Button
+            className={triggerButtonClassName}
+            variant="outlined"
+            onClick={onOpen}
+          >
             {buttonLabel}
           </Button>
         ))}

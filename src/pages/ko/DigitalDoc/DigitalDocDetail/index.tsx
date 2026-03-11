@@ -152,7 +152,12 @@ export default function DigitalDocDetail() {
         <Button variant="outlined" color="primary" onClick={handleToggleTempEdit}>
           {isTempEditEnabled ? "임시 수정 닫기" : "임시 수정 열기"}
         </Button>
-        <Button variant="contained" color="primary" onClick={handleBack}>
+        <Button
+          className="btn_fixed-sm"
+          variant="contained"
+          color="primary"
+          onClick={handleBack}
+        >
           목록
         </Button>
       </div>

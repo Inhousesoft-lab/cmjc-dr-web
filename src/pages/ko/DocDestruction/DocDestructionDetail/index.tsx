@@ -117,7 +117,11 @@ export default function DocDestructionDetail() {
   return (
     <div>
       <Box className="btn_wrapper" mt={2}>
-        <Button size="large" variant="contained" onClick={handleBack}>
+        <Button
+          className="btn_fixed-sm btn_fixed-md"
+          variant="contained"
+          onClick={handleBack}
+        >
           목록
         </Button>
         <DigitalDocHistoryButton eldocNo={eldocNo} />
