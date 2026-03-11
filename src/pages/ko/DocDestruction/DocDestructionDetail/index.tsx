@@ -14,6 +14,7 @@ import {
   selectDocDestructionDetailError,
   selectDocDestructionDetailLoading,
 } from "@/features/docDestruction/DocDestructionSelectors";
+import type { SearchValues } from "@/types/docDestruction";
 
 export default function DocDestructionDetail() {
   const location = useLocation();
@@ -95,23 +96,16 @@ export default function DocDestructionDetail() {
   };
 
   const handleBack = () => {
-    const listState = (
-      location.state as
-        | {
-            listState?: {
-              docLclsfNo: string;
-              docMclsfNo: string;
-              docSclsfNo: string;
-              pageNum: number;
-              pageSize: number;
-            };
-          }
-        | null
-    )?.listState;
+    const detailState = location.state as
+      | {
+          sourceListPath?: string;
+          listState?: SearchValues;
+        }
+      | null;
 
-    navigate(langPath("destruction/list", curLang), {
+    navigate(langPath(detailState?.sourceListPath ?? "destruction/list", curLang), {
       state: {
-        restoreListState: listState,
+        restoreListState: detailState?.listState,
       },
     });
   };
@@ -133,9 +127,9 @@ export default function DocDestructionDetail() {
         tableAriaLabel="파기 상세 정보"
         colgroup={
           <colgroup>
-            <col className="tbl-col-w-20p" />
+            <col style={{ width: "160px" }} />
             <col />
-            <col className="tbl-col-w-20p" />
+            <col style={{ width: "160px" }} />
             <col />
           </colgroup>
         }

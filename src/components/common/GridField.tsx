@@ -4,10 +4,16 @@ const GridField = ({
   label,
   value,
   item = 6,
+  labelSize,
+  valueSize,
+  blank = false,
 }: {
   label: string;
   value: React.ReactNode;
   item?: 12 | 9 | 8 | 6 | 4 | 3;
+  labelSize?: { xs: number; sm: number };
+  valueSize?: { xs: number; sm: number };
+  blank?: boolean;
   fullWidth?: boolean;
 }) => {
   const sizeMap = {
@@ -38,13 +44,21 @@ const GridField = ({
   } as const;
 
   const size = sizeMap[item];
+  const resolvedLabelSize = labelSize ?? size.label;
+  const resolvedValueSize = valueSize ?? size.value;
 
   return (
     <>
-      <Grid size={size.label} className={`table-view__label-cell`}>
+      <Grid
+        size={resolvedLabelSize}
+        className={`table-view__label-cell${blank ? " table-view__label-cell--blank" : ""}`}
+      >
         <Typography variant="subtitle2">{label}</Typography>
       </Grid>
-      <Grid size={size.value} className={`table-view__value-cell`}>
+      <Grid
+        size={resolvedValueSize}
+        className={`table-view__value-cell${blank ? " table-view__value-cell--blank" : ""}`}
+      >
         <Typography component="div" variant="body2">
           {value}
         </Typography>

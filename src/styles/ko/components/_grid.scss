@@ -67,3 +67,13 @@
   display: block;
   padding: 6px 10px;
 }
+
+.table-view__label-cell--blank,
+.table-view__value-cell--blank {
+  background: #fff;
+}
+
+.table-view__label-cell--blank .MuiTypography-root,
+.table-view__value-cell--blank .MuiTypography-root {
+  padding: 0;
+}

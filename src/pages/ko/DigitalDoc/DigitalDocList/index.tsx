@@ -172,7 +172,7 @@ export default function DigitalDocList() {
             }
           />
           <GridField
-            item={6}
+            item={4}
             label="검색어"
             value={
               <TextField
@@ -190,7 +190,7 @@ export default function DigitalDocList() {
             }
           />
           <GridField
-            item={6}
+            item={4}
             label="문서제목"
             value={
               <TextField
@@ -207,6 +207,7 @@ export default function DigitalDocList() {
               />
             }
           />
+          <GridField item={4} label="" value={null} blank />
         </Grid>
         <Box className="table-view-actions">
           <Stack spacing={1} alignItems="center">

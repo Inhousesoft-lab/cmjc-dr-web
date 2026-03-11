@@ -206,13 +206,29 @@ export default function HoldingInstitutionList() {
     dispatch(fetchHoldingInstitutionList(resetParams));
   }, [dispatch]);
 
+  const handleSubmit = React.useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      handleSearch();
+    },
+    [handleSearch],
+  );
+
   return (
     <div>
-      <Stack direction="row" className="search-area" mb={2}>
+      <Stack
+        component="form"
+        direction="row"
+        className="search-area"
+        mb={2}
+        onSubmit={handleSubmit}
+      >
         <Grid container spacing={0} className="table-view-grid">
           <GridField
             item={6}
             label="수집일자"
+            labelSize={{ xs: 4, sm: 1 }}
+            valueSize={{ xs: 8, sm: 5 }}
             value={
               <div className="filter-range">
                 <MuiDatePickerFt
@@ -234,6 +250,8 @@ export default function HoldingInstitutionList() {
           <GridField
             item={6}
             label="종료일자"
+            labelSize={{ xs: 4, sm: 1 }}
+            valueSize={{ xs: 8, sm: 5 }}
             value={
               <div className="filter-range">
                 <MuiDatePickerFt
@@ -343,7 +361,7 @@ export default function HoldingInstitutionList() {
             }
           />
           <GridField
-            item={6}
+            item={3}
             label="문서제목"
             value={
               <TextField
@@ -383,10 +401,11 @@ export default function HoldingInstitutionList() {
               />
             }
           />
+          <GridField item={3} label="" value={null} blank />
         </Grid>
         <Box className="table-view-actions">
           <Stack spacing={1} alignItems="center">
-            <Button variant="contained" onClick={handleSearch}>
+            <Button type="submit" variant="contained" onClick={handleSearch}>
               조회
             </Button>
             <IconButton
