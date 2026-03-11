@@ -129,6 +129,7 @@ export default function DigitalDocHistoryButton({
   return (
     <DialogTrigger
       buttonLabel="이력"
+      triggerButtonClassName="btn_fixed-sm btn_fixed-md"
       title="이력"
       maxWidth="xl"
       onOpen={handleClickOpen}

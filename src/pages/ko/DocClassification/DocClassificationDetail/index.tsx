@@ -144,16 +144,17 @@ export default function DocClassificationDetail() {
         className="detail-top-actions"
       >
         <div className="btn_wrapper detail-top-actions__group">
-          <Button variant="contained" onClick={handleBack}>
+          <Button className="btn_fixed-sm" variant="contained" onClick={handleBack}>
             목록
           </Button>
           <DocClassificationHistoryButton docClsfNo={targetDocClsfNo} />
         </div>
         <div className="btn_wrapper detail-top-actions__group">
-          <Button variant="contained" onClick={handleViewDataEdit}>
+          <Button className="btn_fixed-sm" variant="contained" onClick={handleViewDataEdit}>
             수정
           </Button>
           <Button
+            className="btn_fixed-sm"
             variant="contained"
             color="error"
             onClick={handleViewDataDelete}

@@ -53,6 +53,7 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
   return (
     <DialogTrigger
       buttonLabel="이력"
+      triggerButtonClassName="btn_fixed-sm"
       title="이력"
       maxWidth="md"
       open={open}

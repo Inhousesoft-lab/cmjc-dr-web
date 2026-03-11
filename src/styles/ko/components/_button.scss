@@ -24,6 +24,27 @@
   z-index: 4;
 }
 
+.btn_fixed-sm {
+  width: 96px !important;
+  min-width: 96px !important;
+}
+
+.detail-top-actions .MuiButton-root.btn_fixed-sm,
+.btn_wrapper .MuiButton-root.btn_fixed-sm {
+  width: 96px !important;
+  min-width: 96px !important;
+}
+
+.btn_fixed-md {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
+.btn_wrapper .MuiButton-root.btn_fixed-md {
+  height: 40px !important;
+  min-height: 40px !important;
+}
+
 .highlighted_btn {
   display: inline-flex;
   align-items: center;
