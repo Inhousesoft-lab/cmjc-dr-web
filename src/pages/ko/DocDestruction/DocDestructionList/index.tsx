@@ -27,26 +27,18 @@ import type { SearchValues } from "@/types/docDestruction";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import { printElement } from "@/utils/print";
 
-const buildSearchValues = (
-  docLclsfNo: string,
-  docMclsfNo: string,
-  docSclsfNo: string,
-): SearchValues => ({
+const buildSearchValues = (): SearchValues => ({
   reqCd: "CMPLT",
-  docLclsfNo,
-  docMclsfNo,
-  docSclsfNo,
+  docLclsfNo: "",
+  docMclsfNo: "",
+  docSclsfNo: "",
   prvcInclYn: "N",
   docNo: "",
   docTtl: "",
   hldPrdChangedOnly: false,
   docClsfNm: "",
-  fromEndYmd: dayjs().add(-7, "day").format("YYYYMMDD"),
-  toEndYmd: dayjs()
-    .set("year", 9999)
-    .set("month", 11)
-    .set("date", 31)
-    .format("YYYYMMDD"),
+  fromEndYmd: "",
+  toEndYmd: "",
   fromDstrcAplyYmd: "",
   toDstrcAplyYmd: "",
   fromDstrcAprvYmd: "",
@@ -55,32 +47,41 @@ const buildSearchValues = (
   pageSize: 10,
 });
 
-interface DocDestructionListState {
-  docLclsfNo: string;
-  docMclsfNo: string;
-  docSclsfNo: string;
-  pageNum: number;
-  pageSize: number;
-}
-
 export default function DocDestructionList() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const curLang = getLangFromPathname(location.pathname);
+  const initialSearchValues = React.useMemo(() => buildSearchValues(), []);
 
   const printAreaRef = useRef<HTMLDivElement | null>(null);
 
   const restoredState = (
-    location.state as { restoreListState?: DocDestructionListState } | null
+    location.state as { restoreListState?: SearchValues } | null
   )?.restoreListState;
 
-  const [docLclsfNo, setDocLclsfNo] = useState(restoredState?.docLclsfNo ?? "");
-  const [docMclsfNo, setDocMclsfNo] = useState(restoredState?.docMclsfNo ?? "");
-  const [docSclsfNo, setDocSclsfNo] = useState(restoredState?.docSclsfNo ?? "");
-  const [pageNum, setPageNum] = useState(restoredState?.pageNum ?? 1);
-  const [pageSize, setPageSize] = useState(restoredState?.pageSize ?? 10);
+  const [docLclsfNo, setDocLclsfNo] = useState(
+    restoredState?.docLclsfNo ?? initialSearchValues.docLclsfNo,
+  );
+  const [docMclsfNo, setDocMclsfNo] = useState(
+    restoredState?.docMclsfNo ?? initialSearchValues.docMclsfNo,
+  );
+  const [docSclsfNo, setDocSclsfNo] = useState(
+    restoredState?.docSclsfNo ?? initialSearchValues.docSclsfNo,
+  );
+  const [fromDstrcAprvYmd, setFromDstrcAprvYmd] = useState(
+    restoredState?.fromDstrcAprvYmd ?? initialSearchValues.fromDstrcAprvYmd,
+  );
+  const [toDstrcAprvYmd, setToDstrcAprvYmd] = useState(
+    restoredState?.toDstrcAprvYmd ?? initialSearchValues.toDstrcAprvYmd,
+  );
+  const [pageNum, setPageNum] = useState(
+    restoredState?.pageNum ?? initialSearchValues.pageNum,
+  );
+  const [pageSize, setPageSize] = useState(
+    restoredState?.pageSize ?? initialSearchValues.pageSize,
+  );
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     docLclsfNo,
     docMclsfNo,
@@ -95,11 +96,25 @@ export default function DocDestructionList() {
 
   const searchValues = useMemo(
     () => ({
-      ...buildSearchValues(docLclsfNo, docMclsfNo, docSclsfNo),
+      ...initialSearchValues,
+      docLclsfNo,
+      docMclsfNo,
+      docSclsfNo,
+      fromDstrcAprvYmd,
+      toDstrcAprvYmd,
       pageNum,
       pageSize,
     }),
-    [docLclsfNo, docMclsfNo, docSclsfNo, pageNum, pageSize],
+    [
+      docLclsfNo,
+      docMclsfNo,
+      docSclsfNo,
+      fromDstrcAprvYmd,
+      initialSearchValues,
+      pageNum,
+      pageSize,
+      toDstrcAprvYmd,
+    ],
   );
 
   const loadData = () => {
@@ -108,17 +123,22 @@ export default function DocDestructionList() {
     dispatch(fetchDocDestructionList(nextParams));
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    loadData();
+  };
+
   const handleRefresh = () => {
-    setDocLclsfNo("");
-    setDocMclsfNo("");
-    setDocSclsfNo("");
-    setPageNum(1);
-    setPageSize(10);
+    setDocLclsfNo(initialSearchValues.docLclsfNo);
+    setDocMclsfNo(initialSearchValues.docMclsfNo);
+    setDocSclsfNo(initialSearchValues.docSclsfNo);
+    setFromDstrcAprvYmd(initialSearchValues.fromDstrcAprvYmd);
+    setToDstrcAprvYmd(initialSearchValues.toDstrcAprvYmd);
+    setPageNum(initialSearchValues.pageNum);
+    setPageSize(initialSearchValues.pageSize);
     dispatch(
       fetchDocDestructionList({
-        ...buildSearchValues("", "", ""),
-        pageNum: 1,
-        pageSize: 10,
+        ...initialSearchValues,
       }),
     );
   };
@@ -126,9 +146,7 @@ export default function DocDestructionList() {
   useEffect(() => {
     dispatch(
       fetchDocDestructionList({
-        ...buildSearchValues(docLclsfNo, docMclsfNo, docSclsfNo),
-        pageNum,
-        pageSize,
+        ...searchValues,
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,20 +180,21 @@ export default function DocDestructionList() {
     if (!row.eldocNo) return;
     navigate(langPath(`docDestruction/${row.eldocNo}`, curLang), {
       state: {
-        listState: {
-          docLclsfNo,
-          docMclsfNo,
-          docSclsfNo,
-          pageNum,
-          pageSize,
-        } satisfies DocDestructionListState,
+        sourceListPath: "destruction/list",
+        listState: searchValues,
       },
     });
   };
 
   return (
     <div>
-      <Stack direction="row" className="search-area" mb={2}>
+      <Stack
+        component="form"
+        direction="row"
+        className="search-area"
+        mb={2}
+        onSubmit={handleSubmit}
+      >
         <Grid container spacing={0} className="table-view-grid">
           {/* 1행 */}
           <GridField
@@ -224,12 +243,20 @@ export default function DocDestructionList() {
           {/* 2행 */}
           <GridField
             item={12}
-            label="기간"
+            label="파기일자"
+            labelSize={{ xs: 4, sm: 1 }}
+            valueSize={{ xs: 8, sm: 11 }}
             value={
               <div className="filter-range">
-                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <MuiDatePickerFt
+                  value={fromDstrcAprvYmd}
+                  onChange={setFromDstrcAprvYmd}
+                />
                 <span className="filter-range-sep">-</span>{" "}
-                <MuiDatePickerFt value={""} onChange={() => {}} />
+                <MuiDatePickerFt
+                  value={toDstrcAprvYmd}
+                  onChange={setToDstrcAprvYmd}
+                />
               </div>
             }
           />
@@ -242,7 +269,7 @@ export default function DocDestructionList() {
             alignItems: "center",
           }}
         >
-          <Button variant="contained" onClick={loadData}>
+          <Button type="submit" variant="contained" onClick={loadData}>
             조회
           </Button>
           <IconButton
