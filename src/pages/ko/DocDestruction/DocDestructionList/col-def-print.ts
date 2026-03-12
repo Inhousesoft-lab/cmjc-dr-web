@@ -14,7 +14,9 @@ export const listDefs = [
   {
     headerName: "번호",
     field: "rowNo",
-    width: 80,
+    width: 72,
+    minWidth: 72,
+    maxWidth: 72,
     flex: 0,
     cellStyle: { textAlign: "center" },
   },
@@ -49,6 +51,10 @@ export const listDefs = [
   {
     headerName: "파기일자",
     field: "dstrcAprvDt",
+    width: 118,
+    minWidth: 118,
+    maxWidth: 118,
+    flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
       const prstCd = String(params?.data?.dstrcPrcsPrstCd ?? "");

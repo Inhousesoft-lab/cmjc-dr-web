@@ -17,7 +17,9 @@ export const listDefs: ColDef<DocDestruction>[] = [
     headerName: "번호",
     field: "rowNo",
     flex: 0,
-    width: 100,
+    width: 72,
+    minWidth: 72,
+    maxWidth: 72,
     cellStyle: { textAlign: "center" },
   },
   {
@@ -51,6 +53,10 @@ export const listDefs: ColDef<DocDestruction>[] = [
   {
     headerName: "파기일자",
     field: "dstrcAprvDt",
+    width: 118,
+    minWidth: 118,
+    maxWidth: 118,
+    flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
       const prstCd = String(params?.data?.dstrcPrcsPrstCd ?? "");

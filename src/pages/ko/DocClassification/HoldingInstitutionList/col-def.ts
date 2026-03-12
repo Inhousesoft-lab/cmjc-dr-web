@@ -1,16 +1,21 @@
+import React from "react";
 import { formatDateDash, formatPeriod } from "@/utils/formater";
 
 export const listDefs = [
   {
     headerName: "번호",
     field: "rowNo",
-    width: 70,
+    width: 72,
+    minWidth: 72,
+    maxWidth: 72,
+    flex: 0,
     cellStyle: { textAlign: "center" },
   },
   {
     headerName: "문서분류",
     field: "docClsfNm",
-    width: 260,
+    minWidth: 240,
+    flex: 2.2,
     valueFormatter: (params: any) => {
       const l = params?.data?.docLclsfNm ?? "";
       const m = params?.data?.docMclsfNm ?? "";
@@ -22,17 +27,30 @@ export const listDefs = [
   {
     headerName: "문서번호",
     field: "docNo",
-    width: 130,
+    minWidth: 130,
+    flex: 1.1,
   },
   {
     headerName: "문서제목",
     field: "docTtl",
-    width: 220,
+    minWidth: 200,
+    flex: 1.6,
   },
   {
     headerName: "정보주체 동의여부",
     field: "docClsf.prvcFileHldPrst.infoMnbdAgreYn",
-    width: 170,
+    width: 112,
+    minWidth: 112,
+    maxWidth: 112,
+    flex: 0,
+    headerComponent: () =>
+      React.createElement(
+        "span",
+        null,
+        "정보주체",
+        React.createElement("br"),
+        "동의여부",
+      ),
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
       const yn = params?.data?.docClsf?.prvcFileHldPrst?.infoMnbdAgreYn;
@@ -44,7 +62,10 @@ export const listDefs = [
   {
     headerName: "수집일자",
     field: "clctYmd",
-    width: 120,
+    width: 118,
+    minWidth: 118,
+    maxWidth: 118,
+    flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => formatDateDash(params?.value),
   },
@@ -55,7 +76,10 @@ export const listDefs = [
       {
         headerName: "보유기간",
         field: "hldPrdDfyrs",
-        width: 110,
+        width: 104,
+        minWidth: 104,
+        maxWidth: 104,
+        flex: 0,
         cellStyle: { textAlign: "center" },
         valueFormatter: (params: any) =>
           formatPeriod(params?.data?.hldPrdDfyrs, params?.data?.hldPrdMmCnt),
@@ -63,7 +87,10 @@ export const listDefs = [
       {
         headerName: "종료일자",
         field: "endYmd",
-        width: 120,
+        width: 118,
+        minWidth: 118,
+        maxWidth: 118,
+        flex: 0,
         cellStyle: { textAlign: "center" },
         valueFormatter: (params: any) => formatDateDash(params?.value),
       },
@@ -76,7 +103,10 @@ export const listDefs = [
       {
         headerName: "보유기간",
         field: "docClsf.prvcFileHldPrst.hldPrdDfyrs",
-        width: 110,
+        width: 104,
+        minWidth: 104,
+        maxWidth: 104,
+        flex: 0,
         cellStyle: { textAlign: "center" },
         valueFormatter: (params: any) =>
           formatPeriod(
@@ -87,7 +117,10 @@ export const listDefs = [
       {
         headerName: "종료일자",
         field: "endYmdAfterChanged",
-        width: 120,
+        width: 118,
+        minWidth: 118,
+        maxWidth: 118,
+        flex: 0,
         cellStyle: { textAlign: "center" },
         valueFormatter: (params: any) => formatDateDash(params?.value),
       },
@@ -96,18 +129,22 @@ export const listDefs = [
   {
     headerName: "등록자(부서)",
     field: "rgtrId",
-    width: 150,
+    minWidth: 160,
+    flex: 1.3,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
       const rgtrId = params?.data?.rgtrId ?? "-";
-      const deptId = params?.data?.deptId ?? "-";
-      return `${rgtrId} (${deptId})`;
+      const deptNm = params?.data?.deptNm?.trim() || "-";
+      return `${rgtrId} (${deptNm})`;
     },
   },
   {
     headerName: "등록일자",
     field: "regDt",
-    width: 120,
+    width: 118,
+    minWidth: 118,
+    maxWidth: 118,
+    flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => formatDateDash(params?.value),
   },
