@@ -90,6 +90,7 @@ export const digitalDocHistoryRowSchema = z.looseObject({
   prvcDstrcAutzrId: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
   actCn: stringField,
   acsrIpAddr: stringField,
   eqpmntNm: stringField,

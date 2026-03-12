@@ -110,6 +110,7 @@ export interface DigitalDocHistory {
   eqpmntNm: string; // 장비명
   regDt: string; // 등록일자
   rgtrId: string; // 등록자
+  rgtrNm: string;
 }
 
 export interface DigitalAuthrtHistory {

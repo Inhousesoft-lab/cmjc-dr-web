@@ -90,6 +90,8 @@ const docClassificationSchema = z
         "prvcCnsgnCtrtYn",
         "prvcCnsgnFactIndctYn",
         "prpsExclUtztnPvsnYn",
+        "prvcPrcsCnsgnBzentyNmCn",
+        "prpsExclUtztnPvsnBssExpln",
       ]);
 
       if (isBlank(sub.deptNm)) {

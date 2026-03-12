@@ -114,6 +114,7 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
     eldocYn: toStr(item?.eldocYn),
     atchFileSn: toStr(item?.atchFileSn),
     deptId: toStr(item?.deptId),
+    deptNm: toStr(item?.deptNm),
     dstrcPrcsPrstCd: toStr(item?.dstrcPrcsPrstCd),
     dstrcAplyDt: toStr(item?.dstrcAplyDt),
     dstrcAplcntId: toStr(item?.dstrcAplcntId),

@@ -84,6 +84,7 @@ export const holdingInstitutionRowSchema = z.looseObject({
   eldocYn: stringField,
   atchFileSn: stringField,
   deptId: stringField,
+  deptNm: stringField,
   dstrcPrcsPrstCd: stringField,
   dstrcAplyDt: stringField,
   dstrcAplcntId: stringField,
