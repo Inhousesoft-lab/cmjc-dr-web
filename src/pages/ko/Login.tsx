@@ -30,12 +30,17 @@ export default function Login() {
     e.preventDefault();
     setErrorMsg("");
 
-    if (!id || !password) {
+    const trimmedId = id.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedId || !trimmedPassword) {
       setErrorMsg("아이디와 비밀번호를 입력해주세요.");
       return;
     }
 
-    const result = await dispatch(login({ userId: id, password }));
+    const result = await dispatch(
+      login({ userId: trimmedId, password: trimmedPassword }),
+    );
 
     if (login.fulfilled.match(result)) {
       sessionStorage.removeItem("postLoginRedirect");
@@ -56,7 +61,7 @@ export default function Login() {
           value={id}
           onChange={(e) => setId(e.target.value)}
           style={styles.input}
-          placeholder="아이디를 입력하세요."
+          placeholder="아이디를 입력하세요"
         />
 
         <label style={styles.label}>비밀번호</label>
@@ -65,7 +70,7 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
-          placeholder="비밀번호를 입력하세요."
+          placeholder="비밀번호를 입력하세요"
         />
 
         {errorMsg && <p style={styles.error}>{errorMsg}</p>}

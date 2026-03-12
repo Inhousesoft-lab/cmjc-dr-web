@@ -179,8 +179,14 @@ export default function DigitalDocHistoryButton({
                   }}
                   sx={{ cursor: "pointer" }}
                 >
-                  <TableCell align="center">{row.deptId || "-"}</TableCell>
-                  <TableCell align="center">{row.indvId || "-"}</TableCell>
+                  <TableCell align="center">
+                    {(row as any).deptNm || row.deptId || "-"}
+                  </TableCell>
+                  <TableCell align="center">
+                    {(row as any).indvNm ||
+                      (row.indvId === "ALL" ? "전체" : row.indvId) ||
+                      "-"}
+                  </TableCell>
                   <TableCell align="center">{row.actCn || "-"}</TableCell>
                   <TableCell align="center">{row.rgtrId || "-"}</TableCell>
                   <TableCell align="center">{formatDateDash(row.regDt)}</TableCell>
