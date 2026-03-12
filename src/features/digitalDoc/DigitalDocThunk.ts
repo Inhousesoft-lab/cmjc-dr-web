@@ -275,6 +275,7 @@ export type DigitalDocCreatePayload = {
   docMclsfNo: string;
   docSclsfNo: string;
   docClsfNo: string;
+  prvcInclYn: string;
   docNo: string;
   docTtl: string;
   clctYmd: string;

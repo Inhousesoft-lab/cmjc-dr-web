@@ -1,4 +1,5 @@
 import { AppDispatch } from "@/app/store";
+import { normalizeDocDestructionRoles } from "@/features/docDestruction/docDestructionAccess";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { https } from "@shared/utils/https";
 
@@ -17,6 +18,28 @@ interface AuthState {
   accessToken: string | null;
   loading: boolean;
 }
+
+const normalizeUser = (payload: Partial<User>): User | null => {
+  if (!payload.authenticated || !payload.userId) {
+    return null;
+  }
+
+  // 세션 복구 시에도 파기문서 권한 해석을 동일하게 맞춘다.
+  const roles = normalizeDocDestructionRoles(
+    Array.isArray(payload.roles)
+      ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
+      : [],
+  );
+
+  return {
+    authenticated: true,
+    userId: String(payload.userId ?? ""),
+    userNm: String(payload.userNm ?? ""),
+    instId: payload.instId ? String(payload.instId) : undefined,
+    instNm: payload.instNm ? String(payload.instNm) : undefined,
+    roles,
+  };
+};
 
 const initialState: AuthState = {
   isAuthenticated: false,
@@ -37,15 +60,20 @@ export const login = createAsyncThunk<
     });
 
     const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
+    // 로그인 직후 받은 권한셋도 같은 규칙으로 보정한다.
+    const roles = normalizeDocDestructionRoles(
+      Array.isArray(payload.roles)
+        ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
+        : [],
+    );
+
     return {
       authenticated: Boolean(payload.authenticated ?? true),
       userId: String(payload.userId ?? ""),
       userNm: String(payload.userNm ?? ""),
       instId: payload.instId ? String(payload.instId) : undefined,
       instNm: payload.instNm ? String(payload.instNm) : undefined,
-      roles: Array.isArray(payload.roles)
-        ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
-        : [],
+      roles,
     };
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
@@ -60,23 +88,23 @@ export const checkSession = createAsyncThunk<
   { dispatch: AppDispatch; rejectValue: string }
 >("auth/checkSession", async (_, thunkAPI) => {
   try {
-    const res = await https.get("/api/dr/temp/auth/me");
-    const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
-
-    if (!payload.authenticated || !payload.userId) {
-      return null;
+    // 운영/임시 세션 엔드포인트를 순서대로 확인한다.
+    for (const path of ["/api/dr/auth/me", "/api/dr/temp/auth/me"]) {
+      try {
+        const res = await https.get(path);
+        const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
+        const normalized = normalizeUser(payload);
+        if (normalized) {
+          return normalized;
+        }
+      } catch (error: any) {
+        if (error?.response?.status !== 404) {
+          throw error;
+        }
+      }
     }
 
-    return {
-      authenticated: true,
-      userId: String(payload.userId ?? ""),
-      userNm: String(payload.userNm ?? ""),
-      instId: payload.instId ? String(payload.instId) : undefined,
-      instNm: payload.instNm ? String(payload.instNm) : undefined,
-      roles: Array.isArray(payload.roles)
-        ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
-        : [],
-    };
+    return null;
   } catch (err: any) {
     return thunkAPI.rejectWithValue(
       err.response?.data?.message ?? "세션 확인 실패",

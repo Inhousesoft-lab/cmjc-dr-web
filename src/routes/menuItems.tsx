@@ -94,8 +94,8 @@ const menuItems: Menu[] = [
     label: "파기문서 관리",
     menuType: "MENU",
     element: {
-      ko: "DocDestructionList",
-      en: "DocDestructionList",
+      ko: "DocDestructionEntry",
+      en: "DocDestructionEntry",
     },
     children: [
       {

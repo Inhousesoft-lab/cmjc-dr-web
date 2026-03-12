@@ -207,7 +207,13 @@ const PrvcDetailTable = React.memo(
                 size="small"
                 name="hldPrdDfyrs"
                 defaultValue={defaults.hldPrdDfyrs ?? 1}
-                sx={{ width: 100 }}
+                sx={{
+                  width: 100,
+                  "& .MuiSelect-select": {
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                }}
                 onChange={handleYearChange}
               >
                 <MenuItem value="1">1년</MenuItem>

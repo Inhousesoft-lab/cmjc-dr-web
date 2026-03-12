@@ -15,9 +15,9 @@ const URL = {
   DIGITAL_DOC_MODIFY: "/digitalDoc/:eldocNo/modify",
   DIGITAL_DOC_CREATE_TEMP: "/digitalDoc/temp",
   // 전자문서 파기
-  DOC_DESTRUCTION_REQ_LIST: "/docDestructionReq/list",
-  DOC_DESTRUCTION_APPV_LIST: "/docDestructionAppv/list",
-  DOC_DESTRUCTION_LIST: "/docDestruction/list",
+  DOC_DESTRUCTION_REQ_LIST: "/destruction/reqList",
+  DOC_DESTRUCTION_APPV_LIST: "/destruction/appvList",
+  DOC_DESTRUCTION_LIST: "/destruction/list",
   DOC_DESTRUCTION_DETAIL: "/docDestruction/:eldocNo",
 };
 
