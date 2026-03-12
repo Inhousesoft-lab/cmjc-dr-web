@@ -191,7 +191,7 @@ export default function DocDestructionDetail() {
           <LabelCell>비고</LabelCell>
           <TableCell
             colSpan={3}
-            sx={{ height: 96, verticalAlign: "top", pt: 2 }}
+            sx={{ height: 96, verticalAlign: "middle" }}
           >
             {showValue(detail?.addExpln)}
           </TableCell>

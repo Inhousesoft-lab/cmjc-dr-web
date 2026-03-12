@@ -34,6 +34,7 @@ import { useNavigate } from "react-router";
 import URL from "@/constants/url";
 import { resetDigitalDocSaveState } from "@/features/digitalDoc/DigitalDocSlice";
 import UploadFiles from "@/components/file/UploadFiles";
+import { selectDocClsfByParent } from "@/features/clsf/DocClsfSelectors";
 
 type FormValues = DigitalDocCreatePayload;
 type FieldErrors = Partial<Record<keyof FormValues, string>>;
@@ -43,6 +44,7 @@ const INITIAL_FORM_VALUES: FormValues = {
   docMclsfNo: "",
   docSclsfNo: "",
   docClsfNo: "",
+  prvcInclYn: "N",
   docNo: "",
   docTtl: "",
   clctYmd: "",
@@ -68,6 +70,37 @@ export default function DigitalDocForm() {
     values.docLclsfNo,
     values.docMclsfNo,
   );
+  const lclsfDocs = useAppSelector((state) => selectDocClsfByParent(state));
+  const mclsfDocs = useAppSelector((state) =>
+    values.docLclsfNo ? selectDocClsfByParent(state, values.docLclsfNo) : [],
+  );
+  const sclsfDocs = useAppSelector((state) =>
+    values.docMclsfNo ? selectDocClsfByParent(state, values.docMclsfNo) : [],
+  );
+
+  // 저장 시 사용할 최종 분류 메타를 찾는다.
+  const selectedDocClsf = React.useMemo(() => {
+    if (values.docSclsfNo) {
+      return sclsfDocs.find((item) => item.docClsfNo === values.docSclsfNo);
+    }
+
+    if (values.docMclsfNo) {
+      return mclsfDocs.find((item) => item.docClsfNo === values.docMclsfNo);
+    }
+
+    if (values.docLclsfNo) {
+      return lclsfDocs.find((item) => item.docClsfNo === values.docLclsfNo);
+    }
+
+    return undefined;
+  }, [
+    lclsfDocs,
+    mclsfDocs,
+    sclsfDocs,
+    values.docLclsfNo,
+    values.docMclsfNo,
+    values.docSclsfNo,
+  ]);
 
   React.useEffect(() => {
     if (!saveError) return;
@@ -97,6 +130,8 @@ export default function DigitalDocForm() {
     const payload: FormValues = {
       ...values,
       docClsfNo: values.docSclsfNo || values.docMclsfNo || values.docLclsfNo,
+      // 개인정보 포함 여부는 선택한 문서분류 값을 그대로 따른다.
+      prvcInclYn: selectedDocClsf?.prvcInclYn === "Y" ? "Y" : "N",
     };
 
     const validated = digitalDocFormValidator(payload);

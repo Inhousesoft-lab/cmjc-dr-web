@@ -159,6 +159,7 @@ export const digitalDocFormSchema = z
     docLclsfNo: z.string().trim().min(1, "대분류를 선택하세요."),
     docMclsfNo: z.string().trim().min(1, "중분류를 선택하세요."),
     docSclsfNo: z.string().trim().min(1, "소분류를 선택하세요."),
+    prvcInclYn: z.enum(["Y", "N"]).default("N"),
     docNo: z.string().trim().min(1, "문서번호를 입력하세요."),
     docTtl: z.string().trim().min(1, "문서제목을 입력하세요."),
     clctYmd: dateField,
