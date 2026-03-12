@@ -54,9 +54,12 @@ export const login = createAsyncThunk<
   { dispatch: AppDispatch; rejectValue: string }
 >("auth/login", async ({ userId, password }, thunkAPI) => {
   try {
+    const normalizedUserId = String(userId ?? "").trim();
+    const normalizedPassword = String(password ?? "").trim();
+
     const res = await https.post("/api/dr/temp/auth/login", {
-      userId,
-      password,
+      userId: normalizedUserId,
+      password: normalizedPassword,
     });
 
     const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
