@@ -15,6 +15,23 @@
   }
 }
 
+#myGrid {
+  .ag-header-cell-label {
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  .ag-header-cell-text {
+    text-align: left !important;
+  }
+
+  .ag-cell,
+  .ag-cell-value {
+    text-align: left !important;
+    justify-content: flex-start !important;
+  }
+}
+
 
 .tree-grid {
   .tree-grid__cell {

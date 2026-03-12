@@ -4,7 +4,10 @@ export const listDefs = [
   {
     headerName: "번호",
     field: "rowNo",
-    width: 90,
+    width: 72,
+    minWidth: 72,
+    maxWidth: 72,
+    flex: 0,
     cellStyle: { textAlign: "center" },
   },
   {
@@ -25,6 +28,10 @@ export const listDefs = [
   {
     headerName: "개인정보 포함유무",
     field: "prvcInclYn",
+    width: 152,
+    minWidth: 152,
+    maxWidth: 152,
+    flex: 0,
     valueFormatter: (params: { value: any }) => {
       const v = params.value;
       if (v === "Y") return "포함";
@@ -43,6 +50,10 @@ export const listDefs = [
   {
     headerName: "사용유무",
     field: "useEn",
+    width: 94,
+    minWidth: 94,
+    maxWidth: 94,
+    flex: 0,
     valueFormatter: (params: { value: any }) => {
       const v = params.value;
       if (v === "Y") return "사용";

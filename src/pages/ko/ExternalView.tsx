@@ -196,6 +196,9 @@ export default function ExternalView() {
         headerName: "번호",
         field: "id",
         width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        flex: 0,
         cellStyle: { textAlign: "center" },
       },
       {
@@ -214,6 +217,9 @@ export default function ExternalView() {
         headerName: "수집일자 (보존기간)",
         field: "date",
         width: 140,
+        minWidth: 140,
+        maxWidth: 140,
+        flex: 0,
         cellStyle: {
           textAlign: "center",
           display: "flex",
@@ -226,7 +232,10 @@ export default function ExternalView() {
       {
         headerName: "종류",
         field: "type",
-        width: 50,
+        width: 68,
+        minWidth: 68,
+        maxWidth: 68,
+        flex: 0,
         cellStyle: {
           textAlign: "center",
           display: "flex",

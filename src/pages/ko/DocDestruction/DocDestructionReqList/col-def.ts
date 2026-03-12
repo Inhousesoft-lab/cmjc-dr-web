@@ -7,7 +7,9 @@ export const listDefs: ColDef<DocDestruction>[] = [
     headerName: "번호",
     field: "rowNo",
     flex: 0,
-    width: 100,
+    width: 72,
+    minWidth: 72,
+    maxWidth: 72,
     cellStyle: { textAlign: "center" },
   },
   {
@@ -28,6 +30,10 @@ export const listDefs: ColDef<DocDestruction>[] = [
   {
     headerName: "개인정보",
     field: "hasPersonalInfo",
+    width: 88,
+    minWidth: 88,
+    maxWidth: 88,
+    flex: 0,
     cellStyle: (params: any) => {
       const isIncluded = params.value === "포함";
       return {
@@ -56,12 +62,20 @@ export const listDefs: ColDef<DocDestruction>[] = [
   {
     headerName: "종료일자",
     field: "endDate",
+    width: 118,
+    minWidth: 118,
+    maxWidth: 118,
+    flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "종류",
     field: "docType",
+    width: 72,
+    minWidth: 72,
+    maxWidth: 72,
+    flex: 0,
     cellStyle: { textAlign: "center" },
   },
   {
@@ -72,6 +86,10 @@ export const listDefs: ColDef<DocDestruction>[] = [
   {
     headerName: "등록일자",
     field: "regDate",
+    width: 118,
+    minWidth: 118,
+    maxWidth: 118,
+    flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => formatDateDash(params?.value),
   },

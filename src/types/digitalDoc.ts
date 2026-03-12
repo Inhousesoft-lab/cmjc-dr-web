@@ -36,6 +36,7 @@ export interface DigitalDoc {
   eldocYn: string; // 전자문서여부
   atchFileSn: string; // 첨부파일일련번호(공통)
   deptId: string; // 기본권한(등록자 부서아이디)
+  deptNm: string;
   dstrcPrcsPrstCd: string; // 파기처리현황코드(00:전자문서,01:파기신청,02:부서장승인파기,03:부서장승인,04:개인정보처리담당자승인 파기)
   dstrcAplyDt: string; // 파기신청일자
   dstrcAplcntId: string; // 파기신청자
@@ -95,6 +96,7 @@ export interface DigitalDocHistory {
   eldocYn: string; // 전자문서여부
   atchFileSn: string; // 첨부파일일련번호(공통)
   deptId: string; // 기본권한(등록자 부서아이디)
+  deptNm: string;
   dstrcPrcsPrstCd: string; // 파기처리현황코드(00:전자문서,01:파기신청,02:부서장승인파기,03:부서장승인,04:개인정보처리담당자승인 파기)
   dstrcAplyDt: string; // 파기신청일자
   dstrcAplcntId: string; // 파기신청자
