@@ -49,6 +49,7 @@ export interface DocDestruction {
   endDate: string; // 종료일자
   docType: string; // 종류 (문서 / 파일 등)
   registrantDept: string; // 등록자(부서)
+  rgtrNm: string;
   regDate: string; // 등록일자
 }
 

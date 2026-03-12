@@ -133,7 +133,7 @@ export const listDefs = [
     flex: 1.3,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      const rgtrId = params?.data?.rgtrId ?? "-";
+      const rgtrId = params?.data?.rgtrNm ?? params?.data?.rgtrId ?? "-";
       const deptNm = params?.data?.deptNm?.trim() || "-";
       return `${rgtrId} (${deptNm})`;
     },

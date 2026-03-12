@@ -59,6 +59,7 @@ const docClsfSchema = z.looseObject({
   useEn: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
   mdfcnDt: stringField,
   mdfrId: stringField,
   prvcFileHldPrst: z

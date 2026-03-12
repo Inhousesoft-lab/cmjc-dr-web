@@ -47,6 +47,7 @@ export interface DigitalDoc {
   prvcDstrcAutzrId: string; // 개인정보파기승인자
   regDt: string; // 등록일자
   rgtrId: string; // 등록자
+  rgtrNm: string;
   mdfcnDt: string; // 수정일자
   mdfrId: string; // 수정자
 }

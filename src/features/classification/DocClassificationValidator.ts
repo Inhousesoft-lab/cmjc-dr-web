@@ -76,34 +76,26 @@ const docClassificationSchema = z
 
     if (data.prvcInclYn === "Y" && data.prvcFileHldPrst) {
       const sub = data.prvcFileHldPrst as Partial<DocClassSubDetail>;
-      const excludedFields = new Set<keyof DocClassSubDetail>([
-        "docClsfNo",
-        "prvcFileHldPrstNo",
-        "hldPrdMmCnt",
-        "infoMnbdDsagClctSttBssExpln",
-        "rrnoClctYn",
-        "spiHldYn",
-        "spiIndivAgrnYn",
-        "uiiHldYn",
-        "uiiIndivAgreYn",
-        "prvcEvlTrgtYn",
-        "prvcCnsgnCtrtYn",
-        "prvcCnsgnFactIndctYn",
-        "prpsExclUtztnPvsnYn",
-        "prvcPrcsCnsgnBzentyNmCn",
-        "prpsExclUtztnPvsnBssExpln",
-      ]);
+      const requiredFields: (keyof DocClassSubDetail)[] = [
+        "deptNm",
+        "fileNm",
+        "hldPrpsExpln",
+        "clctSttBssExpln",
+        "useDeptNm",
+        "prvcPrcsMthdExpln",
+        "hldPrdDfyrs",
+        "infoMnbdPrvcMttr",
+        "sttyAgtPrvcMttr",
+        "rrnoClctSttBssExpln",
+        "spiHldSttBssExpln",
+        "uiiHldSttBssExpln",
+        "hndlPicNm",
+        "tdptySplrcpNmCn",
+        "tdptyPvsnBssExpln",
+        "tdptyPvsnMttr",
+      ];
 
-      if (isBlank(sub.deptNm)) {
-        ctx.addIssue({
-          code: "custom",
-          message: REQUIRED_MESSAGE,
-          path: ["deptNm"],
-        });
-      }
-
-      (Object.keys(sub) as (keyof DocClassSubDetail)[]).forEach((field) => {
-        if (excludedFields.has(field)) return;
+      requiredFields.forEach((field) => {
         if (isBlank(sub[field])) {
           ctx.addIssue({
             code: "custom",

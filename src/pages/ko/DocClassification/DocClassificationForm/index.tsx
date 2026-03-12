@@ -941,8 +941,8 @@ export default function DocClassificationForm() {
       useEn: getText("useEn", defaults.useEn ?? "Y"),
       rgtrId: docClsfNo
         ? defaults.rgtrId ?? ""
-        : currentUser?.userNm || currentUser?.userId || "",
-      mdfrId: currentUser?.userNm || currentUser?.userId || "",
+        : currentUser?.userId || currentUser?.userNm || "",
+      mdfrId: currentUser?.userId || defaults.mdfrId || currentUser?.userNm || "",
       prvcFileHldPrst: subDetail,
     };
   }, [currentUser?.userId, currentUser?.userNm, defaults, docClsfNo, docClsfSeCd]);
@@ -977,8 +977,8 @@ export default function DocClassificationForm() {
                 sclsfNo: payload.docClsfNo ?? "",
               })}`,
             });
+            return;
           }
-          return;
         }
 
         await https.post(updateDocClassificationApiPath(), payload as DocClassDetail);
@@ -1024,6 +1024,10 @@ export default function DocClassificationForm() {
             issues.map((issue) => [issue.path?.[0] ?? "", issue.message]),
           ),
         );
+        notifications.show(issues[0]?.message || "입력값을 확인해 주세요.", {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
         return;
       }
 

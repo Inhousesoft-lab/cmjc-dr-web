@@ -47,6 +47,7 @@ export interface HoldingInstitution {
   prvcDstrcAutzrId: string;
   regDt: string;
   rgtrId: string;
+  rgtrNm: string;
   mdfcnDt: string;
   mdfrId: string;
   docSclsfNo: string;

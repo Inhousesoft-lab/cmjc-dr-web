@@ -86,7 +86,7 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
             <TableRow key={row.docClsfNo}>
               <TableCell>{row.docClsfNo}</TableCell>
               <TableCell>{formatDateDash(row.regDt)}</TableCell>
-              <TableCell>{row.rgtrId}</TableCell>
+              <TableCell>{row.rgtrNm || row.rgtrId}</TableCell>
               <TableCell>{row.actCn}</TableCell>
               <TableCell>{row.acsrIpAddr}</TableCell>
               <TableCell>{row.eqpmntNm}</TableCell>

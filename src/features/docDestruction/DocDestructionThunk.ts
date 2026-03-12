@@ -53,8 +53,9 @@ const getRegistrantLabel = (
   registrantDept: string,
   deptNm: string,
   rgtrId: string,
+  rgtrNm: string,
 ) => {
-  const registrant = rgtrId.trim();
+  const registrant = (rgtrNm || rgtrId).trim();
   const dept = (deptNm || registrantDept).trim();
 
   if (!registrant && !dept) return "-";
@@ -92,7 +93,8 @@ const normalizeDocDestructionRow = (
     prvcDstrcAutzrId: raw.prvcDstrcAutzrId,
     endDate: raw.endDate || raw.endYmd,
     docType: raw.docType || raw.eldocYn,
-    registrantDept: getRegistrantLabel(raw.registrantDept, raw.deptNm, raw.rgtrId),
+    registrantDept: getRegistrantLabel(raw.registrantDept, raw.deptNm, raw.rgtrId, raw.rgtrNm),
+    rgtrNm: raw.rgtrNm,
     regDate: raw.regDate || raw.regDt,
   };
 };

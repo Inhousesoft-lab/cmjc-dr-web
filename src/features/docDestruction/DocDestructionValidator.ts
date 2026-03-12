@@ -36,6 +36,7 @@ export const docDestructionListRowSchema = z.looseObject({
   registrantDept: stringField.optional().default(""),
   deptNm: stringField.optional().default(""),
   rgtrId: stringField.optional().default(""),
+  rgtrNm: stringField.optional().default(""),
   regDate: stringField.optional().default(""),
   regDt: stringField.optional().default(""),
 });

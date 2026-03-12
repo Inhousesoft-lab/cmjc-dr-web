@@ -125,6 +125,7 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
     prvcDstrcAutzrId: toStr(item?.prvcDstrcAutzrId),
     regDt: toStr(item?.regDt),
     rgtrId: toStr(item?.rgtrId),
+    rgtrNm: toStr(item?.rgtrNm),
     mdfcnDt: toStr(item?.mdfcnDt),
     mdfrId: toStr(item?.mdfrId),
     docSclsfNo: toStr(item?.docSclsfNo ?? docClsf?.docSclsfNo),

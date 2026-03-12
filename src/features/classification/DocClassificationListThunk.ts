@@ -45,6 +45,7 @@ const docClassificationRowSchema = z.looseObject({
     useEn: stringField,
     regDt: stringField,
     rgtrId: stringField,
+    rgtrNm: stringField,
     mdfcnDt: stringField,
     mdfrId: stringField,
   });
@@ -133,6 +134,7 @@ const docClassificationDetailSchema = z.looseObject({
   useEn: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
   mdfcnDt: stringField,
   mdfrId: stringField,
   prvcFileHldPrst: z
