@@ -36,6 +36,7 @@ export interface HoldingInstitution {
   eldocYn: string;
   atchFileSn: string;
   deptId: string;
+  deptNm: string;
   dstrcPrcsPrstCd: string;
   dstrcAplyDt: string;
   dstrcAplcntId: string;
@@ -46,6 +47,7 @@ export interface HoldingInstitution {
   prvcDstrcAutzrId: string;
   regDt: string;
   rgtrId: string;
+  rgtrNm: string;
   mdfcnDt: string;
   mdfrId: string;
   docSclsfNo: string;

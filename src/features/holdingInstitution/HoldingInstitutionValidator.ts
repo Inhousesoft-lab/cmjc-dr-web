@@ -59,6 +59,7 @@ const docClsfSchema = z.looseObject({
   useEn: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
   mdfcnDt: stringField,
   mdfrId: stringField,
   prvcFileHldPrst: z
@@ -84,6 +85,7 @@ export const holdingInstitutionRowSchema = z.looseObject({
   eldocYn: stringField,
   atchFileSn: stringField,
   deptId: stringField,
+  deptNm: stringField,
   dstrcPrcsPrstCd: stringField,
   dstrcAplyDt: stringField,
   dstrcAplcntId: stringField,

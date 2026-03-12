@@ -7,54 +7,58 @@ import AgGridTable from "../grid/AgGridTable";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
   fetchDigitalDocAuthrtHistoryList,
-  fetchDigitalDocDialogDetail,
   fetchDigitalDocHistoryList,
 } from "@/features/digitalDoc/DigitalDocThunk";
 import {
   selectDigitalDocAuthrtHistoryError,
   selectDigitalDocAuthrtHistoryLoading,
   selectDigitalDocAuthrtHistoryRows,
-  selectDigitalDocDialogDetail,
-  selectDigitalDocDialogDetailError,
   selectDigitalDocHistoryError,
   selectDigitalDocHistoryLoading,
   selectDigitalDocHistoryRows,
 } from "@/features/digitalDoc/DigitalDocSelectors";
 import useNotifications from "@/hooks/useNotifications";
-import DocDetailTable from "../table/DocDetailTable";
 import { formatDateDash } from "@/utils/formater";
 
 const docListDefs = [
   {
     headerName: "번호",
     field: "eldocHstryNo",
-    width: 90,
+    width: 150,
     cellStyle: { textAlign: "center" },
   },
   {
     headerName: "행위일자",
     field: "regDt",
+    width: 120,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "행위자",
     field: "rgtrId",
+    width: 110,
     cellStyle: { textAlign: "center" },
+    valueFormatter: (params: any) =>
+      params?.data?.rgtrNm || params?.data?.rgtrId || "-",
   },
   {
     headerName: "행위내용",
     field: "actCn",
-    cellStyle: { textAlign: "center" },
+    flex: 1,
+    minWidth: 180,
+    cellStyle: { textAlign: "left" },
   },
   {
     headerName: "IP",
     field: "acsrIpAddr",
+    width: 130,
     cellStyle: { textAlign: "center" },
   },
   {
     headerName: "장비",
     field: "eqpmntNm",
+    width: 140,
     cellStyle: { textAlign: "center" },
   },
 ];
@@ -69,7 +73,6 @@ export default function DigitalDocHistoryButton({
 
   const [open, setOpen] = useState(false);
   const [docColumnDefs] = useState<ColDef[]>(docListDefs);
-  const [selectEdeldocNo, setSelectEdeldocNo] = useState("");
 
   const docHistoryRows = useAppSelector(selectDigitalDocHistoryRows);
   const docHistoryLoading = useAppSelector(selectDigitalDocHistoryLoading);
@@ -79,20 +82,13 @@ export default function DigitalDocHistoryButton({
     selectDigitalDocAuthrtHistoryLoading,
   );
   const authrtHistoryError = useAppSelector(selectDigitalDocAuthrtHistoryError);
-  const detail = useAppSelector(selectDigitalDocDialogDetail);
-  const detailError = useAppSelector(selectDigitalDocDialogDetailError);
 
   useEffect(() => {
     if (!open || !eldocNo) return;
-    
+
     dispatch(fetchDigitalDocHistoryList(eldocNo));
     dispatch(fetchDigitalDocAuthrtHistoryList(eldocNo));
   }, [dispatch, eldocNo, open]);
-
-  useEffect(() => {
-    if (!open || !selectEdeldocNo) return;
-    dispatch(fetchDigitalDocDialogDetail(selectEdeldocNo));
-  }, [dispatch, open, selectEdeldocNo]);
 
   useEffect(() => {
     if (!docHistoryError) return;
@@ -110,31 +106,15 @@ export default function DigitalDocHistoryButton({
     });
   }, [authrtHistoryError, notifications]);
 
-  useEffect(() => {
-    if (!detailError) return;
-    notifications.show(detailError, {
-      severity: "error",
-      autoHideDuration: 3000,
-    });
-  }, [detailError, notifications]);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
     <DialogTrigger
       buttonLabel="이력"
       triggerButtonClassName="btn_fixed-sm btn_fixed-md"
       title="이력"
       maxWidth="xl"
-      onOpen={handleClickOpen}
+      onOpen={() => setOpen(true)}
       open={open}
-      onClose={handleClose}
+      onClose={() => setOpen(false)}
     >
       <Grid container spacing={3}>
         <Grid size={6}>
@@ -161,11 +141,21 @@ export default function DigitalDocHistoryButton({
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell align="center">부서</TableCell>
-                    <TableCell align="center">이름</TableCell>
-                    <TableCell align="center">행위내용</TableCell>
-                    <TableCell align="center">행위자</TableCell>
-                    <TableCell align="center">행위일자</TableCell>
+                    <TableCell align="center" sx={{ width: 120 }}>
+                      부서
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: 110 }}>
+                      이름
+                    </TableCell>
+                    <TableCell align="center" sx={{ minWidth: 160 }}>
+                      행위내용
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: 110 }}>
+                      행위자
+                    </TableCell>
+                    <TableCell align="center" sx={{ width: 120 }}>
+                      행위일자
+                    </TableCell>
                   </TableRow>
                 </TableHead>
               }
@@ -173,11 +163,6 @@ export default function DigitalDocHistoryButton({
               {authrtHistoryRows.map((row, index) => (
                 <TableRow
                   key={`${row.inqAuthrtHstryNo || row.inqAuthrtNo || "row"}-${index}`}
-                  onClick={() => {
-                    if (!row.eldocNo) return;
-                    setSelectEdeldocNo(row.eldocNo);
-                  }}
-                  sx={{ cursor: "pointer" }}
                 >
                   <TableCell align="center">
                     {(row as any).deptNm || row.deptId || "-"}
@@ -188,8 +173,12 @@ export default function DigitalDocHistoryButton({
                       "-"}
                   </TableCell>
                   <TableCell align="center">{row.actCn || "-"}</TableCell>
-                  <TableCell align="center">{row.rgtrId || "-"}</TableCell>
-                  <TableCell align="center">{formatDateDash(row.regDt)}</TableCell>
+                  <TableCell align="center">
+                    {(row as any).rgtrNm || row.rgtrId || "-"}
+                  </TableCell>
+                  <TableCell align="center">
+                    {formatDateDash(row.regDt)}
+                  </TableCell>
                 </TableRow>
               ))}
               {authrtHistoryRows.length === 0 && (
@@ -202,11 +191,6 @@ export default function DigitalDocHistoryButton({
                 </TableRow>
               )}
             </TableWrapper>
-            {selectEdeldocNo ? (
-              <DocDetailTable eldocNo={selectEdeldocNo} detail={detail} />
-            ) : (
-              <div>선택된 공람 이력 데이터가 없습니다.</div>
-            )}
           </Stack>
         </Grid>
       </Grid>

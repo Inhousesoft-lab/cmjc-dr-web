@@ -49,6 +49,21 @@ const getHoldingPeriodLabel = (years: string, months: string) => {
   return `${yearText}${monthText}`.trim();
 };
 
+const getRegistrantLabel = (
+  registrantDept: string,
+  deptNm: string,
+  rgtrId: string,
+  rgtrNm: string,
+) => {
+  const registrant = (rgtrNm || rgtrId).trim();
+  const dept = (deptNm || registrantDept).trim();
+
+  if (!registrant && !dept) return "-";
+  if (!registrant) return dept;
+  if (!dept) return registrant;
+  return `${registrant} (${dept})`;
+};
+
 const normalizeDocDestructionRow = (
   raw: DocDestructionListRowRaw,
   index: number,
@@ -78,7 +93,8 @@ const normalizeDocDestructionRow = (
     prvcDstrcAutzrId: raw.prvcDstrcAutzrId,
     endDate: raw.endDate || raw.endYmd,
     docType: raw.docType || raw.eldocYn,
-    registrantDept: raw.registrantDept || raw.deptNm || raw.rgtrId,
+    registrantDept: getRegistrantLabel(raw.registrantDept, raw.deptNm, raw.rgtrId, raw.rgtrNm),
+    rgtrNm: raw.rgtrNm,
     regDate: raw.regDate || raw.regDt,
   };
 };

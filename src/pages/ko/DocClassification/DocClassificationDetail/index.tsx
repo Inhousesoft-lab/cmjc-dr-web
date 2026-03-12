@@ -188,7 +188,7 @@ export default function DocClassificationDetail() {
           "등록일자",
           formatDateDash(detailData?.regDt),
           "등록자",
-          detailData?.rgtrId || "-",
+          detailData?.rgtrNm || detailData?.rgtrId || "-",
         )}
       </TableWrapper>
 

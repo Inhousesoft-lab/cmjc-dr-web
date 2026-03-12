@@ -32,20 +32,17 @@ export const listDefs = [
     minWidth: 152,
     maxWidth: 152,
     flex: 0,
-    valueFormatter: (params: { value: any }) => {
-      const v = params.value;
-      if (v === "Y") return "포함";
-      if (v === "N") return "미포함";
-      return ""; // null/undefined 대비
+    valueFormatter: (params: { value: string }) => {
+      const value = params.value;
+      if (value === "Y") return "포함";
+      if (value === "N") return "미포함";
+      return "";
     },
-    cellStyle: (params: { value: string }) => {
-      const isIncluded = params.value === "Y";
-      return {
-        textAlign: "center",
-        color: isIncluded ? "red" : "",
-        fontWeight: isIncluded ? "600" : "400",
-      };
-    },
+    cellStyle: (params: { value: string }) => ({
+      textAlign: "center",
+      color: params.value === "Y" ? "red" : "",
+      fontWeight: params.value === "Y" ? "600" : "400",
+    }),
   },
   {
     headerName: "사용유무",
@@ -54,33 +51,29 @@ export const listDefs = [
     minWidth: 94,
     maxWidth: 94,
     flex: 0,
-    valueFormatter: (params: { value: any }) => {
-      const v = params.value;
-      if (v === "Y") return "사용";
-      if (v === "N") return "사용안함";
-      return ""; // null/undefined 대비
+    valueFormatter: (params: { value: string }) => {
+      const value = params.value;
+      if (value === "Y") return "사용";
+      if (value === "N") return "사용안함";
+      return "";
     },
-    cellStyle: (params: { value: string }) => {
-      const isNotUsed = params.value === "N";
-      return {
-        textAlign: "center",
-        color: isNotUsed ? "#0066cc" : "",
-        fontWeight: isNotUsed ? "600" : "400",
-      };
-    },
+    cellStyle: (params: { value: string }) => ({
+      textAlign: "center",
+      color: params.value === "N" ? "#0066cc" : "",
+      fontWeight: params.value === "N" ? "600" : "400",
+    }),
   },
   {
     headerName: "등록자",
     field: "rgtrId",
+    valueFormatter: (params: { data?: { rgtrNm?: string; rgtrId?: string } }) =>
+      params?.data?.rgtrNm ?? params?.data?.rgtrId ?? "-",
     cellStyle: { textAlign: "center" },
   },
   {
     headerName: "등록일자",
     field: "regDt",
-    valueFormatter: (params: { value: string }) => {
-      return formatDateDash(params.value); // null/undefined 대비
-    },
-
+    valueFormatter: (params: { value: string }) => formatDateDash(params.value),
     cellStyle: { textAlign: "center" },
   },
 ];

@@ -3,6 +3,7 @@ import { TableCell, TableRow } from "@mui/material";
 import type { DocClassHistory } from "@/types/docClassification";
 import { selectDocClassificationHistoryApiPath } from "@/api/docClassification/DocClassificationApiPaths";
 import https from "@/api/axiosInstance";
+import { formatDateDash } from "@/utils/formater";
 import TableWrapper from "../table/TableWrapper";
 import LabelCell from "../table/LabelCell";
 import DialogTrigger from "../dialog/DialogTrigger";
@@ -84,8 +85,8 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
           rowData?.map((row) => (
             <TableRow key={row.docClsfNo}>
               <TableCell>{row.docClsfNo}</TableCell>
-              <TableCell>{formatDate(row.regDt)}</TableCell>
-              <TableCell>{row.rgtrId}</TableCell>
+              <TableCell>{formatDateDash(row.regDt)}</TableCell>
+              <TableCell>{row.rgtrNm || row.rgtrId}</TableCell>
               <TableCell>{row.actCn}</TableCell>
               <TableCell>{row.acsrIpAddr}</TableCell>
               <TableCell>{row.eqpmntNm}</TableCell>

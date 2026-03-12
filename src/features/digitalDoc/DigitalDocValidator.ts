@@ -44,6 +44,7 @@ export const digitalDocRowSchema = z.looseObject({
   prvcDstrcAutzrId: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
   mdfcnDt: stringField,
   mdfrId: stringField,
 });
@@ -90,6 +91,7 @@ export const digitalDocHistoryRowSchema = z.looseObject({
   prvcDstrcAutzrId: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
   actCn: stringField,
   acsrIpAddr: stringField,
   eqpmntNm: stringField,
@@ -107,6 +109,7 @@ export const digitalAuthrtRowSchema = z.looseObject({
   delYn: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
   mdfcnDt: stringField,
   mdfrId: stringField,
 });

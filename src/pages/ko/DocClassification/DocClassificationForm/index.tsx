@@ -36,6 +36,7 @@ import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import MuiSelect from "@/components/elements/MuiSelect";
 import PageStatus from "@/components/common/PageStatus";
 import SectionTitle from "@/components/common/SectionTitle";
+import { useAppSelector } from "@/app/hooks";
 
 type SubDetailValues = NonNullable<Values["prvcFileHldPrst"]>;
 
@@ -661,7 +662,7 @@ const PrvcDetailTable = React.memo(
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell required>목적 외 이용 제공 근거</LabelCell>
+          <LabelCell>목적 외 이용 제공 근거</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -690,6 +691,7 @@ export default function DocClassificationForm() {
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
+  const currentUser = useAppSelector((state) => state.auth.user);
 
   const formRef = React.useRef<HTMLFormElement | null>(null);
 
@@ -937,11 +939,13 @@ export default function DocClassificationForm() {
       docSclsfNm: getText("docSclsfNm", defaults.docSclsfNm ?? ""),
       prvcInclYn: getCheckboxYn("prvcInclYn", defaults.prvcInclYn ?? "N"),
       useEn: getText("useEn", defaults.useEn ?? "Y"),
-      rgtrId: "Admin test",
-      mdfrId: "Admin test",
+      rgtrId: docClsfNo
+        ? defaults.rgtrId ?? ""
+        : currentUser?.userId || currentUser?.userNm || "",
+      mdfrId: currentUser?.userId || defaults.mdfrId || currentUser?.userNm || "",
       prvcFileHldPrst: subDetail,
     };
-  }, [defaults, docClsfSeCd]);
+  }, [currentUser?.userId, currentUser?.userNm, defaults, docClsfNo, docClsfSeCd]);
 
   const handleSave = React.useCallback(
     async (payload: Values) => {
@@ -973,8 +977,8 @@ export default function DocClassificationForm() {
                 sclsfNo: payload.docClsfNo ?? "",
               })}`,
             });
+            return;
           }
-          return;
         }
 
         await https.post(updateDocClassificationApiPath(), payload as DocClassDetail);
@@ -1020,6 +1024,10 @@ export default function DocClassificationForm() {
             issues.map((issue) => [issue.path?.[0] ?? "", issue.message]),
           ),
         );
+        notifications.show(issues[0]?.message || "입력값을 확인해 주세요.", {
+          severity: "error",
+          autoHideDuration: 3000,
+        });
         return;
       }
 

@@ -39,6 +39,7 @@ export interface DocClassificationVO {
   useEn: string;
   regDt: string;
   rgtrId: string;
+  rgtrNm: string;
   mdfcnDt: string;
   mdfrId: string;
 }
@@ -60,6 +61,7 @@ export interface DocClassDetail {
   useEn: string;
   regDt: string;
   rgtrId: string;
+  rgtrNm?: string;
   mdfrId: string;
 }
 
@@ -140,6 +142,7 @@ export interface DocClassHistory {
   acsrIpAddr: string; // 접속자IP주소
   regDt: string; // 등록일자
   rgtrId: string; // 등록자
+  rgtrNm: string;
   eqpmntNm: string; // 장비명
 }
 

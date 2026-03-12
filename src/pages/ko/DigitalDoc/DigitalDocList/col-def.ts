@@ -109,7 +109,7 @@ export const listDefs: ColDef<DigitalDoc>[] = [
     field: "rgtrId",
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      const rgtrId = params?.value ?? "-";
+      const rgtrId = params?.data?.rgtrNm ?? params?.value ?? "-";
       const deptNm = params?.data?.deptNm ?? params?.data?.deptId ?? "-";
       return `${rgtrId}(${deptNm})`;
     },
