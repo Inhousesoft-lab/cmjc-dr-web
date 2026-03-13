@@ -1,21 +1,52 @@
 import * as React from "react";
 import { Box, Button, Stack, Typography } from "@mui/material";
-import type { SearchValues } from "@/types/docDestruction";
+import type { SearchValues, DocDestruction } from "@/types/docDestruction";
 import { listDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
 import DialogTrigger from "../dialog/DialogTrigger";
 import AgGridTable from "../grid/AgGridTable";
 import { ColDef } from "ag-grid-community";
 import { printElement } from "@/utils/print";
+import https from "@/api/axiosInstance";
+import { selectDocDestructionListApiPath } from "@/api/docDestruction/DocDestructionApiPaths";
+import {
+  docDestructionListRowSchema,
+  docDestructionListSchema,
+  type DocDestructionListRowRaw,
+} from "@/features/docDestruction/DocDestructionValidator";
+import { normalizeDocDestructionRow } from "@/features/docDestruction/DocDestructionThunk";
+import { z } from "zod";
 
-type Destruction = {
-  no: string;
-  fileName: string;
-  dataType: string;
-  createdDate: string;
-  disposeDate: string;
-  reason: string;
-  handler: string;
-  manager: string;
+const COMPLETED_PRIVACY_DESTRUCTION_STATUS = "04";
+
+type DestructionRowState = {
+  rows: DocDestruction[];
+  rowCount: number;
+};
+
+const normalizePrintRows = (payload: unknown): DocDestruction[] => {
+  if (Array.isArray(payload)) {
+    const parsedRows = z.array(docDestructionListRowSchema).safeParse(payload);
+    if (!parsedRows.success) {
+      throw new Error("파기관리대장 출력 응답 형식이 올바르지 않습니다.");
+    }
+
+    return parsedRows.data.map((item, index) => normalizeDocDestructionRow(item, index));
+  }
+
+  const parsed = docDestructionListSchema.safeParse(payload ?? {});
+  if (!parsed.success) {
+    throw new Error("파기관리대장 출력 응답 형식이 올바르지 않습니다.");
+  }
+
+  const rows = parsed.data.list.length > 0 ? parsed.data.list : parsed.data.rows;
+  return rows.map((item: DocDestructionListRowRaw, index: number) =>
+    normalizeDocDestructionRow(item, index),
+  );
+};
+
+const isCompletedPrivacyRow = (row: DocDestruction) => {
+  const personalInfoIncluded = String(row.prvcInclYn ?? row.hasPersonalInfo ?? "").trim();
+  return personalInfoIncluded === "Y" && row.dstrcPrcsPrstCd === COMPLETED_PRIVACY_DESTRUCTION_STATUS;
 };
 
 export default function DocDestructionManagementPrintDialog({
@@ -27,12 +58,9 @@ export default function DocDestructionManagementPrintDialog({
 
   const [open, setOpen] = React.useState(false);
 
-  const [columnDefs] = React.useState<ColDef<any>[]>(listDefs);
+  const [columnDefs] = React.useState<ColDef<DocDestruction>[]>(listDefs);
 
-  const [rowData, setRowsData] = React.useState<{
-    rows: Destruction[];
-    rowCount: number;
-  }>({
+  const [rowData, setRowsData] = React.useState<DestructionRowState>({
     rows: [],
     rowCount: 0,
   });
@@ -48,26 +76,37 @@ export default function DocDestructionManagementPrintDialog({
   };
 
   const loadData = React.useCallback(async () => {
-    // 데이터 로드 로직 작성
-    const data = { ...searchValues, reqCd: "CMPLT", prvcInclYn: "Y" };
+    const requestParams = {
+      ...searchValues,
+      reqCd: "CMPLT",
+      prvcInclYn: "Y",
+      dstrcPrcsPrstCd: COMPLETED_PRIVACY_DESTRUCTION_STATUS,
+      pageNum: 1,
+      pageSize: 9999,
+    };
 
     try {
       setIsLoading(true);
-      const res = rowData.rows;
-      const mappedRows: Destruction[] = res.map((item: any, index: number) => ({
-        ...item,
-        eldocNo: item.eldocNo || `${index}`,
-      }));
+      const res = await https.get(selectDocDestructionListApiPath(), {
+        params: requestParams,
+      });
+      const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
+      const normalizedRows = normalizePrintRows(payload).filter(isCompletedPrivacyRow);
+
       setRowsData({
-        rows: mappedRows,
-        rowCount: mappedRows.length,
+        rows: normalizedRows,
+        rowCount: normalizedRows.length,
       });
     } catch (e) {
       console.error(e);
+      setRowsData({
+        rows: [],
+        rowCount: 0,
+      });
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [searchValues]);
 
   React.useEffect(() => {
     if (open) loadData();

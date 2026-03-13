@@ -1,4 +1,5 @@
 import * as React from "react";
+import https from "@/api/axiosInstance";
 import {
   Box,
   Button,
@@ -36,10 +37,11 @@ export default function DigitalDocDownDialog({
     setChecking(false);
   };
 
-  const verifyPasswordMockApi = React.useCallback(async (value: string) => {
-    // TODO: 실제 비밀번호 검증 API로 교체
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return value === "1234";
+  const verifyPasswordApi = React.useCallback(async (value: string) => {
+    const res = await https.post("/api/dr/auth/password/verify", {
+      password: value,
+    });
+    return Boolean((res as any)?.data?.verified ?? (res as any)?.data?.data?.verified ?? false);
   }, []);
 
   const handleDownload = React.useCallback(async () => {
@@ -51,18 +53,23 @@ export default function DigitalDocDownDialog({
     setChecking(true);
     setPasswordError("");
 
-    const isValid = await verifyPasswordMockApi(password);
-    if (!isValid) {
-      setChecking(false);
-      setPasswordError("비밀번호가 올바르지 않습니다.");
-      return;
-    }
+    try {
+      const isValid = await verifyPasswordApi(password);
+      if (!isValid) {
+        setChecking(false);
+        setPasswordError("비밀번호가 올바르지 않습니다.");
+        return;
+      }
 
-    // TODO: atchFileSn 기반 다운로드 API 연결
-    console.log("download atchFileSn:", atchFileSn);
-    setChecking(false);
-    handleClose();
-  }, [atchFileSn, handleClose, password, verifyPasswordMockApi]);
+      // TODO: atchFileSn 기반 다운로드 API 연결
+      console.log("download atchFileSn:", atchFileSn);
+      setChecking(false);
+      handleClose();
+    } catch (error) {
+      setChecking(false);
+      setPasswordError("비밀번호 확인 중 오류가 발생했습니다.");
+    }
+  }, [atchFileSn, handleClose, password, verifyPasswordApi]);
 
   return (
     <React.Fragment>

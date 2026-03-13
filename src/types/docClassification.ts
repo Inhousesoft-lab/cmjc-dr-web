@@ -146,6 +146,12 @@ export interface DocClassHistory {
   eqpmntNm: string; // 장비명
 }
 
+export interface DocClassificationDeleteRequest {
+  docClsfNo: string;
+  password: string;
+  reason: string;
+}
+
 export interface DocClassDetailFormState {
   values: Partial<Omit<DocClassDetail, "id">>;
   errors: Partial<Record<keyof DocClassDetailFormState["values"], string>>;

@@ -36,6 +36,7 @@ export interface DocDestruction {
   docNo: string; // 문서번호
   docTitle: string; // 문서제목
   hasPersonalInfo: string; // 개인정보 ("포함" / "미포함")
+  prvcInclYn: string; // 개인정보 포함 여부 원본값
   clctYmd: string; // 수집일자
   hldPrdDfyrs: string; // 보존연한(년)
   hldPrdMmCnt: string; // 보존연한(월)
@@ -52,6 +53,8 @@ export interface DocDestruction {
   registrantDept: string; // 등록자(부서)
   rgtrNm: string;
   regDate: string; // 등록일자
+  fileName: string; // 개인정보 파일명
+  dataTypeLabel: string; // 자료의 종류
 }
 
 export interface DocDestructionDetail {

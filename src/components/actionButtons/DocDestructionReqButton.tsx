@@ -52,11 +52,11 @@ export default function DocDestructionReqButton(prop: ButtonProps) {
       event.preventDefault();
 
       const formData = new FormData(event.currentTarget);
-      const password = formData.get("password") as string;
-      const reason = formData.get("reason") as string;
+      const password = String(formData.get("password") ?? "").trim();
+      const reason = String(formData.get("reason") ?? "").trim();
 
       const request: DocDestructionUpdate = {
-        password: password,
+        password,
         rsn: reason,
         reqCd: "REQ",
         docs: selectedRows,

@@ -1,4 +1,4 @@
-import { Box, Button, Grid, IconButton, Stack } from "@mui/material";
+import { Box, Button, Grid, IconButton, Stack, TextField } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
@@ -12,7 +12,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import dayjs from "dayjs";
 import MuiSelect from "@/components/elements/MuiSelect";
 import { useLocation, useNavigate } from "react-router";
 import useNotifications from "@/hooks/useNotifications";
@@ -75,6 +74,12 @@ export default function DocDestructionList() {
   const [docSclsfNo, setDocSclsfNo] = useState(
     restoredState?.docSclsfNo ?? initialSearchValues.docSclsfNo,
   );
+  const [docNo, setDocNo] = useState(
+    restoredState?.docNo ?? initialSearchValues.docNo,
+  );
+  const [docTtl, setDocTtl] = useState(
+    restoredState?.docTtl ?? initialSearchValues.docTtl,
+  );
   const [fromEndYmd, setFromEndYmd] = useState(
     restoredState?.fromEndYmd ?? initialSearchValues.fromEndYmd,
   );
@@ -111,6 +116,8 @@ export default function DocDestructionList() {
       docLclsfNo,
       docMclsfNo,
       docSclsfNo,
+      docNo,
+      docTtl,
       fromEndYmd,
       toEndYmd,
       pageNum,
@@ -120,6 +127,8 @@ export default function DocDestructionList() {
       docLclsfNo,
       docMclsfNo,
       docSclsfNo,
+      docNo,
+      docTtl,
       fromEndYmd,
       initialSearchValues,
       pageNum,
@@ -147,6 +156,8 @@ export default function DocDestructionList() {
     setDocLclsfNo(initialSearchValues.docLclsfNo);
     setDocMclsfNo(initialSearchValues.docMclsfNo);
     setDocSclsfNo(initialSearchValues.docSclsfNo);
+    setDocNo(initialSearchValues.docNo);
+    setDocTtl(initialSearchValues.docTtl);
     setFromEndYmd(initialSearchValues.fromEndYmd);
     setToEndYmd(initialSearchValues.toEndYmd);
     setPageNum(initialSearchValues.pageNum);
@@ -253,6 +264,36 @@ export default function DocDestructionList() {
               </div>
             }
           />
+          {/* 3행 */}
+          <GridField
+            item={4}
+            label="문서번호"
+            value={
+              <TextField
+                name="docNo"
+                fullWidth
+                size="small"
+                placeholder="문서번호"
+                value={docNo}
+                onChange={(e) => setDocNo(e.target.value)}
+              />
+            }
+          />
+          <GridField
+            item={4}
+            label="문서제목"
+            value={
+              <TextField
+                name="docTtl"
+                fullWidth
+                size="small"
+                placeholder="문서제목"
+                value={docTtl}
+                onChange={(e) => setDocTtl(e.target.value)}
+              />
+            }
+          />
+          <GridField item={4} label="" value={null} blank />
         </Grid>
         <Box
           className="table-view-actions"

@@ -37,6 +37,18 @@ export type DocDestructionDetailPayload = Record<string, any>;
 const toListParamsKey = (params: Partial<SearchValues> | undefined) =>
   JSON.stringify(params ?? {});
 
+const extractErrorMessage = (error: unknown) => {
+  const safeError = error as any;
+  return (
+    safeError?.response?.data?.data?.message ||
+    safeError?.response?.data?.message ||
+    safeError?.response?.data?.error?.message ||
+    safeError?.response?.data?.errors?.message ||
+    safeError?.response?.data?.data?.password ||
+    getErrorMessage(error)
+  );
+};
+
 const getPersonalInfoLabel = (value: string) => {
   if (value === "Y") return "포함";
   if (value === "N") return "미포함";
@@ -64,7 +76,7 @@ const getRegistrantLabel = (
   return `${registrant} (${dept})`;
 };
 
-const normalizeDocDestructionRow = (
+export const normalizeDocDestructionRow = (
   raw: DocDestructionListRowRaw,
   index: number,
 ): DocDestruction => {
@@ -72,6 +84,12 @@ const normalizeDocDestructionRow = (
   const holdingPeriod = getHoldingPeriodLabel(raw.hldPrdDfyrs, raw.hldPrdMmCnt);
   const collectDateLabel =
     raw.collectDateLabel || (raw.clctYmd ? `${raw.clctYmd}${holdingPeriod ? `(${holdingPeriod})` : ""}` : "");
+  const nestedDocClsf = (raw as any)?.docClsf;
+  const nestedPrvcFile = nestedDocClsf?.prvcFileHldPrst;
+  const fileName =
+    String(raw.fileName || nestedPrvcFile?.fileNm || "").trim();
+  const rawDocType = String(raw.docType || raw.eldocYn || "").trim();
+  const dataTypeLabel = raw.dataTypeLabel || (rawDocType === "Y" ? "전자문서" : rawDocType === "N" ? "비전자문서" : rawDocType);
 
   return {
     rowNo: raw.rowNo || index + 1,
@@ -80,6 +98,7 @@ const normalizeDocDestructionRow = (
     docNo: raw.docNo,
     docTitle: raw.docTitle || raw.docTtl,
     hasPersonalInfo: personalInfo,
+    prvcInclYn: raw.prvcInclYn,
     clctYmd: raw.clctYmd,
     hldPrdDfyrs: raw.hldPrdDfyrs,
     hldPrdMmCnt: raw.hldPrdMmCnt,
@@ -92,10 +111,12 @@ const normalizeDocDestructionRow = (
     dstrcAutzrId: raw.dstrcAutzrId,
     prvcDstrcAutzrId: raw.prvcDstrcAutzrId,
     endDate: raw.endDate || raw.endYmd,
-    docType: raw.docType || raw.eldocYn,
+    docType: rawDocType,
     registrantDept: getRegistrantLabel(raw.registrantDept, raw.deptNm, raw.rgtrId, raw.rgtrNm),
     rgtrNm: raw.rgtrNm,
     regDate: raw.regDate || raw.regDt,
+    fileName,
+    dataTypeLabel,
   };
 };
 
@@ -227,10 +248,10 @@ export const updateDocDestruction = createAsyncThunk<
       if (resultCode === "PASSWORD_ERROR") {
         return rejectWithValue("비밀번호가 일치하지 않습니다.");
       }
-      return rejectWithValue("요청 처리에 실패했습니다.");
+      return rejectWithValue(extractErrorMessage(body) || "요청 처리에 실패했습니다.");
     }
   } catch (error) {
-    return rejectWithValue(getErrorMessage(error));
+    return rejectWithValue(extractErrorMessage(error));
   }
   },
   {
