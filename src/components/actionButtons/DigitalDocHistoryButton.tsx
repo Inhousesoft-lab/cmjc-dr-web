@@ -1,9 +1,18 @@
-import { useEffect, useState } from "react";
-import { Grid, Stack, TableCell, TableHead, TableRow } from "@mui/material";
-import type { ColDef } from "ag-grid-community";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Grid,
+  Stack,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
+import type { ColDef, RowClickedEvent } from "ag-grid-community";
 import DialogTrigger from "../dialog/DialogTrigger";
 import TableWrapper from "../table/TableWrapper";
 import AgGridTable from "../grid/AgGridTable";
+import DocDetailTable from "../table/DocDetailTable";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
   fetchDigitalDocAuthrtHistoryList,
@@ -18,9 +27,10 @@ import {
   selectDigitalDocHistoryRows,
 } from "@/features/digitalDoc/DigitalDocSelectors";
 import useNotifications from "@/hooks/useNotifications";
+import type { DigitalDocHistory } from "@/types/digitalDoc";
 import { formatDateDash } from "@/utils/formater";
 
-const docListDefs = [
+const docListDefs: ColDef<DigitalDocHistory>[] = [
   {
     headerName: "번호",
     field: "eldocHstryNo",
@@ -72,7 +82,9 @@ export default function DigitalDocHistoryButton({
   const notifications = useNotifications();
 
   const [open, setOpen] = useState(false);
-  const [docColumnDefs] = useState<ColDef[]>(docListDefs);
+  const [selectedHistory, setSelectedHistory] = useState<DigitalDocHistory | null>(
+    null,
+  );
 
   const docHistoryRows = useAppSelector(selectDigitalDocHistoryRows);
   const docHistoryLoading = useAppSelector(selectDigitalDocHistoryLoading);
@@ -83,12 +95,34 @@ export default function DigitalDocHistoryButton({
   );
   const authrtHistoryError = useAppSelector(selectDigitalDocAuthrtHistoryError);
 
+  const docColumnDefs = useMemo(() => docListDefs, []);
+
   useEffect(() => {
     if (!open || !eldocNo) return;
 
     dispatch(fetchDigitalDocHistoryList(eldocNo));
     dispatch(fetchDigitalDocAuthrtHistoryList(eldocNo));
   }, [dispatch, eldocNo, open]);
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedHistory(null);
+      return;
+    }
+
+    if (docHistoryRows.length === 0) {
+      setSelectedHistory(null);
+      return;
+    }
+
+    setSelectedHistory((prev) => {
+      if (!prev) return docHistoryRows[0];
+      return (
+        docHistoryRows.find((row) => row.eldocHstryNo === prev.eldocHstryNo) ??
+        docHistoryRows[0]
+      );
+    });
+  }, [docHistoryRows, open]);
 
   useEffect(() => {
     if (!docHistoryError) return;
@@ -106,6 +140,10 @@ export default function DigitalDocHistoryButton({
     });
   }, [authrtHistoryError, notifications]);
 
+  const handleRowClicked = (event: RowClickedEvent<DigitalDocHistory>) => {
+    setSelectedHistory(event.data ?? null);
+  };
+
   return (
     <DialogTrigger
       buttonLabel="이력"
@@ -116,84 +154,111 @@ export default function DigitalDocHistoryButton({
       open={open}
       onClose={() => setOpen(false)}
     >
-      <Grid container spacing={3}>
-        <Grid size={6}>
-          <AgGridTable
-            height={500}
-            colDefs={docColumnDefs}
-            rowData={docHistoryRows}
-            isLoading={docHistoryLoading}
-          />
-        </Grid>
-        <Grid size={6}>
-          <Stack spacing={2}>
-            <TableWrapper
-              tableAriaLabel="공람 이력"
-              tableHead={
-                <TableHead>
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      align="center"
-                      sx={{ fontWeight: 700 }}
-                    >
-                      공람 이력
+      <Stack spacing={3}>
+        <Grid container spacing={3}>
+          <Grid size={6}>
+            <AgGridTable
+              height={500}
+              colDefs={docColumnDefs}
+              rowData={docHistoryRows}
+              isLoading={docHistoryLoading}
+              onRowClicked={handleRowClicked}
+            />
+          </Grid>
+          <Grid size={6}>
+            <Stack spacing={2}>
+              <TableWrapper
+                tableAriaLabel="공람 이력"
+                tableHead={
+                  <TableHead>
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        align="center"
+                        sx={{ fontWeight: 700 }}
+                      >
+                        공람 이력
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell align="center" sx={{ width: 120 }}>
+                        부서
+                      </TableCell>
+                      <TableCell align="center" sx={{ width: 110 }}>
+                        이름
+                      </TableCell>
+                      <TableCell align="center" sx={{ minWidth: 160 }}>
+                        행위내용
+                      </TableCell>
+                      <TableCell align="center" sx={{ width: 110 }}>
+                        행위자
+                      </TableCell>
+                      <TableCell align="center" sx={{ width: 120 }}>
+                        행위일자
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                }
+              >
+                {authrtHistoryRows.map((row, index) => (
+                  <TableRow
+                    key={`${row.inqAuthrtHstryNo || row.inqAuthrtNo || "row"}-${index}`}
+                  >
+                    <TableCell align="center">
+                      {(row as any).deptNm || row.deptId || "-"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {(row as any).indvNm ||
+                        (row.indvId === "ALL" ? "전체" : row.indvId) ||
+                        "-"}
+                    </TableCell>
+                    <TableCell align="center">{row.actCn || "-"}</TableCell>
+                    <TableCell align="center">
+                      {(row as any).rgtrNm || row.rgtrId || "-"}
+                    </TableCell>
+                    <TableCell align="center">
+                      {formatDateDash(row.regDt)}
                     </TableCell>
                   </TableRow>
+                ))}
+                {authrtHistoryRows.length === 0 && (
                   <TableRow>
-                    <TableCell align="center" sx={{ width: 120 }}>
-                      부서
-                    </TableCell>
-                    <TableCell align="center" sx={{ width: 110 }}>
-                      이름
-                    </TableCell>
-                    <TableCell align="center" sx={{ minWidth: 160 }}>
-                      행위내용
-                    </TableCell>
-                    <TableCell align="center" sx={{ width: 110 }}>
-                      행위자
-                    </TableCell>
-                    <TableCell align="center" sx={{ width: 120 }}>
-                      행위일자
+                    <TableCell colSpan={5} align="center">
+                      {authrtHistoryLoading
+                        ? "공람 이력 조회 중..."
+                        : "공람 이력이 없습니다."}
                     </TableCell>
                   </TableRow>
-                </TableHead>
-              }
-            >
-              {authrtHistoryRows.map((row, index) => (
-                <TableRow
-                  key={`${row.inqAuthrtHstryNo || row.inqAuthrtNo || "row"}-${index}`}
-                >
-                  <TableCell align="center">
-                    {(row as any).deptNm || row.deptId || "-"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {(row as any).indvNm ||
-                      (row.indvId === "ALL" ? "전체" : row.indvId) ||
-                      "-"}
-                  </TableCell>
-                  <TableCell align="center">{row.actCn || "-"}</TableCell>
-                  <TableCell align="center">
-                    {(row as any).rgtrNm || row.rgtrId || "-"}
-                  </TableCell>
-                  <TableCell align="center">
-                    {formatDateDash(row.regDt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {authrtHistoryRows.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    {authrtHistoryLoading
-                      ? "공람 이력 조회 중..."
-                      : "공람 이력이 없습니다."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableWrapper>
-          </Stack>
+                )}
+              </TableWrapper>
+            </Stack>
+          </Grid>
         </Grid>
-      </Grid>
+
+        <Stack spacing={1}>
+          <Typography variant="subtitle1" fontWeight={700}>
+            이력 시점 전자문서 메타데이터
+          </Typography>
+          {selectedHistory ? (
+            <>
+              <Alert severity="info" sx={{ py: 0 }}>
+                선택 이력: {selectedHistory.eldocHstryNo || "-"} / 행위일자 {" "}
+                {formatDateDash(selectedHistory.regDt)} / 행위내용 {" "}
+                {selectedHistory.actCn || "-"}
+              </Alert>
+              <DocDetailTable
+                eldocNo={eldocNo}
+                detail={selectedHistory}
+                showAttachments={false}
+              />
+            </>
+          ) : (
+            <Alert severity="info" sx={{ py: 0 }}>
+              조회할 이력 항목을 선택하세요.
+            </Alert>
+          )}
+        </Stack>
+      </Stack>
     </DialogTrigger>
   );
 }

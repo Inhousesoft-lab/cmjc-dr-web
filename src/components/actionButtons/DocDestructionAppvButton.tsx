@@ -48,7 +48,7 @@ export default function DocDestructionAppvButton(prop: ButtonProps) {
     async (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
-      const password = String(formData.get("password") ?? "");
+      const password = String(formData.get("password") ?? "").trim();
 
       const aprv01Docs = selectedRows
         .filter((row) => row.dstrcPrcsPrstCd === "01")

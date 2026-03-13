@@ -7,14 +7,15 @@ import {
   holdPeriodLabel,
   prvcLabel,
 } from "@/utils/formater";
-import type { DigitalDoc } from "@/types/digitalDoc";
+import type { DigitalDoc, DigitalDocHistory } from "@/types/digitalDoc";
 
 interface DocDetailTableProps {
   eldocNo: string;
-  detail: DigitalDoc | null;
+  detail: DigitalDoc | DigitalDocHistory | null;
   docNo?: string;
   docTtl?: string;
   editable?: boolean;
+  showAttachments?: boolean;
   onDocNoChange?: (value: string) => void;
   onDocTtlChange?: (value: string) => void;
 }
@@ -25,6 +26,7 @@ export default function DocDetailTable({
   docNo,
   docTtl,
   editable = false,
+  showAttachments = true,
   onDocNoChange,
   onDocTtlChange,
 }: DocDetailTableProps) {
@@ -87,10 +89,12 @@ export default function DocDetailTable({
       <GridField label="개인정보" value={mappedPrvcLabel} />
       <GridField label="반환여부" value={mappedGvbkLabel} />
       <GridField item={12} label="비고" value={detail?.addExpln || "-"} />
-      <GridField
-        label="첨부파일"
-        value={eldocNo ? <UploadFiles taskSeTrgtId={eldocNo} readOnly /> : "-"}
-      />
+      {showAttachments && (
+        <GridField
+          label="첨부파일"
+          value={eldocNo ? <UploadFiles taskSeTrgtId={eldocNo} readOnly /> : "-"}
+        />
+      )}
     </Grid>
   );
 }

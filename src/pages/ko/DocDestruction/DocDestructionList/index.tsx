@@ -1,4 +1,12 @@
-import { Box, Button, Grid, IconButton, Stack } from "@mui/material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  Stack,
+} from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 
@@ -70,6 +78,9 @@ export default function DocDestructionList() {
   const [docSclsfNo, setDocSclsfNo] = useState(
     restoredState?.docSclsfNo ?? initialSearchValues.docSclsfNo,
   );
+  const [prvcInclYn, setPrvcInclYn] = useState(
+    restoredState?.prvcInclYn ?? initialSearchValues.prvcInclYn,
+  );
   const [fromDstrcAprvYmd, setFromDstrcAprvYmd] = useState(
     restoredState?.fromDstrcAprvYmd ?? initialSearchValues.fromDstrcAprvYmd,
   );
@@ -100,6 +111,7 @@ export default function DocDestructionList() {
       docLclsfNo,
       docMclsfNo,
       docSclsfNo,
+      prvcInclYn,
       fromDstrcAprvYmd,
       toDstrcAprvYmd,
       pageNum,
@@ -109,6 +121,7 @@ export default function DocDestructionList() {
       docLclsfNo,
       docMclsfNo,
       docSclsfNo,
+      prvcInclYn,
       fromDstrcAprvYmd,
       initialSearchValues,
       pageNum,
@@ -132,6 +145,7 @@ export default function DocDestructionList() {
     setDocLclsfNo(initialSearchValues.docLclsfNo);
     setDocMclsfNo(initialSearchValues.docMclsfNo);
     setDocSclsfNo(initialSearchValues.docSclsfNo);
+    setPrvcInclYn(initialSearchValues.prvcInclYn);
     setFromDstrcAprvYmd(initialSearchValues.fromDstrcAprvYmd);
     setToDstrcAprvYmd(initialSearchValues.toDstrcAprvYmd);
     setPageNum(initialSearchValues.pageNum);
@@ -198,7 +212,7 @@ export default function DocDestructionList() {
         <Grid container spacing={0} className="table-view-grid">
           {/* 1행 */}
           <GridField
-            item={4}
+            item={3}
             label="대분류"
             value={
               <MuiSelect
@@ -214,7 +228,7 @@ export default function DocDestructionList() {
             }
           />
           <GridField
-            item={4}
+            item={3}
             label="중분류"
             value={
               <MuiSelect
@@ -229,7 +243,7 @@ export default function DocDestructionList() {
             }
           />
           <GridField
-            item={4}
+            item={3}
             label="소분류"
             value={
               <MuiSelect
@@ -240,12 +254,30 @@ export default function DocDestructionList() {
               />
             }
           />
+          <GridField
+            item={3}
+            label="개인정보 포함"
+            value={
+              <FormControlLabel
+                className="doc-clsf-prvc-checkbox"
+                control={
+                  <Checkbox
+                    id="prvcInclYn"
+                    size="small"
+                    checked={prvcInclYn === "Y"}
+                    onChange={(e) => setPrvcInclYn(e.target.checked ? "Y" : "N")}
+                  />
+                }
+                label="포함"
+              />
+            }
+          />
           {/* 2행 */}
           <GridField
             item={12}
             label="파기일자"
-            labelSize={{ xs: 4, sm: 1 }}
-            valueSize={{ xs: 8, sm: 11 }}
+            labelSize={{ xs: 4, sm: 2 }}
+            valueSize={{ xs: 8, sm: 10 }}
             value={
               <div className="filter-range">
                 <MuiDatePickerFt

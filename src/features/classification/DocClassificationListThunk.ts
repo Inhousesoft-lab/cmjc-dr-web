@@ -8,6 +8,7 @@ import {
 import { z } from "zod";
 import type {
   DocClassDetail,
+  DocClassificationDeleteRequest,
   DocClassificationSearch,
   DocClassificationVO,
 } from "@/types/docClassification";
@@ -22,6 +23,20 @@ const toListParamsKey = (params: DocClassificationSearch | undefined) =>
   JSON.stringify(params ?? {});
 
 const stringField = z.preprocess((v) => (v == null ? "" : String(v)), z.string());
+
+const extractErrorMessage = (error: unknown) => {
+  const safeError = error as any;
+  return (
+    safeError?.response?.data?.data?.message ||
+    safeError?.response?.data?.message ||
+    safeError?.response?.data?.error?.message ||
+    safeError?.response?.data?.errors?.message ||
+    safeError?.response?.data?.data?.errors?.message ||
+    safeError?.response?.data?.data?.password ||
+    safeError?.response?.data?.data?.reason ||
+    getErrorMessage(error)
+  );
+};
 
 const docClassificationRowSchema = z.looseObject({
     rowNo: z
@@ -102,6 +117,7 @@ const prvcFileHldPrstSchema = z
     infoMnbdDsagClctSttBssExpln: stringField,
     spiHldYn: stringField,
     spiIndivAgrnYn: stringField,
+    spiIndivAgreYn: stringField,
     spiHldSttBssExpln: stringField,
     uiiHldYn: stringField,
     uiiIndivAgreYn: stringField,
@@ -213,12 +229,20 @@ export const fetchDocClassificationDetail = createAsyncThunk<
 
 export const deleteDocClassification = createAsyncThunk<
   void,
-  string,
+  string | DocClassificationDeleteRequest,
   { rejectValue: string }
->("docClassification/delete", async (docClsfNo, { rejectWithValue }) => {
+>("docClassification/delete", async (payload, { rejectWithValue }) => {
   try {
-    await https.delete(deleteDocClassificationApiPath(docClsfNo));
+    if (typeof payload === "string") {
+      await https.delete(deleteDocClassificationApiPath(payload));
+      return;
+    }
+
+    await https.post(deleteDocClassificationApiPath(payload.docClsfNo), {
+      password: payload.password,
+      reason: payload.reason,
+    });
   } catch (error) {
-    return rejectWithValue(getErrorMessage(error));
+    return rejectWithValue(extractErrorMessage(error));
   }
 });
