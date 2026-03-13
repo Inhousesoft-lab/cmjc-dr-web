@@ -2,6 +2,7 @@ import type { Paging } from "./common";
 
 export interface DocDestructionSearchState {
   values: Partial<Omit<SearchValues, "id">>;
+  rgtrNm: string;
 }
 
 export interface SearchValues extends Paging {
@@ -115,4 +116,5 @@ export interface DocDestructionAuthrtHistory {
   delYn: string; // 삭제여부(Y:삭제, N:유지)
   regDt: string; // 등록일자
   rgtrId: string; // 등록자
+  rgtrNm: string;
 }

@@ -87,7 +87,7 @@ const normalizeDocDestructionRow = (
     dstrcAprvDt: raw.dstrcAprvDt || raw.dstrcAprvYmd,
     rsn: raw.rsn,
     dstrcPrcsPrstCd: raw.dstrcPrcsPrstCd,
-    dstrcAplcntId: raw.dstrcAplcntId || raw.rgtrId,
+    dstrcAplcntId: raw.dstrcAplcntId || raw.rgtrNm || raw.rgtrId,
     dstrcAplyDt: raw.dstrcAplyDt,
     dstrcAutzrId: raw.dstrcAutzrId,
     prvcDstrcAutzrId: raw.prvcDstrcAutzrId,

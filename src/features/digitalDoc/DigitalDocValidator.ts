@@ -128,6 +128,7 @@ export const digitalAuthrtHistoryRowSchema = z.looseObject({
   delYn: stringField,
   regDt: stringField,
   rgtrId: stringField,
+  rgtrNm: stringField,
 });
 
 export const digitalAuthrtHistoryListSchema = z.looseObject({

@@ -124,6 +124,7 @@ export interface DigitalAuthrtHistory {
   delYn: string; // 삭제여부(Y:삭제, N:유지)
   regDt: string; // 등록일자
   rgtrId: string; // 등록자
+  rgtrNm: string;
 }
 
 export interface EldocState extends Paging {
