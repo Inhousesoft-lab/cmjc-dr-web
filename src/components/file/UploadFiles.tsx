@@ -11,6 +11,11 @@ import {
   ListItemIcon,
   Button,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 
 import {
@@ -33,6 +38,7 @@ interface FileProps {
   taskSeTrgtId?: string; // 해당 업무의 pk
   setGroupId?: (id: string) => void;
   readOnly?: boolean;
+  requireDownloadReason?: boolean;
 }
 
 export default function UploadFiles({
@@ -41,6 +47,7 @@ export default function UploadFiles({
   taskSeTrgtId,
   setGroupId,
   readOnly = false,
+  requireDownloadReason = false,
 }: FileProps) {
   const [fileList, setFileList] = useState<FileWithId[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -66,6 +73,11 @@ export default function UploadFiles({
     severity: "info",
   });
   const [isDragging, setIsDragging] = useState(false);
+  const [downloadReasonOpen, setDownloadReasonOpen] = useState(false);
+  const [downloadReason, setDownloadReason] = useState("");
+  const [downloadReasonError, setDownloadReasonError] = useState("");
+  const [pendingDownloadFile, setPendingDownloadFile] = useState<FileItem | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -74,6 +86,83 @@ export default function UploadFiles({
     severity: "success" | "error" | "warning" | "info" = "info",
   ) => {
     setSnackbar({ open: true, message, severity });
+  };
+
+  const closeDownloadReasonDialog = () => {
+    if (isDownloading) {
+      return;
+    }
+    setDownloadReasonOpen(false);
+    setDownloadReason("");
+    setDownloadReasonError("");
+    setPendingDownloadFile(null);
+  };
+
+  const runDownload = async (file: FileItem, reason?: string) => {
+    const downloadUrls = FileApi.getDownloadStreamUrls(
+      file,
+      requireDownloadReason
+        ? {
+            eldocNo: taskSeTrgtId,
+            reason,
+          }
+        : undefined,
+    );
+
+    await FileApi.downloadFromUrls(downloadUrls, file.fileNm || "download");
+  };
+
+  const handleDownloadClick = async (file: FileItem) => {
+    if (requireDownloadReason) {
+      setPendingDownloadFile(file);
+      setDownloadReasonOpen(true);
+      setDownloadReason("");
+      setDownloadReasonError("");
+      return;
+    }
+
+    try {
+      await runDownload(file);
+    } catch (error) {
+      showSnackbar(
+        error instanceof Error ? error.message : "다운로드에 실패했습니다.",
+        "error",
+      );
+    }
+  };
+
+  const handleReasonDownloadConfirm = async () => {
+    const trimmedReason = downloadReason.trim();
+    if (!trimmedReason) {
+      setDownloadReasonError("다운로드 사유를 입력해 주세요.");
+      return;
+    }
+
+    if (!pendingDownloadFile) {
+      setDownloadReasonError("다운로드할 파일 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    let succeeded = false;
+
+    try {
+      setIsDownloading(true);
+      await runDownload(pendingDownloadFile, trimmedReason);
+      succeeded = true;
+    } catch (error) {
+      setDownloadReasonError(
+        error instanceof Error ? error.message : "다운로드에 실패했습니다.",
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+
+    if (succeeded) {
+      setDownloadReasonOpen(false);
+      setDownloadReason("");
+      setDownloadReasonError("");
+      setPendingDownloadFile(null);
+    }
   };
 
   // 파일 그룹 데이터 조회 ============================================
@@ -493,20 +582,8 @@ export default function UploadFiles({
                           <Button
                             variant="outlined"
                             size="small"
-                            onClick={async () => {
-                              try {
-                                await FileApi.downloadFromUrls(
-                                  downloadUrls,
-                                  file.fileNm || "download",
-                                );
-                              } catch (error) {
-                                showSnackbar(
-                                  error instanceof Error
-                                    ? error.message
-                                    : "다운로드에 실패했습니다.",
-                                  "error",
-                                );
-                              }
+                            onClick={() => {
+                              void handleDownloadClick(file);
                             }}
                           >
                             다운로드
@@ -534,6 +611,43 @@ export default function UploadFiles({
           </List>
         </Box>
       )}
+
+      <Dialog open={downloadReasonOpen} onClose={closeDownloadReasonDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>다운로드 사유 입력</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="사유"
+            fullWidth
+            multiline
+            minRows={3}
+            value={downloadReason}
+            onChange={(e) => {
+              setDownloadReason(e.target.value);
+              if (downloadReasonError) {
+                setDownloadReasonError("");
+              }
+            }}
+            error={!!downloadReasonError}
+            helperText={downloadReasonError || "개인정보 포함 문서는 다운로드 사유가 필요합니다."}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDownloadReasonDialog} disabled={isDownloading}>
+            취소
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              void handleReasonDownloadConfirm();
+            }}
+            disabled={isDownloading}
+          >
+            다운로드
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Snackbar for notifications */}
       <Snackbar

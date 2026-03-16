@@ -956,6 +956,43 @@ export default function DocClassificationForm() {
       const isEditMode = Boolean(docClsfNo);
 
       if (isEditMode) {
+        const hasHoldingPeriodChanged =
+          payload.prvcInclYn === "Y" &&
+          (Number(payload.prvcFileHldPrst?.hldPrdDfyrs) !==
+            Number(hldPrdDfyrs) ||
+            Number(payload.prvcFileHldPrst?.hldPrdMmCnt) !==
+              Number(hldPrdMmCnt));
+
+        if (hasHoldingPeriodChanged) {
+          const confirmed = await dialogs.confirm(
+            "보유기간 변경 시, 기존 개인정보파일에 대한 보유기간 수정에 대한 검토가 필요합니다. 해당화면으로 이동 하시겠습니다?",
+            {
+              severity: "error",
+              okText: "확인",
+              cancelText: "취소",
+            },
+          );
+
+          if (!confirmed) {
+            return;
+          }
+
+          await https.post(updateDocClassificationApiPath(), payload as DocClassDetail);
+          notifications.show("수정 완료.", {
+            severity: "success",
+            autoHideDuration: 3000,
+          });
+          navigate({
+            pathname: URL.HOLDING_INSTITUTION_LIST,
+            search: `?${createSearchParams({
+              lclsfNo: payload.docLclsfNo ?? "",
+              mclsfNo: payload.docMclsfNo ?? "",
+              sclsfNo: payload.docClsfNo ?? "",
+            })}`,
+          });
+          return;
+        }
+
         if (
           payload.prvcInclYn === "Y" &&
           (Number(payload.prvcFileHldPrst?.hldPrdDfyrs) !==

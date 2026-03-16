@@ -90,10 +90,30 @@ export interface FileListRequest {
   taskSeTrgtId?: string;
 }
 
-const buildDownloadStreamPath = (file: Pick<FileItem, "srvrFileNm" | "fileNm">) =>
-  `/api/dr/file/downloadStream?filename=${encodeURIComponent(
-    file.srvrFileNm || "",
-  )}&originalName=${encodeURIComponent(file.fileNm || "")}`;
+export interface DownloadStreamOptions {
+  eldocNo?: string;
+  reason?: string;
+}
+
+const buildDownloadStreamPath = (
+  file: Pick<FileItem, "srvrFileNm" | "fileNm">,
+  options?: DownloadStreamOptions,
+) => {
+  const params = new URLSearchParams({
+    filename: file.srvrFileNm || "",
+    originalName: file.fileNm || "",
+  });
+
+  if (options?.eldocNo) {
+    params.set("eldocNo", options.eldocNo);
+  }
+
+  if (options?.reason) {
+    params.set("reason", options.reason);
+  }
+
+  return `/api/dr/file/downloadStream?${params.toString()}`;
+};
 
 export const FileApi = {
   getFileList: async (request: FileListRequest): Promise<FileItem[]> => {
@@ -199,8 +219,11 @@ export const FileApi = {
     return String(atchFileGroupId.toString());
   },
 
-  getDownloadStreamUrls: (file: Pick<FileItem, "srvrFileNm" | "fileNm">) => {
-    const path = buildDownloadStreamPath(file);
+  getDownloadStreamUrls: (
+    file: Pick<FileItem, "srvrFileNm" | "fileNm">,
+    options?: DownloadStreamOptions,
+  ) => {
+    const path = buildDownloadStreamPath(file, options);
     const urls = [resolveApiUrl(path), resolveFallbackApiUrl(path)].filter(
       (url, index, arr): url is string => !!url && arr.indexOf(url) === index,
     );
