@@ -9,8 +9,10 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageStatus from "@/components/common/PageStatus";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
+  checkDocClassificationDelete,
   deleteDocClassification,
   fetchDocClassificationDetail,
+  unuseDocClassification,
 } from "@/features/classification/DocClassificationListThunk";
 import {
   selectDocClassificationDeleteLoading,
@@ -22,6 +24,8 @@ import { formatDateDash, holdPeriodLabel, ynLabel } from "@/utils/formater";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import DocClassificationDeleteDialog from "@/components/biz/DocClassificationDeleteDialog";
 import { getErrorMessage } from "@/utils/globalFunc";
+
+type DeleteDialogMode = "delete" | "unuse";
 
 const DETAIL_LABEL_WIDTH = 180;
 
@@ -41,6 +45,8 @@ export default function DocClassificationDetail() {
   const detailError = useAppSelector(selectDocClassificationDetailError);
   const isDeleteLoading = useAppSelector(selectDocClassificationDeleteLoading);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [deleteDialogMode, setDeleteDialogMode] =
+    React.useState<DeleteDialogMode>("delete");
 
   React.useEffect(() => {
     if (!targetDocClsfNo) return;
@@ -67,24 +73,58 @@ export default function DocClassificationDetail() {
     navigate(langPath("/docClassification/list", curLang));
   }, [curLang, navigate, notifications]);
 
+  const handleUnuseSuccess = React.useCallback(() => {
+    notifications.show("사용안함 처리되었습니다.", {
+      severity: "success",
+      autoHideDuration: 3000,
+    });
+    dispatch(fetchDocClassificationDetail(targetDocClsfNo));
+  }, [dispatch, notifications, targetDocClsfNo]);
+
+  const openDeleteDialog = React.useCallback((mode: DeleteDialogMode) => {
+    setDeleteDialogMode(mode);
+    setDeleteDialogOpen(true);
+  }, []);
+
   const handleViewDataDelete = React.useCallback(async () => {
     if (!detailData) return;
 
-    if (detailData.prvcInclYn === "Y") {
-      setDeleteDialogOpen(true);
-      return;
-    }
-
-    const confirmed = await dialogs.confirm("삭제하시겠습니까?", {
-      title: "삭제 확인",
-      severity: "error",
-      okText: "확인",
-      cancelText: "취소",
-    });
-
-    if (!confirmed) return;
-
     try {
+      const deleteCheck = await dispatch(
+        checkDocClassificationDelete(targetDocClsfNo),
+      ).unwrap();
+
+      if (deleteCheck.hasLinkedElectronicDocs) {
+        const shouldUnuse = await dialogs.confirm(
+          "기존에 연결된 전자문서가 있습니다. 사용안함으로 하시겠습니까?",
+          {
+            title: "사용안함 확인",
+            severity: "warning",
+            okText: "예",
+            cancelText: "아니오",
+          },
+        );
+
+        if (!shouldUnuse) return;
+
+        openDeleteDialog("unuse");
+        return;
+      }
+
+      if (detailData.prvcInclYn === "Y") {
+        openDeleteDialog("delete");
+        return;
+      }
+
+      const confirmed = await dialogs.confirm("삭제하시겠습니까?", {
+        title: "삭제 확인",
+        severity: "error",
+        okText: "확인",
+        cancelText: "취소",
+      });
+
+      if (!confirmed) return;
+
       await dispatch(deleteDocClassification(targetDocClsfNo)).unwrap();
       handleDeleteSuccess();
     } catch (e) {
@@ -93,7 +133,15 @@ export default function DocClassificationDetail() {
         autoHideDuration: 3000,
       });
     }
-  }, [detailData, dialogs, dispatch, handleDeleteSuccess, notifications, targetDocClsfNo]);
+  }, [
+    detailData,
+    dialogs,
+    dispatch,
+    handleDeleteSuccess,
+    notifications,
+    openDeleteDialog,
+    targetDocClsfNo,
+  ]);
 
   const handleDeleteWithReason = React.useCallback(
     async ({ password, reason }: { password: string; reason: string }) => {
@@ -114,6 +162,19 @@ export default function DocClassificationDetail() {
       }
 
       try {
+        if (deleteDialogMode === "unuse") {
+          await dispatch(
+            unuseDocClassification({
+              docClsfNo: targetDocClsfNo,
+              password,
+              reason,
+            }),
+          ).unwrap();
+          setDeleteDialogOpen(false);
+          handleUnuseSuccess();
+          return;
+        }
+
         await dispatch(
           deleteDocClassification({
             docClsfNo: targetDocClsfNo,
@@ -130,8 +191,21 @@ export default function DocClassificationDetail() {
         });
       }
     },
-    [dispatch, handleDeleteSuccess, notifications, targetDocClsfNo],
+    [
+      deleteDialogMode,
+      dispatch,
+      handleDeleteSuccess,
+      handleUnuseSuccess,
+      notifications,
+      targetDocClsfNo,
+    ],
   );
+
+  const handleCloseDeleteDialog = React.useCallback(() => {
+    if (isDeleteLoading) return;
+    setDeleteDialogOpen(false);
+    setDeleteDialogMode("delete");
+  }, [isDeleteLoading]);
 
   const handleBack = () => {
     const listState = (
@@ -245,7 +319,9 @@ export default function DocClassificationDetail() {
       <DocClassificationDeleteDialog
         open={deleteDialogOpen}
         loading={isDeleteLoading}
-        onClose={() => setDeleteDialogOpen(false)}
+        title={deleteDialogMode === "unuse" ? "문서분류 사용안함" : "문서분류 삭제"}
+        submitText={deleteDialogMode === "unuse" ? "사용안함" : "삭제"}
+        onClose={handleCloseDeleteDialog}
         onSubmit={handleDeleteWithReason}
       />
 

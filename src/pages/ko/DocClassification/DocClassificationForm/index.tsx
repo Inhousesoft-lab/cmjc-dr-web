@@ -401,8 +401,10 @@ const PrvcDetailTable = React.memo(
           <TableCell>
             <RadioGroup
               row
-              name="spiIndivAgrnYn"
-              defaultValue={defaults.spiIndivAgrnYn ?? "N"}
+              name="spiIndivAgreYn"
+              defaultValue={
+                defaults.spiIndivAgreYn ?? defaults.spiIndivAgrnYn ?? "N"
+              }
             >
               <FormControlLabel
                 value="Y"
@@ -853,9 +855,11 @@ export default function DocClassificationForm() {
         defaults.prvcFileHldPrst?.infoMnbdDsagClctSttBssExpln ?? "",
       ),
       spiHldYn: getText("spiHldYn", defaults.prvcFileHldPrst?.spiHldYn ?? ""),
-      spiIndivAgrnYn: getText(
-        "spiIndivAgrnYn",
-        defaults.prvcFileHldPrst?.spiIndivAgrnYn ?? "",
+      spiIndivAgreYn: getText(
+        "spiIndivAgreYn",
+        defaults.prvcFileHldPrst?.spiIndivAgreYn ??
+          defaults.prvcFileHldPrst?.spiIndivAgrnYn ??
+          "",
       ),
       spiHldSttBssExpln: getText(
         "spiHldSttBssExpln",

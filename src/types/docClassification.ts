@@ -83,7 +83,8 @@ export interface DocClassSubDetail {
   infoMnbdAgreYn: string; // 정보주체 동의여부(Y:동의, N:미동의)
   infoMnbdDsagClctSttBssExpln: string; // 정보주체 동의 없이 수집 법령근거
   spiHldYn: string; // 민감정보 보유여부(Y:보유, N:미보유)
-  spiIndivAgrnYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
+  spiIndivAgreYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
+  spiIndivAgrnYn?: string; // 과거 오타 키 호환용
   spiHldSttBssExpln: string; // 민감정보 보유 법령근거
   uiiHldYn: string; // 고유식별정보 보유여부(Y:보유, N:미보유)
   uiiIndivAgreYn: string; // 고유식별정보 별도 동의여부(Y:동의, N:미동의)
@@ -123,7 +124,8 @@ export interface DocClassHistory {
   infoMnbdAgreYn: string; // 정보주체 동의여부(Y:동의, N:미동의)
   infoMnbdDsagClctSttBssExpln: string; // 정보주체 동의 없이 수집 법령근거
   spiHldYn: string; // 민감정보 보유여부(Y:보유, N:미보유)
-  spiIndivAgrnYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
+  spiIndivAgreYn: string; // 민감정보 별도 동의여부(Y:동의, N:미동의)
+  spiIndivAgrnYn?: string; // 과거 오타 키 호환용
   spiHldSttBssExpln: string; // 민감정보 보유 법령근거
   uiiHldYn: string; // 고유식별정보 보유여부(Y:보유, N:미보유)
   uiiIndivAgreYn: string; // 고유식별정보 별도 동의여부(Y:동의, N:미동의)
@@ -150,6 +152,16 @@ export interface DocClassificationDeleteRequest {
   docClsfNo: string;
   password: string;
   reason: string;
+}
+
+export interface DocClassificationUnuseRequest {
+  docClsfNo: string;
+  password: string;
+  reason: string;
+}
+
+export interface DocClassificationDeleteCheckResponse {
+  hasLinkedElectronicDocs: boolean;
 }
 
 export interface DocClassDetailFormState {
