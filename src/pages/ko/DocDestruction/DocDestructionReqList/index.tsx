@@ -309,8 +309,9 @@ export default function DocDestructionList() {
           <IconButton
             aria-label="검색 초기화 및 새로고침"
             onClick={handleRefresh}
+            sx={{ width: 40, height: 40, p: 1 }}
           >
-            <RefreshIcon />
+            <RefreshIcon fontSize="medium" />
           </IconButton>
         </Box>
       </Stack>
