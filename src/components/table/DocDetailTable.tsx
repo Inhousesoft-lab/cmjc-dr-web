@@ -16,6 +16,7 @@ interface DocDetailTableProps {
   docTtl?: string;
   editable?: boolean;
   showAttachments?: boolean;
+  attachmentsContent?: React.ReactNode;
   onDocNoChange?: (value: string) => void;
   onDocTtlChange?: (value: string) => void;
 }
@@ -27,6 +28,7 @@ export default function DocDetailTable({
   docTtl,
   editable = false,
   showAttachments = true,
+  attachmentsContent,
   onDocNoChange,
   onDocTtlChange,
 }: DocDetailTableProps) {
@@ -104,7 +106,8 @@ export default function DocDetailTable({
         <GridField
           label="첨부파일"
           value={
-            eldocNo ? (
+            attachmentsContent ??
+            (eldocNo ? (
               <UploadFiles
                 taskSeTrgtId={eldocNo}
                 readOnly
@@ -112,7 +115,7 @@ export default function DocDetailTable({
               />
             ) : (
               "-"
-            )
+            ))
           }
         />
       )}
