@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { ColDef } from "ag-grid-community";
+import { useSearchParams } from "react-router-dom";
 import { listDefs } from "./col-def";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
@@ -50,6 +51,30 @@ const INITIAL_SEARCH_PARAMS: SearchValues = {
   pageSize: 10,
 };
 
+const toBool = (value: string | null) =>
+  value === "true" || value === "Y" || value === "1";
+
+const buildInitialSearchParams = (
+  queryParams: URLSearchParams,
+): SearchValues => ({
+  ...INITIAL_SEARCH_PARAMS,
+  fromClctYmd: queryParams.get("fromClctYmd") ?? INITIAL_SEARCH_PARAMS.fromClctYmd,
+  toClctYmd: queryParams.get("toClctYmd") ?? INITIAL_SEARCH_PARAMS.toClctYmd,
+  fromEndYmd: queryParams.get("fromEndYmd") ?? INITIAL_SEARCH_PARAMS.fromEndYmd,
+  toEndYmd: queryParams.get("toEndYmd") ?? INITIAL_SEARCH_PARAMS.toEndYmd,
+  docLclsfNo: queryParams.get("docLclsfNo") ?? INITIAL_SEARCH_PARAMS.docLclsfNo,
+  docMclsfNo: queryParams.get("docMclsfNo") ?? INITIAL_SEARCH_PARAMS.docMclsfNo,
+  docSclsfNo: queryParams.get("docSclsfNo") ?? INITIAL_SEARCH_PARAMS.docSclsfNo,
+  docNo: queryParams.get("docNo") ?? INITIAL_SEARCH_PARAMS.docNo,
+  docTtl: queryParams.get("docTtl") ?? INITIAL_SEARCH_PARAMS.docTtl,
+  infoMnbdAgreYn:
+    queryParams.get("infoMnbdAgreYn") ?? INITIAL_SEARCH_PARAMS.infoMnbdAgreYn,
+  hldPrdDfyrs: queryParams.get("hldPrdDfyrs") ?? INITIAL_SEARCH_PARAMS.hldPrdDfyrs,
+  hldPrdChangedOnly: toBool(queryParams.get("hldPrdChangedOnly")),
+  pageNum: Number(queryParams.get("pageNum") || INITIAL_SEARCH_PARAMS.pageNum),
+  pageSize: Number(queryParams.get("pageSize") || INITIAL_SEARCH_PARAMS.pageSize),
+});
+
 const HOLD_PERIOD_ITEMS = [
   { name: "전체", code: "" },
   { name: "1년", code: "1" },
@@ -66,10 +91,15 @@ export default function HoldingInstitutionList() {
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const dialogs = useDialogs();
+  const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+  const initialSearchParams = React.useMemo(
+    () => buildInitialSearchParams(urlSearchParams),
+    [urlSearchParams],
+  );
 
   const [columnDefs] = React.useState<ColDef[]>(listDefs);
   const [searchParams, setSearchParams] =
-    React.useState<SearchValues>(INITIAL_SEARCH_PARAMS);
+    React.useState<SearchValues>(initialSearchParams);
 
   const { lclsfList, mclsfList, sclsfList, lclsfError } = useDocClsfOptions(
     searchParams.docLclsfNo,
@@ -82,7 +112,7 @@ export default function HoldingInstitutionList() {
   const listError = useAppSelector(selectHoldingInstitutionError);
 
   React.useEffect(() => {
-    dispatch(fetchHoldingInstitutionList(INITIAL_SEARCH_PARAMS));
+    dispatch(fetchHoldingInstitutionList(initialSearchParams));
   }, [dispatch]);
 
   React.useEffect(() => {
@@ -102,6 +132,18 @@ export default function HoldingInstitutionList() {
   }, [lclsfError, notifications]);
 
   const [selectedRows, setSelectedRows] = React.useState<HoldingInstitution[]>([]);
+
+  const syncSearchParams = React.useCallback(
+    (nextParams: SearchValues) => {
+      setSearchParams(nextParams);
+      setUrlSearchParams(
+        Object.fromEntries(
+          Object.entries(nextParams).map(([key, value]) => [key, String(value)]),
+        ),
+      );
+    },
+    [setUrlSearchParams],
+  );
 
   const handleSelectionChange = React.useCallback((nextRows: HoldingInstitution[]) => {
     setSelectedRows(nextRows);
@@ -139,7 +181,13 @@ export default function HoldingInstitutionList() {
         severity: "success",
         autoHideDuration: 3000,
       });
-      dispatch(fetchHoldingInstitutionList(searchParams));
+      const nextParams = {
+        ...searchParams,
+        hldPrdChangedOnly: false,
+        pageNum: 1,
+      };
+      syncSearchParams(nextParams);
+      dispatch(fetchHoldingInstitutionList(nextParams));
       setSelectedRows([]);
     } catch (error) {
       notifications.show(getErrorMessage(error), {
@@ -147,7 +195,7 @@ export default function HoldingInstitutionList() {
         autoHideDuration: 3000,
       });
     }
-  }, [dialogs, dispatch, notifications, searchParams, selectedRows]);
+  }, [dialogs, dispatch, notifications, searchParams, selectedRows, syncSearchParams]);
 
   const handleApplyAllRows = React.useCallback(async () => {
     const confirmed = await dialogs.confirm(
@@ -184,7 +232,13 @@ export default function HoldingInstitutionList() {
         severity: "success",
         autoHideDuration: 3000,
       });
-      dispatch(fetchHoldingInstitutionList(searchParams));
+      const nextParams = {
+        ...searchParams,
+        hldPrdChangedOnly: false,
+        pageNum: 1,
+      };
+      syncSearchParams(nextParams);
+      dispatch(fetchHoldingInstitutionList(nextParams));
       setSelectedRows([]);
     } catch (error) {
       notifications.show(getErrorMessage(error), {
@@ -192,19 +246,19 @@ export default function HoldingInstitutionList() {
         autoHideDuration: 3000,
       });
     }
-  }, [dialogs, dispatch, notifications, searchParams]);
+  }, [dialogs, dispatch, notifications, searchParams, syncSearchParams]);
 
   const handleSearch = React.useCallback(() => {
     const nextParams = { ...searchParams, pageNum: 1 };
-    setSearchParams(nextParams);
+    syncSearchParams(nextParams);
     dispatch(fetchHoldingInstitutionList(nextParams));
-  }, [dispatch, searchParams]);
+  }, [dispatch, searchParams, syncSearchParams]);
 
   const handleResetSearchValues = React.useCallback(() => {
     const resetParams = { ...INITIAL_SEARCH_PARAMS };
-    setSearchParams(resetParams);
+    syncSearchParams(resetParams);
     dispatch(fetchHoldingInstitutionList(resetParams));
-  }, [dispatch]);
+  }, [dispatch, syncSearchParams]);
 
   const handleSubmit = React.useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -438,7 +492,7 @@ export default function HoldingInstitutionList() {
             pageNum: nextPage,
             pageSize: nextSize,
           };
-          setSearchParams(nextParams);
+          syncSearchParams(nextParams);
           dispatch(fetchHoldingInstitutionList(nextParams));
         }}
       />

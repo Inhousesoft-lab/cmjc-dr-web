@@ -46,6 +46,11 @@ export default function DocDetailTable({
     : "-";
   const mappedGvbkLabel = gvbkLabel(detail?.gvbkYn);
   const mappedPrvcLabel = prvcLabel(detail?.prvcInclYn);
+  const showDownloadReason = String((detail as any)?.actCn ?? "").includes(
+    "다운로드",
+  );
+  const downloadReasonLabel = showDownloadReason ? "다운로드 사유" : "";
+  const downloadReasonValue = showDownloadReason ? detail?.rsn || "-" : "";
 
   return (
     <Grid container spacing={0} className="table-view-grid">
@@ -88,11 +93,27 @@ export default function DocDetailTable({
       <GridField label="종료일자" value={clctLabel} />
       <GridField label="개인정보" value={mappedPrvcLabel} />
       <GridField label="반환여부" value={mappedGvbkLabel} />
-      <GridField item={12} label="비고" value={detail?.addExpln || "-"} />
+      <GridField item={6} label="비고" value={detail?.addExpln || "-"} />
+      <GridField
+        item={6}
+        label={downloadReasonLabel}
+        value={downloadReasonValue}
+        blank={!showDownloadReason}
+      />
       {showAttachments && (
         <GridField
           label="첨부파일"
-          value={eldocNo ? <UploadFiles taskSeTrgtId={eldocNo} readOnly /> : "-"}
+          value={
+            eldocNo ? (
+              <UploadFiles
+                taskSeTrgtId={eldocNo}
+                readOnly
+                requireDownloadReason={detail?.prvcInclYn === "Y"}
+              />
+            ) : (
+              "-"
+            )
+          }
         />
       )}
     </Grid>
