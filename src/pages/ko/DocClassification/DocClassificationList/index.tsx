@@ -6,9 +6,11 @@ import {
   Checkbox,
   FormControlLabel,
   Grid,
+  IconButton,
   Stack,
   TextField,
 } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { ColDef } from "ag-grid-community";
 import AgGridContainer from "@/components/grid/AgGridContainer";
 import MuiSelect from "@/components/elements/MuiSelect";
@@ -239,19 +241,24 @@ export default function DocClassificationList() {
               }
             />
           </Grid>
-          <Box className="table-view-actions">
+          <Box
+            className="table-view-actions"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <Button type="submit" variant="contained">
               조회
             </Button>
-            <Button
-              type="button"
-              variant="text"
-              aria-label="검색조건 초기화"
+            <IconButton
+              aria-label="검색 초기화 및 새로고침"
               onClick={handleResetSearchValues}
-              sx={{ minWidth: "auto", p: 0.5 }}
+              sx={{ width: 40, height: 40, p: 1 }}
             >
-              <span className="ico_reset" aria-hidden="true" />
-            </Button>
+              <RefreshIcon fontSize="medium" />
+            </IconButton>
           </Box>
         </Stack>
       </form>

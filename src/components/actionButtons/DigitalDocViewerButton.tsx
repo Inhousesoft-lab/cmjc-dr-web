@@ -48,6 +48,7 @@ export default function DigitalDocViewerButton({
   const [containerWidth, setContainerWidth] = React.useState(0);
   const [currentUrlIndex, setCurrentUrlIndex] = React.useState(0);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [resolvedFileUrl, setResolvedFileUrl] = React.useState("");
   const viewerRef = React.useRef<HTMLDivElement | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const pageRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
@@ -94,6 +95,58 @@ export default function DigitalDocViewerButton({
 
     return () => observer.disconnect();
   }, [fileType, open]);
+
+  React.useEffect(() => {
+    if (!open || !activeFileUrl) {
+      setResolvedFileUrl("");
+      return;
+    }
+
+    let revokedUrl: string | null = null;
+    let cancelled = false;
+
+    const loadFileForViewer = async () => {
+      setLoadError(null);
+      setResolvedFileUrl("");
+
+      try {
+        const response = await fetch(activeFileUrl, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const blob = await response.blob();
+        if (cancelled) return;
+
+        revokedUrl = window.URL.createObjectURL(blob);
+        setResolvedFileUrl(revokedUrl);
+      } catch (error) {
+        if (cancelled) return;
+        if (currentUrlIndex + 1 < fileUrls.length) {
+          moveToNextUrl();
+          return;
+        }
+        setLoadError(
+          error instanceof Error
+            ? error.message || "파일을 불러오지 못했습니다."
+            : "파일을 불러오지 못했습니다.",
+        );
+      }
+    };
+
+    void loadFileForViewer();
+
+    return () => {
+      cancelled = true;
+      if (revokedUrl) {
+        window.URL.revokeObjectURL(revokedUrl);
+      }
+    };
+  }, [activeFileUrl, currentUrlIndex, fileUrls.length, moveToNextUrl, open]);
 
   React.useEffect(() => {
     if (fileType !== "pdf") return;
@@ -276,9 +329,11 @@ export default function DigitalDocViewerButton({
             {fileType === "pdf" ? (
               loadError ? (
                 <Typography color="error">{loadError}</Typography>
+              ) : !resolvedFileUrl ? (
+                <Typography>파일을 불러오는 중입니다...</Typography>
               ) : (
                 <Document
-                  file={activeFileUrl}
+                  file={resolvedFileUrl}
                   onLoadSuccess={handleLoadSuccess}
                   onLoadError={handlePdfLoadError}
                 >
@@ -316,9 +371,11 @@ export default function DigitalDocViewerButton({
               >
                 {loadError ? (
                   <Typography color="error">{loadError}</Typography>
+                ) : !resolvedFileUrl ? (
+                  <Typography>파일을 불러오는 중입니다...</Typography>
                 ) : (
                   <img
-                    src={activeFileUrl}
+                    src={resolvedFileUrl}
                     alt="첨부 이미지"
                     style={{
                       maxWidth: "100%",

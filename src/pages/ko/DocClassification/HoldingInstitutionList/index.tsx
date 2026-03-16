@@ -411,9 +411,9 @@ export default function HoldingInstitutionList() {
             <IconButton
               aria-label="검색조건 초기화"
               onClick={handleResetSearchValues}
-              size="small"
+              sx={{ width: 40, height: 40, p: 1 }}
             >
-              <RefreshIcon fontSize="small" />
+              <RefreshIcon fontSize="medium" />
             </IconButton>
           </Stack>
         </Box>
