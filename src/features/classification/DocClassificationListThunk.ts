@@ -1,6 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import https from "@/api/axiosInstance";
 import {
+  addDocClassificationUnuseApiPath,
+  checkDocClassificationDeleteApiPath,
   deleteDocClassificationApiPath,
   selectDocClassificationDetailApiPath,
   selectDocClassificationListApiPath,
@@ -8,8 +10,10 @@ import {
 import { z } from "zod";
 import type {
   DocClassDetail,
+  DocClassificationDeleteCheckResponse,
   DocClassificationDeleteRequest,
   DocClassificationSearch,
+  DocClassificationUnuseRequest,
   DocClassificationVO,
 } from "@/types/docClassification";
 import type { RootState } from "@/app/store";
@@ -116,8 +120,8 @@ const prvcFileHldPrstSchema = z
     infoMnbdAgreYn: stringField,
     infoMnbdDsagClctSttBssExpln: stringField,
     spiHldYn: stringField,
-    spiIndivAgrnYn: stringField,
     spiIndivAgreYn: stringField,
+    spiIndivAgrnYn: stringField.optional(),
     spiHldSttBssExpln: stringField,
     uiiHldYn: stringField,
     uiiIndivAgreYn: stringField,
@@ -157,6 +161,10 @@ const docClassificationDetailSchema = z.looseObject({
     .preprocess((v) => (v == null ? {} : v), prvcFileHldPrstSchema)
     .optional()
     .default({}),
+});
+
+const docClassificationDeleteCheckSchema = z.looseObject({
+  hasLinkedElectronicDocs: z.boolean(),
 });
 
 export const fetchDocClassificationList = createAsyncThunk<
@@ -227,6 +235,26 @@ export const fetchDocClassificationDetail = createAsyncThunk<
   }
 });
 
+export const checkDocClassificationDelete = createAsyncThunk<
+  DocClassificationDeleteCheckResponse,
+  string,
+  { rejectValue: string }
+>("docClassification/deleteCheck", async (docClsfNo, { rejectWithValue }) => {
+  try {
+    const res = await https.get(checkDocClassificationDeleteApiPath(docClsfNo));
+    const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
+    const parsed = docClassificationDeleteCheckSchema.safeParse(payload);
+
+    if (!parsed.success) {
+      return rejectWithValue("문서분류 삭제 사전 확인 응답 형식이 올바르지 않습니다.");
+    }
+
+    return parsed.data as DocClassificationDeleteCheckResponse;
+  } catch (error) {
+    return rejectWithValue(extractErrorMessage(error));
+  }
+});
+
 export const deleteDocClassification = createAsyncThunk<
   void,
   string | DocClassificationDeleteRequest,
@@ -239,6 +267,26 @@ export const deleteDocClassification = createAsyncThunk<
     }
 
     await https.post(deleteDocClassificationApiPath(payload.docClsfNo), {
+      password: payload.password,
+      reason: payload.reason,
+    });
+  } catch (error) {
+    return rejectWithValue(extractErrorMessage(error));
+  }
+});
+
+export const unuseDocClassification = createAsyncThunk<
+  void,
+  string | DocClassificationUnuseRequest,
+  { rejectValue: string }
+>("docClassification/unuse", async (payload, { rejectWithValue }) => {
+  try {
+    if (typeof payload === "string") {
+      await https.put(addDocClassificationUnuseApiPath(payload));
+      return;
+    }
+
+    await https.put(addDocClassificationUnuseApiPath(payload.docClsfNo), {
       password: payload.password,
       reason: payload.reason,
     });

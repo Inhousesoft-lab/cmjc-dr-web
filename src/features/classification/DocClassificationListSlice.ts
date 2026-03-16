@@ -3,6 +3,7 @@ import {
   deleteDocClassification,
   fetchDocClassificationDetail,
   fetchDocClassificationList,
+  unuseDocClassification,
 } from "./DocClassificationListThunk";
 import type { DocClassDetail, DocClassificationVO } from "@/types/docClassification";
 
@@ -97,6 +98,25 @@ const docClassificationListSlice = createSlice({
         state.deleteLoading = false;
         state.deleteError =
           action.payload || action.error.message || "문서분류 삭제 실패";
+      })
+      .addCase(unuseDocClassification.pending, (state) => {
+        state.deleteLoading = true;
+        state.deleteError = null;
+      })
+      .addCase(unuseDocClassification.fulfilled, (state) => {
+        state.deleteLoading = false;
+        state.deleteError = null;
+        if (state.detail) {
+          state.detail = {
+            ...state.detail,
+            useEn: "N",
+          };
+        }
+      })
+      .addCase(unuseDocClassification.rejected, (state, action) => {
+        state.deleteLoading = false;
+        state.deleteError =
+          action.payload || action.error.message || "문서분류 사용안함 처리 실패";
       });
   },
 });

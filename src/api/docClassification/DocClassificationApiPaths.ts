@@ -19,6 +19,9 @@ export const insertDocClassificationApiPath = () => "/api/dr/documentclassificat
 // 수정
 export const updateDocClassificationApiPath = () => "/api/dr/documentclassification/update";
 
+// 삭제 전 연결 전자문서 확인
+export const checkDocClassificationDeleteApiPath = (docClsfNo: string) => `/api/dr/documentclassification/${docClsfNo}/delete-check`;
+
 // 삭제
 export const deleteDocClassificationApiPath = (docClsfNo: string) => `/api/dr/documentclassification/${docClsfNo}/delete`;
 

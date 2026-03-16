@@ -15,6 +15,8 @@ import TableWrapper from "@/components/table/TableWrapper";
 interface Props {
   open: boolean;
   loading?: boolean;
+  title?: string;
+  submitText?: string;
   onClose: () => void;
   onSubmit: (values: { password: string; reason: string }) => Promise<void> | void;
 }
@@ -22,6 +24,8 @@ interface Props {
 export default function DocClassificationDeleteDialog({
   open,
   loading = false,
+  title = "문서분류 삭제",
+  submitText = "삭제",
   onClose,
   onSubmit,
 }: Props) {
@@ -38,7 +42,7 @@ export default function DocClassificationDeleteDialog({
 
   return (
     <Dialog open={open} onClose={loading ? undefined : onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>문서분류 삭제</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <form onSubmit={handleSubmit} id="doc-classification-delete-form">
           <TableWrapper>
@@ -88,7 +92,7 @@ export default function DocClassificationDeleteDialog({
           form="doc-classification-delete-form"
           disabled={loading}
         >
-          삭제
+          {submitText}
         </Button>
       </DialogActions>
     </Dialog>
