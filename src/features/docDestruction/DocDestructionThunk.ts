@@ -88,8 +88,9 @@ export const normalizeDocDestructionRow = (
   const nestedPrvcFile = nestedDocClsf?.prvcFileHldPrst;
   const fileName =
     String(raw.fileName || nestedPrvcFile?.fileNm || "").trim();
+  const fileNm = String((raw as any).fileNm || "").trim();
   const rawDocType = String(raw.docType || raw.eldocYn || "").trim();
-  const dataTypeLabel = raw.dataTypeLabel || (rawDocType === "Y" ? "전자문서" : rawDocType === "N" ? "비전자문서" : rawDocType);
+  const dataTypeLabel = String(raw.dataTypeLabel || fileNm || rawDocType).trim();
 
   return {
     rowNo: raw.rowNo || index + 1,
@@ -116,6 +117,7 @@ export const normalizeDocDestructionRow = (
     rgtrNm: raw.rgtrNm,
     regDate: raw.regDate || raw.regDt,
     fileName,
+    fileNm,
     dataTypeLabel,
   };
 };

@@ -54,6 +54,7 @@ export interface DocDestruction {
   rgtrNm: string;
   regDate: string; // 등록일자
   fileName: string; // 개인정보 파일명
+  fileNm?: string; // 자료의 종류 원본(file_nm)
   dataTypeLabel: string; // 자료의 종류
 }
 

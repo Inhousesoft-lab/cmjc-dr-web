@@ -19,10 +19,10 @@ export const listDefs: ColDef<DocDestruction>[] = [
   {
     headerName: "자료의 종류",
     field: "dataTypeLabel",
-    minWidth: 120,
-    flex: 0.9,
+    minWidth: 180,
+    flex: 1.2,
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params) => formatText(params?.value),
+    valueFormatter: (params) => formatText(params?.data?.fileNm ?? params?.value),
   },
   {
     headerName: "생성일",

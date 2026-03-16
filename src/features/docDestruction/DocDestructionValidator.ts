@@ -40,6 +40,7 @@ export const docDestructionListRowSchema = z.looseObject({
   regDate: stringField.optional().default(""),
   regDt: stringField.optional().default(""),
   fileName: stringField.optional().default(""),
+  fileNm: stringField.optional().default(""),
   dataTypeLabel: stringField.optional().default(""),
 });
 
