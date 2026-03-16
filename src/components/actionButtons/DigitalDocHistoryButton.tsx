@@ -33,9 +33,14 @@ import { formatDateDash } from "@/utils/formater";
 const docListDefs: ColDef<DigitalDocHistory>[] = [
   {
     headerName: "번호",
-    field: "eldocHstryNo",
-    width: 150,
+    field: "rowNo",
+    width: 80,
     cellStyle: { textAlign: "center" },
+  },
+  {
+    headerName: "이력번호",
+    field: "eldocHstryNo",
+    hide: true,
   },
   {
     headerName: "행위일자",
@@ -242,7 +247,7 @@ export default function DigitalDocHistoryButton({
           {selectedHistory ? (
             <>
               <Alert severity="info" sx={{ py: 0 }}>
-                선택 이력: {selectedHistory.eldocHstryNo || "-"} / 행위일자 {" "}
+                선택 이력: {selectedHistory.rowNo || "-"} / 행위일자 {" "}
                 {formatDateDash(selectedHistory.regDt)} / 행위내용 {" "}
                 {selectedHistory.actCn || "-"}
               </Alert>

@@ -66,7 +66,7 @@ export default function DocDetailTable({
           )
         }
       />
-      <GridField label="기본권한" value={detail?.deptId || "-"} />
+      <GridField label="기본권한" value={detail?.deptNm || detail?.deptId || "-"} />
       <GridField
         item={12}
         label="문서제목"

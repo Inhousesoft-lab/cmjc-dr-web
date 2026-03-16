@@ -32,7 +32,15 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
         payload?.data ??
         payload?.result ??
         payload;
-      setRowsData(Array.isArray(raw) ? (raw as DocClassHistory[]) : []);
+
+      const rows = Array.isArray(raw) ? (raw as DocClassHistory[]) : [];
+      const sortedRows = [...rows].sort((a, b) => {
+        const aTime = new Date(a.regDt ?? 0).getTime();
+        const bTime = new Date(b.regDt ?? 0).getTime();
+        return bTime - aTime;
+      });
+
+      setRowsData(sortedRows);
     } catch (listDataError) {
       console.error(listDataError);
     }
@@ -64,12 +72,12 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
       <TableWrapper
         colgroup={
           <colgroup>
-            <col />
+            <col className="tbl-col-w-8p" />
             <col className="tbl-col-w-14p" />
             <col className="tbl-col-w-14p" />
-            <col className="tbl-col-w-14p" />
+            <col className="tbl-col-w-34p" />
             <col className="tbl-col-w-15p" />
-            <col className="tbl-col-w-10p" />
+            <col className="tbl-col-w-15p" />
           </colgroup>
         }
       >
@@ -82,9 +90,9 @@ export default function DocClassificationHistoryDialog({ docClsfNo }: Props) {
           <LabelCell>장비</LabelCell>
         </TableRow>
         {rowData?.length > 0 &&
-          rowData?.map((row) => (
-            <TableRow key={row.docClsfNo}>
-              <TableCell>{row.docClsfNo}</TableCell>
+          rowData?.map((row, index) => (
+            <TableRow key={row.docClsfHstryNo || `${row.docClsfNo}-${index}`}>
+              <TableCell>{index + 1}</TableCell>
               <TableCell>{formatDateDash(row.regDt)}</TableCell>
               <TableCell>{row.rgtrNm || row.rgtrId}</TableCell>
               <TableCell>{row.actCn}</TableCell>
