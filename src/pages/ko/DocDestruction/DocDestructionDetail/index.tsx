@@ -95,6 +95,12 @@ export default function DocDestructionDetail() {
     return `${actorText} (${dateText})`;
   };
 
+  const formatDestructionDate = (status: unknown, date: unknown) => {
+    const prstCd = String(status ?? "").trim();
+    if (prstCd !== "02" && prstCd !== "04") return "-";
+    return formatDateOnly(date);
+  };
+
   const handleBack = () => {
     const detailState = location.state as
       | {
@@ -146,7 +152,9 @@ export default function DocDestructionDetail() {
           <LabelCell>문서번호</LabelCell>
           <TableCell>{showValue(detail?.docNo)}</TableCell>
           <LabelCell>파기일자</LabelCell>
-          <TableCell>{formatDateOnly(detail?.dstrcAprvDt)}</TableCell>
+          <TableCell>
+            {formatDestructionDate(detail?.dstrcPrcsPrstCd, detail?.dstrcAprvDt)}
+          </TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>문서제목</LabelCell>
