@@ -193,7 +193,7 @@ export default function DocDestructionDetail() {
         </TableRow>
         <TableRow>
           <LabelCell>자료의 종류</LabelCell>
-          <TableCell colSpan={3}>{showValue(detail?.eldocYn)}</TableCell>
+          <TableCell colSpan={3}>{showValue(detail?.fileNm ?? detail?.dataTypeLabel)}</TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>비고</LabelCell>
