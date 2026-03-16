@@ -985,21 +985,22 @@ export default function DocClassificationForm() {
           navigate({
             pathname: URL.HOLDING_INSTITUTION_LIST,
             search: `?${createSearchParams({
-              lclsfNo: payload.docLclsfNo ?? "",
-              mclsfNo: payload.docMclsfNo ?? "",
-              sclsfNo: payload.docClsfNo ?? "",
+              docLclsfNo: payload.docLclsfNo ?? "",
+              docMclsfNo: payload.docMclsfNo ?? "",
+              docSclsfNo: payload.docSclsfNo ?? "",
+              hldPrdChangedOnly: "true",
             })}`,
           });
           return;
         }
 
-        if (
+        if (false && (
           payload.prvcInclYn === "Y" &&
           (Number(payload.prvcFileHldPrst?.hldPrdDfyrs) !==
             Number(hldPrdDfyrs) ||
             Number(payload.prvcFileHldPrst?.hldPrdMmCnt) !==
               Number(hldPrdMmCnt))
-        ) {
+        )) {
           const confirmed = await dialogs.confirm(
             "보유기간 변경 시, 기존 개인정보파일에 대한 보유기간 수정에 대한 검토가 필요합니다. 해당화면으로 이동 하시겠습니다?",
             {
