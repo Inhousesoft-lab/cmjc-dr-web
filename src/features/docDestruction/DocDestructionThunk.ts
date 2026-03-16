@@ -61,6 +61,17 @@ const getHoldingPeriodLabel = (years: string, months: string) => {
   return `${yearText}${monthText}`.trim();
 };
 
+const getDocTypeLabel = (value: unknown) => {
+  const raw = String(value ?? "").trim();
+  const normalized = raw.toUpperCase();
+
+  if (!raw) return "";
+  if (normalized === "Y") return "문서";
+  if (normalized === "N") return "파일";
+  if (raw === "문서" || raw === "파일") return raw;
+  return raw;
+};
+
 const getRegistrantLabel = (
   registrantDept: string,
   deptNm: string,
@@ -90,7 +101,8 @@ export const normalizeDocDestructionRow = (
     String(raw.fileName || nestedPrvcFile?.fileNm || "").trim();
   const fileNm = String((raw as any).fileNm || "").trim();
   const rawDocType = String(raw.docType || raw.eldocYn || "").trim();
-  const dataTypeLabel = String(raw.dataTypeLabel || fileNm || rawDocType).trim();
+  const docType = getDocTypeLabel(raw.eldocYn || raw.docType);
+  const dataTypeLabel = String(raw.dataTypeLabel || fileNm || docType || rawDocType).trim();
 
   return {
     rowNo: raw.rowNo || index + 1,
@@ -112,7 +124,7 @@ export const normalizeDocDestructionRow = (
     dstrcAutzrId: raw.dstrcAutzrId,
     prvcDstrcAutzrId: raw.prvcDstrcAutzrId,
     endDate: raw.endDate || raw.endYmd,
-    docType: rawDocType,
+    docType,
     registrantDept: getRegistrantLabel(raw.registrantDept, raw.deptNm, raw.rgtrId, raw.rgtrNm),
     rgtrNm: raw.rgtrNm,
     regDate: raw.regDate || raw.regDt,
@@ -182,6 +194,10 @@ const normalizeDocDestructionDetail = (
   const holdingPeriod = getHoldingPeriodLabel(raw.hldPrdDfyrs, raw.hldPrdMmCnt);
   const collectDateLabel =
     raw.collectDateLabel || (raw.clctYmd ? `${raw.clctYmd}${holdingPeriod ? `(${holdingPeriod})` : ""}` : "");
+  const docType = getDocTypeLabel(raw.eldocYn || raw.docType);
+  const nestedDocClsf = (raw as any)?.docClsf;
+  const nestedPrvcFile = nestedDocClsf?.prvcFileHldPrst;
+  const fileNm = String(raw.fileNm || raw.fileName || nestedPrvcFile?.fileNm || "").trim();
 
   return {
     ...raw,
@@ -190,7 +206,9 @@ const normalizeDocDestructionDetail = (
     dstrcAprvDt: raw.dstrcAprvDt || raw.dstrcAprvYmd,
     endYmd: raw.endYmd || raw.endDate,
     prvcInclYn: personalInfo,
-    eldocYn: raw.eldocYn || raw.docType,
+    eldocYn: docType,
+    fileNm,
+    dataTypeLabel: fileNm,
     collectDateLabel,
   };
 };

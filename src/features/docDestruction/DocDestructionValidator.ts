@@ -76,6 +76,9 @@ export const docDestructionDetailSchema = z.looseObject({
   prvcDstrcAprvDt: stringField.optional().default(""),
   eldocYn: stringField.optional().default(""),
   docType: stringField.optional().default(""),
+  fileNm: stringField.optional().default(""),
+  fileName: stringField.optional().default(""),
+  dataTypeLabel: stringField.optional().default(""),
   addExpln: stringField.optional().default(""),
   rsn: stringField.optional().default(""),
 });
