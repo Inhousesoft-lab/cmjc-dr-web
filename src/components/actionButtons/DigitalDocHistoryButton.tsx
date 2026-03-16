@@ -1,19 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Alert,
-  Grid,
-  Stack,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-} from "@mui/material";
+import { Alert, Grid, Stack, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import type { ColDef, RowClickedEvent } from "ag-grid-community";
 import DialogTrigger from "../dialog/DialogTrigger";
 import TableWrapper from "../table/TableWrapper";
 import AgGridTable from "../grid/AgGridTable";
 import DocDetailTable from "../table/DocDetailTable";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { FileApi, type FileItem } from "@/api/fileApi";
 import {
   fetchDigitalDocAuthrtHistoryList,
   fetchDigitalDocHistoryList,
@@ -29,6 +22,7 @@ import {
 import useNotifications from "@/hooks/useNotifications";
 import type { DigitalDocHistory } from "@/types/digitalDoc";
 import { formatDateDash } from "@/utils/formater";
+import DigitalDocViewerButton from "./DigitalDocViewerButton";
 
 const docListDefs: ColDef<DigitalDocHistory>[] = [
   {
@@ -78,6 +72,26 @@ const docListDefs: ColDef<DigitalDocHistory>[] = [
   },
 ];
 
+const formatFileSize = (bytes?: number) => {
+  if (!bytes) return "-";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+const getFileKind = (file: FileItem) => {
+  const ext = (
+    file.fileExtnNm ??
+    file.fileNm?.split(".").pop() ??
+    ""
+  ).toLowerCase();
+
+  return {
+    isPdf: ext === "pdf",
+    isImage: ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg"].includes(ext),
+  };
+};
+
 export default function DigitalDocHistoryButton({
   eldocNo,
 }: {
@@ -90,6 +104,8 @@ export default function DigitalDocHistoryButton({
   const [selectedHistory, setSelectedHistory] = useState<DigitalDocHistory | null>(
     null,
   );
+  const [historyFiles, setHistoryFiles] = useState<FileItem[]>([]);
+  const [historyFilesLoading, setHistoryFilesLoading] = useState(false);
 
   const docHistoryRows = useAppSelector(selectDigitalDocHistoryRows);
   const docHistoryLoading = useAppSelector(selectDigitalDocHistoryLoading);
@@ -145,9 +161,126 @@ export default function DigitalDocHistoryButton({
     });
   }, [authrtHistoryError, notifications]);
 
+  useEffect(() => {
+    if (!open || !selectedHistory?.eldocNo || !selectedHistory?.atchFileSn) {
+      setHistoryFiles([]);
+      setHistoryFilesLoading(false);
+      return;
+    }
+
+    if (selectedHistory.atchFileSn === "0") {
+      setHistoryFiles([]);
+      setHistoryFilesLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadFiles = async () => {
+      setHistoryFilesLoading(true);
+      try {
+        const files = await FileApi.getFileList({
+          taskSeCd: "dr",
+          menuSn: 1,
+          atchFileGroupId: selectedHistory.atchFileSn,
+          taskSeTrgtId: selectedHistory.eldocNo,
+        });
+
+        if (!cancelled) {
+          setHistoryFiles(files);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setHistoryFiles([]);
+          notifications.show(
+            error instanceof Error
+              ? error.message
+              : "첨부파일 목록을 불러오지 못했습니다.",
+            {
+              severity: "error",
+              autoHideDuration: 3000,
+            },
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setHistoryFilesLoading(false);
+        }
+      }
+    };
+
+    loadFiles().catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [notifications, open, selectedHistory]);
+
   const handleRowClicked = (event: RowClickedEvent<DigitalDocHistory>) => {
     setSelectedHistory(event.data ?? null);
   };
+
+  const historyAttachmentsContent = useMemo(() => {
+    if (!selectedHistory?.atchFileSn || selectedHistory.atchFileSn === "0") {
+      return "-";
+    }
+
+    if (historyFilesLoading) {
+      return "첨부파일 조회 중...";
+    }
+
+    if (historyFiles.length === 0) {
+      return "첨부파일 없음";
+    }
+
+    return (
+      <Stack spacing={0.75}>
+        {historyFiles.map((file, index) => {
+          const { isPdf, isImage } = getFileKind(file);
+          const downloadUrls = FileApi.getDownloadStreamUrls(file);
+
+          return (
+            <Stack
+              key={file.atchFileId ?? `${selectedHistory.eldocHstryNo}-${index}`}
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ minWidth: 0, py: 0.25 }}
+            >
+              <Stack sx={{ minWidth: 0, flex: 1 }}>
+                <Typography
+                  variant="body2"
+                  noWrap
+                  title={file.fileNm || ""}
+                  sx={{
+                    fontWeight: 500,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {file.fileNm || `첨부파일 ${index + 1}`}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {formatFileSize(file.fileSz)}
+                </Typography>
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+                {isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
+                {!isPdf && isImage && (
+                  <DigitalDocViewerButton
+                    fileUrl={downloadUrls}
+                    fileType="image"
+                  />
+                )}
+              </Stack>
+            </Stack>
+          );
+        })}
+      </Stack>
+    );
+  }, [historyFiles, historyFilesLoading, notifications, selectedHistory]);
 
   return (
     <DialogTrigger
@@ -247,14 +380,15 @@ export default function DigitalDocHistoryButton({
           {selectedHistory ? (
             <>
               <Alert severity="info" sx={{ py: 0 }}>
-                선택 이력: {selectedHistory.rowNo || "-"} / 행위일자 {" "}
-                {formatDateDash(selectedHistory.regDt)} / 행위내용 {" "}
+                선택 이력: {selectedHistory.rowNo || "-"} / 행위일자{" "}
+                {formatDateDash(selectedHistory.regDt)} / 행위내용{" "}
                 {selectedHistory.actCn || "-"}
               </Alert>
               <DocDetailTable
                 eldocNo={eldocNo}
                 detail={selectedHistory}
-                showAttachments={false}
+                showAttachments
+                attachmentsContent={historyAttachmentsContent}
               />
             </>
           ) : (

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import DialogTrigger from "@/components/dialog/DialogTrigger";
 import AgGridTable from "@/components/grid/AgGridTable";
@@ -78,6 +78,7 @@ export default function ExternalView() {
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const [open, setOpen] = React.useState(false);
+  const [docNoInput, setDocNoInput] = React.useState("");
   const [filesByDoc, setFilesByDoc] = React.useState<FileMap>({});
   const [loadingFiles, setLoadingFiles] = React.useState<Record<string, boolean>>({});
 
@@ -182,9 +183,15 @@ export default function ExternalView() {
   );
 
   const handleOpen = React.useCallback(() => {
+    const docNo = docNoInput.trim();
     setOpen(true);
-    dispatch(fetchExternalViewList(INITIAL_LIST_PARAMS));
-  }, [dispatch]);
+    dispatch(
+      fetchExternalViewList({
+        ...INITIAL_LIST_PARAMS,
+        ...(docNo ? { docNo } : {}),
+      }),
+    );
+  }, [dispatch, docNoInput]);
 
   const handleClose = React.useCallback(() => {
     setOpen(false);
@@ -365,15 +372,29 @@ export default function ExternalView() {
   );
 
   return (
-    <DialogTrigger
-      buttonLabel="문서열람(외부)"
-      title="문서열람(외부)"
-      maxWidth="md"
-      open={open}
-      onOpen={handleOpen}
-      onClose={handleClose}
-    >
-      <AgGridTable colDefs={columnDefs} rowData={rows} isLoading={isLoading} />
-    </DialogTrigger>
+    <>
+      <Stack direction="row" spacing={1.5} alignItems="center">
+        <Button variant="outlined" onClick={handleOpen}>
+          문서열람(외부)
+        </Button>
+        <TextField
+          size="small"
+          label="문서 번호"
+          value={docNoInput}
+          onChange={(event) => setDocNoInput(event.target.value)}
+          placeholder="문서 번호 입력"
+          sx={{ minWidth: 240 }}
+        />
+      </Stack>
+      <DialogTrigger
+        hideTrigger
+        title="문서열람(외부)"
+        maxWidth="md"
+        open={open}
+        onClose={handleClose}
+      >
+        <AgGridTable colDefs={columnDefs} rowData={rows} isLoading={isLoading} />
+      </DialogTrigger>
+    </>
   );
 }
