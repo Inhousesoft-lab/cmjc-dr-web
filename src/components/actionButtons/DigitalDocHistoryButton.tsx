@@ -22,7 +22,6 @@ import {
 import useNotifications from "@/hooks/useNotifications";
 import type { DigitalDocHistory } from "@/types/digitalDoc";
 import { formatDateDash } from "@/utils/formater";
-import DigitalDocViewerButton from "./DigitalDocViewerButton";
 
 const docListDefs: ColDef<DigitalDocHistory>[] = [
   {
@@ -221,24 +220,28 @@ export default function DigitalDocHistoryButton({
   };
 
   const historyAttachmentsContent = useMemo(() => {
+    const contentSx = {
+      minHeight: 96,
+      width: "100%",
+      display: "flex",
+      alignItems: historyFiles.length > 0 ? "stretch" : "center",
+    } as const;
+
     if (!selectedHistory?.atchFileSn || selectedHistory.atchFileSn === "0") {
-      return "-";
+      return <Stack sx={contentSx}>첨부파일 없음</Stack>;
     }
 
     if (historyFilesLoading) {
-      return "첨부파일 조회 중...";
+      return <Stack sx={contentSx} />;
     }
 
     if (historyFiles.length === 0) {
-      return "첨부파일 없음";
+      return <Stack sx={contentSx}>첨부파일 없음</Stack>;
     }
 
     return (
-      <Stack spacing={0.75}>
+      <Stack spacing={0.75} sx={{ ...contentSx, justifyContent: "center" }}>
         {historyFiles.map((file, index) => {
-          const { isPdf, isImage } = getFileKind(file);
-          const downloadUrls = FileApi.getDownloadStreamUrls(file);
-
           return (
             <Stack
               key={file.atchFileId ?? `${selectedHistory.eldocHstryNo}-${index}`}
@@ -266,21 +269,12 @@ export default function DigitalDocHistoryButton({
                   {formatFileSize(file.fileSz)}
                 </Typography>
               </Stack>
-              <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
-                {isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
-                {!isPdf && isImage && (
-                  <DigitalDocViewerButton
-                    fileUrl={downloadUrls}
-                    fileType="image"
-                  />
-                )}
-              </Stack>
             </Stack>
           );
         })}
       </Stack>
     );
-  }, [historyFiles, historyFilesLoading, notifications, selectedHistory]);
+  }, [historyFiles, historyFilesLoading, selectedHistory]);
 
   return (
     <DialogTrigger
@@ -288,6 +282,7 @@ export default function DigitalDocHistoryButton({
       triggerButtonClassName="btn_fixed-sm btn_fixed-md"
       title="이력"
       maxWidth="xl"
+      paperSx={{ minHeight: 860 }}
       onOpen={() => setOpen(true)}
       open={open}
       onClose={() => setOpen(false)}
@@ -373,7 +368,7 @@ export default function DigitalDocHistoryButton({
           </Grid>
         </Grid>
 
-        <Stack spacing={1}>
+        <Stack spacing={1} sx={{ minHeight: 360 }}>
           <Typography variant="subtitle1" fontWeight={700}>
             이력 시점 전자문서 메타데이터
           </Typography>

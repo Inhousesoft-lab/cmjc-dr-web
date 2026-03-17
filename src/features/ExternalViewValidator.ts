@@ -27,6 +27,7 @@ export const externalViewDocumentRowSchema = z.looseObject({
   hldPrdDfyrs: stringField,
   hldPrdMmCnt: stringField,
   eldocYn: stringField,
+  prvcInclYn: stringField,
   atchFileSn: stringField,
   deptId: stringField,
   addExpln: stringField,

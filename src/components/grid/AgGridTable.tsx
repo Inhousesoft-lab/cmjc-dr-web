@@ -10,6 +10,8 @@ export type AgGridTableProps<TData extends object> = {
   onRowClicked?: (event: RowClickedEvent<TData>) => void;
   actionButtons?: { label: string; onClick: () => void }[];
   height?: number;
+  rowHeight?: number;
+  headerHeight?: number;
   isLoading?: boolean;
 };
 
@@ -18,6 +20,8 @@ export default function AgGridTable<TData extends object>({
   colDefs,
   onRowClicked,
   height = 400,
+  rowHeight = 28,
+  headerHeight = 28,
   isLoading = false,
   actionButtons,
 }: AgGridTableProps<TData>) {
@@ -54,8 +58,8 @@ export default function AgGridTable<TData extends object>({
           rowData={rowData}
           columnDefs={colDefs}
           loading={isLoading}
-          rowHeight={28}
-          headerHeight={28}
+          rowHeight={rowHeight}
+          headerHeight={headerHeight}
           defaultColDef={defaultColDef}
           animateRows
           pagination

@@ -100,24 +100,27 @@ export default function DocDetailTable({
         item={6}
         label={downloadReasonLabel}
         value={downloadReasonValue}
-        blank={!showDownloadReason}
+        blankLabel={!showDownloadReason}
       />
       {showAttachments && (
-        <GridField
-          label="첨부파일"
-          value={
-            attachmentsContent ??
-            (eldocNo ? (
-              <UploadFiles
-                taskSeTrgtId={eldocNo}
-                readOnly
-                requireDownloadReason={detail?.prvcInclYn === "Y"}
-              />
-            ) : (
-              "-"
-            ))
-          }
-        />
+        <>
+          <GridField
+            label="첨부파일"
+            value={
+              attachmentsContent ??
+              (eldocNo ? (
+                <UploadFiles
+                  taskSeTrgtId={eldocNo}
+                  readOnly
+                  requireDownloadReason={detail?.prvcInclYn === "Y"}
+                />
+              ) : (
+                "-"
+              ))
+            }
+          />
+          <GridField item={6} label="" value="" blankLabel blank />
+        </>
       )}
     </Grid>
   );
