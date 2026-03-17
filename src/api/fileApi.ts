@@ -224,9 +224,20 @@ export const FileApi = {
     options?: DownloadStreamOptions,
   ) => {
     const path = buildDownloadStreamPath(file, options);
-    const urls = [resolveApiUrl(path), resolveFallbackApiUrl(path)].filter(
+    const apiUrl = resolveApiUrl(path);
+    const fallbackUrl = resolveFallbackApiUrl(path);
+    const urls = [apiUrl, fallbackUrl].filter(
       (url, index, arr): url is string => !!url && arr.indexOf(url) === index,
     );
+
+    console.log("[fileApi] getDownloadStreamUrls", {
+      file,
+      options,
+      path,
+      apiUrl,
+      fallbackUrl,
+      urls,
+    });
 
     return urls.length > 0 ? urls : [path];
   },
@@ -234,11 +245,22 @@ export const FileApi = {
   downloadFromUrls: async (urls: string[], filename: string) => {
     let lastError: unknown = null;
 
+    console.log("[fileApi] downloadFromUrls:start", { urls, filename });
+
     for (const url of urls) {
       try {
+        console.log("[fileApi] downloadFromUrls:trying", { url, filename });
+
         const response = await fetch(url, {
           method: "GET",
           credentials: "include",
+        });
+
+        console.log("[fileApi] downloadFromUrls:response", {
+          url,
+          status: response.status,
+          ok: response.ok,
+          contentType: response.headers.get("content-type"),
         });
 
         if (!response.ok) {
@@ -246,6 +268,11 @@ export const FileApi = {
         }
 
         const blob = await response.blob();
+        console.log("[fileApi] downloadFromUrls:blob", {
+          url,
+          size: blob.size,
+          type: blob.type,
+        });
         const objectUrl = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = objectUrl;
@@ -256,6 +283,7 @@ export const FileApi = {
         window.URL.revokeObjectURL(objectUrl);
         return;
       } catch (error) {
+        console.error("[fileApi] downloadFromUrls:failed", { url, error });
         lastError = error;
       }
     }

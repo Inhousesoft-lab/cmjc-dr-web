@@ -14,17 +14,29 @@ const toOriginUrl = (baseURL: string, path: string) => {
   if (!baseURL) return "";
   if (!/^https?:\/\//i.test(baseURL)) return "";
 
-  const { origin } = new URL(baseURL);
-  return `${origin}${path}`;
+  const normalizedBase = baseURL.replace(/\/+$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${normalizedBase}${normalizedPath}`;
 };
 
 export const resolveApiUrl = (path: string) => {
   const resolved = toOriginUrl(getApiBaseURL(), path);
+  console.log("[ApiClient] resolveApiUrl", {
+    baseURL: getApiBaseURL(),
+    path,
+    resolved: resolved || path,
+  });
   return resolved || path;
 };
 
 export const resolveFallbackApiUrl = (path: string) => {
-  return toOriginUrl(getFileFallbackBaseURL(), path);
+  const resolved = toOriginUrl(getFileFallbackBaseURL(), path);
+  console.log("[ApiClient] resolveFallbackApiUrl", {
+    baseURL: getFileFallbackBaseURL(),
+    path,
+    resolved,
+  });
+  return resolved;
 };
 
 const apiClient = axios.create({
