@@ -7,6 +7,7 @@ const GridField = ({
   labelSize,
   valueSize,
   blank = false,
+  blankLabel = false,
 }: {
   label: string;
   value: React.ReactNode;
@@ -14,6 +15,7 @@ const GridField = ({
   labelSize?: { xs: number; sm: number };
   valueSize?: { xs: number; sm: number };
   blank?: boolean;
+  blankLabel?: boolean;
   fullWidth?: boolean;
 }) => {
   const sizeMap = {
@@ -51,7 +53,7 @@ const GridField = ({
     <>
       <Grid
         size={resolvedLabelSize}
-        className={`table-view__label-cell${blank ? " table-view__label-cell--blank" : ""}`}
+        className={`table-view__label-cell${blank || blankLabel ? " table-view__label-cell--blank" : ""}`}
       >
         <Typography variant="subtitle2">{label}</Typography>
       </Grid>

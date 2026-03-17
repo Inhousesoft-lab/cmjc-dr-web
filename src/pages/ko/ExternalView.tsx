@@ -1,5 +1,15 @@
 import * as React from "react";
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import DialogTrigger from "@/components/dialog/DialogTrigger";
 import AgGridTable from "@/components/grid/AgGridTable";
@@ -23,7 +33,11 @@ type ExternalViewRow = {
   date: string;
   term: string;
   type: string;
-  atchFileSn: string;
+  prvcInclYn: string;
+  fileKey: string;
+  fileName: string;
+  fileSize: string;
+  file: FileItem | null;
 };
 
 type FileMap = Record<string, FileItem[]>;
@@ -81,6 +95,11 @@ export default function ExternalView() {
   const [docNoInput, setDocNoInput] = React.useState("");
   const [filesByDoc, setFilesByDoc] = React.useState<FileMap>({});
   const [loadingFiles, setLoadingFiles] = React.useState<Record<string, boolean>>({});
+  const [downloadReasonOpen, setDownloadReasonOpen] = React.useState(false);
+  const [downloadReason, setDownloadReason] = React.useState("");
+  const [downloadReasonError, setDownloadReasonError] = React.useState("");
+  const [pendingDownloadRow, setPendingDownloadRow] = React.useState<ExternalViewRow | null>(null);
+  const [isDownloading, setIsDownloading] = React.useState(false);
 
   const sourceRows = useAppSelector(selectExternalViewRows);
   const isLoading = useAppSelector(selectExternalViewLoading);
@@ -165,10 +184,89 @@ export default function ExternalView() {
     };
   }, [notifications, open, sourceRows]);
 
-  const rows = React.useMemo<ExternalViewRow[]>(
-    () =>
-      sourceRows.map((row, index) => ({
-        id: index + 1,
+  const closeDownloadReasonDialog = React.useCallback(() => {
+    if (isDownloading) return;
+    setDownloadReasonOpen(false);
+    setDownloadReason("");
+    setDownloadReasonError("");
+    setPendingDownloadRow(null);
+  }, [isDownloading]);
+
+  const runDownload = React.useCallback(async (row: ExternalViewRow, reason?: string) => {
+    if (!row.file) {
+      throw new Error("다운로드할 파일 정보가 없습니다.");
+    }
+
+    const downloadUrls = FileApi.getDownloadStreamUrls(
+      row.file,
+      row.prvcInclYn === "Y"
+        ? {
+            eldocNo: row.eldocNo,
+            reason,
+          }
+        : undefined,
+    );
+
+    await FileApi.downloadFromUrls(downloadUrls, row.file.fileNm || "download");
+  }, []);
+
+  const handleDownloadClick = React.useCallback(
+    async (row: ExternalViewRow) => {
+      if (!row.file) return;
+
+      if (row.prvcInclYn === "Y") {
+        setPendingDownloadRow(row);
+        setDownloadReasonOpen(true);
+        setDownloadReason("");
+        setDownloadReasonError("");
+        return;
+      }
+
+      try {
+        await runDownload(row);
+      } catch (error) {
+        notifications.show(
+          error instanceof Error ? error.message : "다운로드에 실패했습니다.",
+          {
+            severity: "error",
+            autoHideDuration: 3000,
+          },
+        );
+      }
+    },
+    [notifications, runDownload],
+  );
+
+  const handleReasonDownloadConfirm = React.useCallback(async () => {
+    const trimmedReason = downloadReason.trim();
+
+    if (!trimmedReason) {
+      setDownloadReasonError("다운로드 사유를 입력해 주세요.");
+      return;
+    }
+
+    if (!pendingDownloadRow) {
+      setDownloadReasonError("다운로드할 파일 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      await runDownload(pendingDownloadRow, trimmedReason);
+      closeDownloadReasonDialog();
+    } catch (error) {
+      setDownloadReasonError(
+        error instanceof Error ? error.message : "다운로드에 실패했습니다.",
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [closeDownloadReasonDialog, downloadReason, pendingDownloadRow, runDownload]);
+
+  const rows = React.useMemo<ExternalViewRow[]>(() => {
+    const flattenedRows = sourceRows.flatMap<ExternalViewRow>((row) => {
+      const baseRow: Omit<ExternalViewRow, "fileKey" | "fileName" | "fileSize" | "file"> = {
+        id: 0,
         eldocNo: row.eldocNo,
         category: [row.docLclsfNm, row.docMclsfNm, row.docSclsfNm]
           .filter(Boolean)
@@ -177,21 +275,69 @@ export default function ExternalView() {
         date: formatCompactDate(row.clctYmd),
         term: formatRetentionTerm(row),
         type: row.eldocYn === "Y" ? "문서" : "파일",
-        atchFileSn: row.atchFileSn || "",
-      })),
-    [sourceRows],
-  );
+        prvcInclYn: row.prvcInclYn || "N",
+      };
+
+      if (loadingFiles[row.eldocNo]) {
+        return [
+          {
+            ...baseRow,
+            fileKey: `${row.eldocNo}-loading`,
+            fileName: "첨부파일 불러오는 중...",
+            fileSize: "-",
+            file: null,
+          },
+        ];
+      }
+
+      const files = filesByDoc[row.eldocNo] ?? [];
+
+      if (files.length === 0) {
+        return [
+          {
+            ...baseRow,
+            fileKey: `${row.eldocNo}-empty`,
+            fileName: "첨부파일 없음",
+            fileSize: "-",
+            file: null,
+          },
+        ];
+      }
+
+      return files.map((file, index) => ({
+        ...baseRow,
+        fileKey: file.atchFileId ?? `${row.eldocNo}-${index}`,
+        fileName: file.fileNm || `첨부파일 ${index + 1}`,
+        fileSize: formatFileSize(file.fileSz),
+        file,
+      }));
+    });
+
+    return flattenedRows.map((row, index) => ({
+      ...row,
+      id: index + 1,
+    }));
+  }, [filesByDoc, loadingFiles, sourceRows]);
 
   const handleOpen = React.useCallback(() => {
     const docNo = docNoInput.trim();
+
+    if (!docNo) {
+      notifications.show("문서번호를 입력해 주세요.", {
+        severity: "warning",
+        autoHideDuration: 3000,
+      });
+      return;
+    }
+
     setOpen(true);
     dispatch(
       fetchExternalViewList({
         ...INITIAL_LIST_PARAMS,
-        ...(docNo ? { docNo } : {}),
+        docNo,
       }),
     );
-  }, [dispatch, docNoInput]);
+  }, [dispatch, docNoInput, notifications]);
 
   const handleClose = React.useCallback(() => {
     setOpen(false);
@@ -202,173 +348,151 @@ export default function ExternalView() {
       {
         headerName: "번호",
         field: "id",
-        width: 60,
-        minWidth: 60,
-        maxWidth: 60,
+        width: 64,
+        minWidth: 64,
+        maxWidth: 64,
         flex: 0,
-        cellStyle: { textAlign: "center" },
+        cellStyle: {
+          textAlign: "center",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        },
       },
       {
         headerName: "문서분류",
         field: "category",
+        width: 220,
+        minWidth: 200,
         cellStyle: { display: "flex", alignItems: "center" },
-        width: 190,
       },
       {
         headerName: "문서제목",
         field: "title",
         cellStyle: { display: "flex", alignItems: "center" },
         flex: 1,
+        minWidth: 240,
       },
       {
-        headerName: "수집일자 (보존기간)",
+        headerName: "수집일자 / 보존기간",
         field: "date",
-        width: 140,
-        minWidth: 140,
-        maxWidth: 140,
+        width: 170,
+        minWidth: 170,
+        maxWidth: 170,
         flex: 0,
+        wrapHeaderText: true,
+        autoHeaderHeight: true,
+        headerClass: "ag-center-header",
         cellStyle: {
           textAlign: "center",
           display: "flex",
           justifyContent: "center",
+          alignItems: "center",
+          whiteSpace: "pre-line",
+          lineHeight: 1.35,
+        },
+        cellRenderer: (params: ICellRendererParams<ExternalViewRow>) => {
+          const row = params.data;
+          if (!row) return "-";
+          return row.term ? `${row.date}\n${row.term}` : row.date;
+        },
+      },
+      {
+        headerName: "첨부파일",
+        field: "fileName",
+        flex: 1,
+        minWidth: 260,
+        cellStyle: {
+          display: "flex",
           alignItems: "center",
         },
-        cellRenderer: (params: ICellRendererParams<ExternalViewRow>) =>
-          `${params.data?.date ?? ""}\n${params.data?.term ?? ""}`,
-      },
-      {
-        headerName: "종류",
-        field: "type",
-        width: 68,
-        minWidth: 68,
-        maxWidth: 68,
-        flex: 0,
-        cellStyle: {
-          textAlign: "center",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+        cellRenderer: (params: ICellRendererParams<ExternalViewRow>) => {
+          const row = params.data;
+          if (!row) return null;
+
+          return (
+            <Box
+              sx={{
+                minWidth: 0,
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <Typography
+                variant="body2"
+                title={row.fileName}
+                sx={{
+                  fontWeight: 500,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1.2,
+                }}
+              >
+                {row.fileName}
+              </Typography>
+              {row.file ? (
+                <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>
+                  {row.fileSize}
+                </Typography>
+              ) : null}
+            </Box>
+          );
         },
       },
       {
         headerName: "비고",
-        field: "actions",
-        flex: 3,
-        autoHeight: true,
+        colId: "actions",
+        width: 210,
+        minWidth: 210,
+        maxWidth: 210,
+        flex: 0,
+        cellStyle: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        },
         cellRenderer: (params: ICellRendererParams<ExternalViewRow>) => {
           const row = params.data;
-          if (!row || row.type === "파일") return null;
-
-          const files = filesByDoc[row.eldocNo] ?? [];
-          const isBusy = loadingFiles[row.eldocNo];
-
-          if (isBusy) {
+          if (!row?.file) {
             return (
               <Typography variant="body2" color="text.secondary">
-                첨부파일 불러오는 중...
+                -
               </Typography>
             );
           }
 
-          if (files.length === 0) {
-            return (
-              <Typography variant="body2" color="text.secondary">
-                첨부파일 없음
-              </Typography>
-            );
-          }
+          const { isPdf, isImage } = getFileKind(row.file);
+          const downloadUrls = FileApi.getDownloadStreamUrls(row.file);
 
           return (
-            <Stack spacing={0.75} sx={{ py: 0.5 }}>
-              {files.map((file, index) => {
-                const { isPdf, isImage } = getFileKind(file);
-                const downloadUrls = FileApi.getDownloadStreamUrls(file);
-
-                return (
-                  <Stack
-                    key={file.atchFileId ?? `${row.eldocNo}-${index}`}
-                    direction="row"
-                    spacing={1}
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{ minWidth: 0 }}
-                  >
-                    <Box
-                      sx={{
-                        minWidth: 0,
-                        flex: 1,
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        noWrap
-                        title={file.fileNm || ""}
-                        sx={{
-                          fontWeight: 500,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {file.fileNm || `첨부파일 ${index + 1}`}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatFileSize(file.fileSz)}
-                      </Typography>
-                    </Box>
-
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      sx={{ flexShrink: 0 }}
-                    >
-                      {isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
-                      {!isPdf && isImage && (
-                        <DigitalDocViewerButton
-                          fileUrl={downloadUrls}
-                          fileType="image"
-                        />
-                      )}
-                      {!isPdf && !isImage && (
-                        <Button variant="outlined" size="small" disabled>
-                          열람
-                        </Button>
-                      )}
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={async () => {
-                          try {
-                            await FileApi.downloadFromUrls(
-                              downloadUrls,
-                              file.fileNm || "download",
-                            );
-                          } catch (error) {
-                            notifications.show(
-                              error instanceof Error
-                                ? error.message
-                                : "다운로드에 실패했습니다.",
-                              {
-                                severity: "error",
-                                autoHideDuration: 3000,
-                              },
-                            );
-                          }
-                        }}
-                      >
-                        다운로드
-                      </Button>
-                    </Stack>
-                  </Stack>
-                );
-              })}
+            <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ width: "100%" }}>
+              {isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
+              {!isPdf && isImage && (
+                <DigitalDocViewerButton fileUrl={downloadUrls} fileType="image" />
+              )}
+              {!isPdf && !isImage && (
+                <Button variant="outlined" size="small" disabled>
+                  열람
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  void handleDownloadClick(row);
+                }}
+              >
+                다운로드
+              </Button>
             </Stack>
           );
         },
       },
     ],
-    [filesByDoc, loadingFiles, notifications],
+    [handleDownloadClick],
   );
 
   return (
@@ -389,12 +513,62 @@ export default function ExternalView() {
       <DialogTrigger
         hideTrigger
         title="문서열람(외부)"
-        maxWidth="md"
+        maxWidth="lg"
         open={open}
         onClose={handleClose}
+        paperSx={{ minHeight: 540 }}
       >
-        <AgGridTable colDefs={columnDefs} rowData={rows} isLoading={isLoading} />
+        <AgGridTable
+          colDefs={columnDefs}
+          rowData={rows}
+          isLoading={isLoading}
+          height={460}
+          rowHeight={44}
+          headerHeight={36}
+        />
       </DialogTrigger>
+
+      <Dialog
+        open={downloadReasonOpen}
+        onClose={closeDownloadReasonDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>다운로드 사유 입력</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="사유"
+            fullWidth
+            multiline
+            minRows={3}
+            value={downloadReason}
+            onChange={(e) => {
+              setDownloadReason(e.target.value);
+              if (downloadReasonError) {
+                setDownloadReasonError("");
+              }
+            }}
+            error={!!downloadReasonError}
+            helperText={downloadReasonError || "개인정보 포함 문서는 다운로드 사유가 필요합니다."}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDownloadReasonDialog} disabled={isDownloading}>
+            취소
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              void handleReasonDownloadConfirm();
+            }}
+            disabled={isDownloading}
+          >
+            다운로드
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
