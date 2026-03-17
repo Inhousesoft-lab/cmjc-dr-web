@@ -44,7 +44,7 @@ if (
   window.history.replaceState(
     null,
     "",
-    `${withAppBase(`/${lang}`)}${window.location.search}${window.location.hash}`,
+    `${withAppBase(`/${lang}/login`)}${window.location.search}${window.location.hash}`,
   );
 }
 

@@ -15,9 +15,9 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
-import workerSrc from "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+pdfjs.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}pdf/pdf.worker.min.js`;
+console.log("[viewer] workerSrc =", pdfjs.GlobalWorkerOptions.workerSrc);
 
 interface DigitalDocViewerButtonProps {
   fileUrl: string | string[];
@@ -49,6 +49,7 @@ export default function DigitalDocViewerButton({
   const [currentUrlIndex, setCurrentUrlIndex] = React.useState(0);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [resolvedFileUrl, setResolvedFileUrl] = React.useState("");
+  const [resolvedPdfData, setResolvedPdfData] = React.useState<Uint8Array | null>(null);
   const viewerRef = React.useRef<HTMLDivElement | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const pageRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
@@ -99,6 +100,7 @@ export default function DigitalDocViewerButton({
   React.useEffect(() => {
     if (!open || !activeFileUrl) {
       setResolvedFileUrl("");
+      setResolvedPdfData(null);
       return;
     }
 
@@ -108,6 +110,7 @@ export default function DigitalDocViewerButton({
     const loadFileForViewer = async () => {
       setLoadError(null);
       setResolvedFileUrl("");
+      setResolvedPdfData(null);
 
       try {
         const response = await fetch(activeFileUrl, {
@@ -120,9 +123,23 @@ export default function DigitalDocViewerButton({
         }
 
         const blob = await response.blob();
+        console.log("[viewer] fetched blob", {
+          url: activeFileUrl,
+          size: blob.size,
+          type: blob.type,
+        });
         if (cancelled) return;
 
+        if (fileType === "pdf") {
+          const arrayBuffer = await blob.arrayBuffer();
+          if (cancelled) return;
+          setResolvedPdfData(new Uint8Array(arrayBuffer));
+          setResolvedFileUrl("");
+          return;
+        }
+
         revokedUrl = window.URL.createObjectURL(blob);
+        console.log("[viewer] objectUrl =", revokedUrl);
         setResolvedFileUrl(revokedUrl);
       } catch (error) {
         if (cancelled) return;
@@ -237,7 +254,9 @@ export default function DigitalDocViewerButton({
     [],
   );
 
-  const handlePdfLoadError = React.useCallback(() => {
+  const handlePdfLoadError = React.useCallback((error: unknown) => {
+    console.error("[viewer] pdf load error", error);
+    console.error("[viewer] pdf load error string", String(error));
     if (currentUrlIndex + 1 < fileUrls.length) {
       moveToNextUrl();
       return;
@@ -329,11 +348,11 @@ export default function DigitalDocViewerButton({
             {fileType === "pdf" ? (
               loadError ? (
                 <Typography color="error">{loadError}</Typography>
-              ) : !resolvedFileUrl ? (
+              ) : !resolvedPdfData ? (
                 <Typography>파일을 불러오는 중입니다...</Typography>
               ) : (
                 <Document
-                  file={resolvedFileUrl}
+                  file={resolvedPdfData}
                   onLoadSuccess={handleLoadSuccess}
                   onLoadError={handlePdfLoadError}
                 >
