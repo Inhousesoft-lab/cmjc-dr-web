@@ -1,6 +1,10 @@
 import type { ColDef } from "ag-grid-community";
 import type { DocDestruction } from "@/types/docDestruction";
-import { formatDateDash, formatPeriod } from "@/utils/formater";
+import {
+  formatCalculatedEndYmd,
+  formatDateDash,
+  formatPeriod,
+} from "@/utils/formater";
 
 const formatActorWithDate = (actor: unknown, date: unknown) => {
   const actorLabel = String(actor ?? "").trim();
@@ -61,7 +65,11 @@ export const listDefs: ColDef<DocDestruction>[] = [
     valueFormatter: (params: any) => {
       const prstCd = String(params?.data?.dstrcPrcsPrstCd ?? "");
       if (prstCd !== "02" && prstCd !== "04") return "-";
-      return formatDateDash(params?.value);
+      return formatCalculatedEndYmd(
+        params?.data?.clctYmd,
+        params?.data?.hldPrdDfyrs,
+        params?.data?.hldPrdMmCnt,
+      );
     },
   },
   {

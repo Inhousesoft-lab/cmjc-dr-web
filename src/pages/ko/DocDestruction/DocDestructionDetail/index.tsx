@@ -15,6 +15,7 @@ import {
   selectDocDestructionDetailLoading,
 } from "@/features/docDestruction/DocDestructionSelectors";
 import type { SearchValues } from "@/types/docDestruction";
+import { formatCalculatedEndYmd } from "@/utils/formater";
 
 export default function DocDestructionDetail() {
   const location = useLocation();
@@ -171,7 +172,13 @@ export default function DocDestructionDetail() {
             )}
           </TableCell>
           <LabelCell>종료일자</LabelCell>
-          <TableCell>{formatDateOnly(detail?.endYmd)}</TableCell>
+          <TableCell>
+            {formatCalculatedEndYmd(
+              detail?.clctYmd,
+              detail?.hldPrdDfyrs,
+              detail?.hldPrdMmCnt,
+            )}
+          </TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>신청자</LabelCell>

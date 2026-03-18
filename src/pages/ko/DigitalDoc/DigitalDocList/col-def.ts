@@ -1,6 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import type { DigitalDoc } from "@/types/digitalDoc";
-import { formatDateDash } from "@/utils/formater";
+import { formatCalculatedEndYmd, formatDateDash } from "@/utils/formater";
 
 export const listDefs: ColDef<DigitalDoc>[] = [
   {
@@ -83,13 +83,18 @@ export const listDefs: ColDef<DigitalDoc>[] = [
   {
     headerName: "종료일자",
     field: "endYmd",
+    valueGetter: (params: any) => params.data?.endYmd ?? "",
     width: 118,
     minWidth: 118,
     maxWidth: 118,
     flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
-      return formatDateDash(params.value);
+      return formatCalculatedEndYmd(
+        params?.data?.clctYmd,
+        params?.data?.hldPrdDfyrs,
+        params?.data?.hldPrdMmCnt,
+      );
     },
   },
   {

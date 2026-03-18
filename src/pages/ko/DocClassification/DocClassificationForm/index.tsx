@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createSearchParams, useNavigate, useParams } from "react-router-dom";
+import { createSearchParams, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   Button,
   Checkbox,
@@ -37,6 +37,7 @@ import MuiSelect from "@/components/elements/MuiSelect";
 import PageStatus from "@/components/common/PageStatus";
 import SectionTitle from "@/components/common/SectionTitle";
 import { useAppSelector } from "@/app/hooks";
+import { getLangFromPathname, langPath } from "@/routes/lang";
 
 type SubDetailValues = NonNullable<Values["prvcFileHldPrst"]>;
 
@@ -691,6 +692,8 @@ export default function DocClassificationForm() {
   const { docClsfNo } = useParams();
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const curLang = getLangFromPathname(location.pathname);
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const currentUser = useAppSelector((state) => state.auth.user);
@@ -983,13 +986,27 @@ export default function DocClassificationForm() {
             autoHideDuration: 3000,
           });
           navigate({
-            pathname: URL.HOLDING_INSTITUTION_LIST,
+            pathname: langPath(URL.HOLDING_INSTITUTION_LIST, curLang),
             search: `?${createSearchParams({
+              redirectBind: "1",
               docLclsfNo: payload.docLclsfNo ?? "",
               docMclsfNo: payload.docMclsfNo ?? "",
               docSclsfNo: payload.docSclsfNo ?? "",
+              infoMnbdAgreYn: payload.prvcFileHldPrst?.infoMnbdAgreYn ?? "",
               hldPrdChangedOnly: "true",
+              pageNum: "1",
             })}`,
+          }, {
+            state: {
+              initialSearchParams: {
+                docLclsfNo: payload.docLclsfNo ?? "",
+                docMclsfNo: payload.docMclsfNo ?? "",
+                docSclsfNo: payload.docSclsfNo ?? "",
+                infoMnbdAgreYn: payload.prvcFileHldPrst?.infoMnbdAgreYn ?? "",
+                hldPrdChangedOnly: true,
+                pageNum: 1,
+              },
+            },
           });
           return;
         }

@@ -1,4 +1,5 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import { notifyUnauthorized } from "@/utils/authSession";
 
 export const getApiBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
@@ -58,6 +59,11 @@ apiClient.interceptors.response.use((response: AxiosResponse) => {
     return Promise.reject(new Error(res.msg || "API Error"));
   }
   return res.data;
+}, (error) => {
+  if (error?.response?.status === 401) {
+    notifyUnauthorized(error?.config?.url);
+  }
+  return Promise.reject(error);
 });
 
 export default apiClient;
