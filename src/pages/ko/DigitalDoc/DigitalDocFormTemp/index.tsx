@@ -78,7 +78,7 @@ export default function DigitalDocForm() {
       hldPrdDfyrs: "1",
       hldPrdMmCnt: "",
       endYmd: "",
-      prvcInclYn: "N",
+      prvcInclYn: "Y",
     },
   });
 
@@ -104,7 +104,7 @@ export default function DigitalDocForm() {
         setValue("docLclsfNm", "");
         setValue("docMclsfNm", "");
         setValue("docSclsfNm", "");
-        setValue("prvcInclYn", "N");
+        setValue("prvcInclYn", "Y");
         return;
       }
 
@@ -115,7 +115,7 @@ export default function DigitalDocForm() {
       setValue("docLclsfNm", "");
       setValue("docMclsfNm", "");
       setValue("docSclsfNm", "");
-      setValue("prvcInclYn", "N");
+      setValue("prvcInclYn", "Y");
     },
     [setValue],
   );
@@ -128,6 +128,7 @@ export default function DigitalDocForm() {
         const payload: DigitalDoc = {
           ...data,
           docClsfNo: data.docSclsfNo || data.docMclsfNo || data.docLclsfNo || data.docClsfNo,
+          prvcInclYn: "Y",
         };
 
         await https.post(insertEDocTempApiPath(), payload);
