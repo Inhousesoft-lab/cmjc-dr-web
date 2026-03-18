@@ -21,6 +21,8 @@ export default function App() {
   const ready = UseLangStylesReady();
 
   React.useEffect(() => {
+    const isLoginPage = window.location.pathname.includes("/login");
+    if (isLoginPage) return;
     dispatch(checkSession());
   }, [dispatch]);
 
@@ -29,7 +31,7 @@ export default function App() {
       (response) => response,
       (error) => {
         if (error?.response?.status === 401) {
-          dispatch(logout());
+          console.warn("[auth] 401 received", error?.config?.url);
         }
         return Promise.reject(error);
       },
@@ -38,7 +40,7 @@ export default function App() {
     return () => {
       https.interceptors.response.eject(interceptorId);
     };
-  }, [dispatch]);
+  }, []);
 
   if (!ready) {
     return null;

@@ -1,3 +1,4 @@
+import https from "@/api/axiosInstance";
 import apiClient, { resolveApiUrl, resolveFallbackApiUrl } from "./ApiClient";
 
 export interface ApiResponse<T> {
@@ -113,6 +114,16 @@ const buildDownloadStreamPath = (
   }
 
   return `/api/dr/file/downloadStream?${params.toString()}`;
+};
+
+const normalizeBlobResponse = (response: any) => {
+  if (response instanceof Blob) {
+    return response;
+  }
+  if (response?.data instanceof Blob) {
+    return response.data;
+  }
+  return new Blob([response as any]);
 };
 
 export const FileApi = {
@@ -242,52 +253,44 @@ export const FileApi = {
     return urls.length > 0 ? urls : [path];
   },
 
-  downloadFromUrls: async (urls: string[], filename: string) => {
+  fetchBlobFromUrls: async (urls: string[]): Promise<Blob> => {
     let lastError: unknown = null;
 
-    console.log("[fileApi] downloadFromUrls:start", { urls, filename });
+    console.log("[fileApi] fetchBlobFromUrls:start", { urls });
 
     for (const url of urls) {
       try {
-        console.log("[fileApi] downloadFromUrls:trying", { url, filename });
-
-        const response = await fetch(url, {
-          method: "GET",
-          credentials: "include",
+        console.log("[fileApi] fetchBlobFromUrls:trying", { url });
+        const response = await https.get(url, {
+          responseType: "blob",
         });
+        const blob = normalizeBlobResponse(response);
 
-        console.log("[fileApi] downloadFromUrls:response", {
-          url,
-          status: response.status,
-          ok: response.ok,
-          contentType: response.headers.get("content-type"),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const blob = await response.blob();
-        console.log("[fileApi] downloadFromUrls:blob", {
+        console.log("[fileApi] fetchBlobFromUrls:blob", {
           url,
           size: blob.size,
           type: blob.type,
         });
-        const objectUrl = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = objectUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(objectUrl);
-        return;
+
+        return blob;
       } catch (error) {
-        console.error("[fileApi] downloadFromUrls:failed", { url, error });
+        console.error("[fileApi] fetchBlobFromUrls:failed", { url, error });
         lastError = error;
       }
     }
 
     throw lastError ?? new Error("다운로드에 실패했습니다.");
+  },
+
+  downloadFromUrls: async (urls: string[], filename: string) => {
+    const blob = await FileApi.fetchBlobFromUrls(urls);
+    const objectUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(objectUrl);
   },
 };
