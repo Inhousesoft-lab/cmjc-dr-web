@@ -24,6 +24,31 @@ import { insertEDocTempApiPath } from "@/api/digitalDoc/DigitalDocApiPaths";
 import { https } from "@shared/utils/https";
 import UploadFiles from "@/components/file/UploadFiles";
 
+const TEMP_DOC_CLASSIFICATION_BINDING: Record<
+  string,
+  {
+    docLclsfNo: string;
+    docMclsfNo: string;
+  }
+> = {
+  CLS_A1849DF2: {
+    docLclsfNo: "CLS_0357FF41",
+    docMclsfNo: "CLS_A1849DF2",
+  },
+  CLS_316D8A68: {
+    docLclsfNo: "CLS_0357FF41",
+    docMclsfNo: "CLS_316D8A68",
+  },
+  CLS_E1ADF348: {
+    docLclsfNo: "CLS_0357FF41",
+    docMclsfNo: "CLS_E1ADF348",
+  },
+  CLS_EA2D1A21: {
+    docLclsfNo: "CLS_0357FF41",
+    docMclsfNo: "CLS_EA2D1A21",
+  },
+};
+
 export default function DigitalDocForm() {
   const navigate = useNavigate();
   const notifications = useNotifications();
@@ -37,6 +62,12 @@ export default function DigitalDocForm() {
     formState: { errors },
   } = useForm<DigitalDoc>({
     defaultValues: {
+      docLclsfNo: "",
+      docMclsfNo: "",
+      docSclsfNo: "",
+      docLclsfNm: "",
+      docMclsfNm: "",
+      docSclsfNm: "",
       docClsfNo: "", // 문서분류번호
       docNo: "", // 문서번호
       docTtl: "", // 문서제목
@@ -44,6 +75,10 @@ export default function DigitalDocForm() {
       addExpln: "", // 비고
       eldocYn: "", // 전자문서여부
       atchFileSn: "", // 첨부파일경로
+      hldPrdDfyrs: "1",
+      hldPrdMmCnt: "",
+      endYmd: "",
+      prvcInclYn: "N",
     },
   });
 
@@ -59,12 +94,43 @@ export default function DigitalDocForm() {
     setIsLoading(false);
   }, []);
 
+  const bindClassification = React.useCallback(
+    (docClsfNo: string) => {
+      setValue("docClsfNo", docClsfNo, { shouldValidate: true, shouldDirty: true });
+      if (!docClsfNo) {
+        setValue("docLclsfNo", "");
+        setValue("docMclsfNo", "");
+        setValue("docSclsfNo", "");
+        setValue("docLclsfNm", "");
+        setValue("docMclsfNm", "");
+        setValue("docSclsfNm", "");
+        setValue("prvcInclYn", "N");
+        return;
+      }
+
+      const binding = TEMP_DOC_CLASSIFICATION_BINDING[docClsfNo];
+      setValue("docLclsfNo", binding?.docLclsfNo ?? "", { shouldDirty: true });
+      setValue("docMclsfNo", binding?.docMclsfNo ?? "", { shouldDirty: true });
+      setValue("docSclsfNo", "", { shouldDirty: true });
+      setValue("docLclsfNm", "");
+      setValue("docMclsfNm", "");
+      setValue("docSclsfNm", "");
+      setValue("prvcInclYn", "N");
+    },
+    [setValue],
+  );
+
   const handleSave = React.useCallback(
     async (data: DigitalDoc) => {
       setIsLoading(true);
       setIsSubmitting(true);
       try {
-        await https.post(insertEDocTempApiPath(), data);
+        const payload: DigitalDoc = {
+          ...data,
+          docClsfNo: data.docSclsfNo || data.docMclsfNo || data.docLclsfNo || data.docClsfNo,
+        };
+
+        await https.post(insertEDocTempApiPath(), payload);
         notifications.show("생성 완료.", {
           severity: "success",
           autoHideDuration: 3000,
@@ -109,24 +175,31 @@ export default function DigitalDocForm() {
               rules={{ required: "선택해주세요" }}
               render={({ field, fieldState }) => (
                 <FormControl error={!!fieldState.error} size="small">
-                  <RadioGroup row value={field.value} onChange={field.onChange}>
+                  <RadioGroup
+                    row
+                    value={field.value}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      void bindClassification(e.target.value);
+                    }}
+                  >
                     <FormControlLabel
-                      value="MODC2025122900000005"
+                      value="CLS_A1849DF2"
                       control={<Radio size="small" />}
                       label="접수서류"
                     />
                     <FormControlLabel
-                      value="MODC2025122900000006"
+                      value="CLS_316D8A68"
                       control={<Radio size="small" />}
                       label="신청자 제출서류"
                     />
                     <FormControlLabel
-                      value="MODC2025122900000007"
+                      value="CLS_E1ADF348"
                       control={<Radio size="small" />}
                       label="직원 추가 보완자료"
                     />
                     <FormControlLabel
-                      value="MODC2025122900000008"
+                      value="CLS_EA2D1A21"
                       control={<Radio size="small" />}
                       label="보관서류체크리스트"
                     />
@@ -238,7 +311,7 @@ export default function DigitalDocForm() {
               }}
               render={({ field }) => (
                 <UploadFiles
-                  taskSeTrgtId={eldocNo} //  수정/상세일 경우 해당 업무의 pk 등록만 쓸거면 안보내도됨
+                  taskSeTrgtId={eldocNo}
                   setGroupId={field.onChange}
                 />
               )}
@@ -268,4 +341,14 @@ export default function DigitalDocForm() {
       </Stack>
     </form>
   );
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === "object" && error !== null) {
+    const message = (error as { response?: { data?: { message?: string; msg?: string } } }).response?.data;
+    if (message?.message) return message.message;
+    if (message?.msg) return message.msg;
+  }
+  return "생성 실패";
 }

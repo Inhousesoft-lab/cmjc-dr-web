@@ -185,6 +185,10 @@ export default function DocDestructionList() {
       gridColumns: listDefs.map((col) => ({
         headerName: col.headerName,
         field: typeof col.field === "string" ? col.field : undefined,
+        format:
+          col.field === "dstrcAprvDt" || col.field === "regDate"
+            ? "date"
+            : undefined,
       })),
       gridRows: rows as unknown as Array<Record<string, unknown>>,
     });

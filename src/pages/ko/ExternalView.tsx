@@ -15,6 +15,7 @@ import DialogTrigger from "@/components/dialog/DialogTrigger";
 import AgGridTable from "@/components/grid/AgGridTable";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { FileApi, type FileItem } from "@/api/fileApi";
+import { downloadExternalViewFileApiPath } from "@/api/externalView/ExternalViewApiPaths";
 import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
 import useNotifications from "@/hooks/useNotifications";
 import {
@@ -24,6 +25,7 @@ import {
 } from "@/features/ExternalViewSelectors";
 import { fetchExternalViewList } from "@/features/ExternalViewThunk";
 import type { ExternalViewDocument } from "@/types/externalView";
+import { resolveApiUrl } from "@/api/ApiClient";
 
 type ExternalViewRow = {
   id: number;
@@ -34,6 +36,9 @@ type ExternalViewRow = {
   term: string;
   type: string;
   prvcInclYn: string;
+  canView: boolean;
+  canDownload: boolean;
+  downloadReasonRequired: boolean;
   fileKey: string;
   fileName: string;
   fileSize: string;
@@ -76,11 +81,7 @@ const formatFileSize = (bytes?: number) => {
 };
 
 const getFileKind = (file: FileItem) => {
-  const ext = (
-    file.fileExtnNm ??
-    file.fileNm?.split(".").pop() ??
-    ""
-  ).toLowerCase();
+  const ext = (file.fileExtnNm ?? file.fileNm?.split(".").pop() ?? "").toLowerCase();
 
   return {
     isPdf: ext === "pdf",
@@ -88,11 +89,22 @@ const getFileKind = (file: FileItem) => {
   };
 };
 
+const getExternalViewFileUrls = (row: Pick<ExternalViewRow, "eldocNo" | "file">) => {
+  if (!row.file) return [];
+
+  const path = downloadExternalViewFileApiPath(row.eldocNo, row.file.srvrFileNm);
+  const apiUrl = resolveApiUrl(path);
+  return [apiUrl || path];
+};
+
 export default function ExternalView() {
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const [open, setOpen] = React.useState(false);
   const [docNoInput, setDocNoInput] = React.useState("");
+  const [submittedDocNo, setSubmittedDocNo] = React.useState("");
+  const [allowView, setAllowView] = React.useState(true);
+  const [allowDownload, setAllowDownload] = React.useState(true);
   const [filesByDoc, setFilesByDoc] = React.useState<FileMap>({});
   const [loadingFiles, setLoadingFiles] = React.useState<Record<string, boolean>>({});
   const [downloadReasonOpen, setDownloadReasonOpen] = React.useState(false);
@@ -112,6 +124,19 @@ export default function ExternalView() {
       autoHideDuration: 3000,
     });
   }, [listError, notifications, open]);
+
+  React.useEffect(() => {
+    if (!open || !submittedDocNo) return;
+
+    dispatch(
+      fetchExternalViewList({
+        ...INITIAL_LIST_PARAMS,
+        docNo: submittedDocNo,
+        allowView,
+        allowDownload,
+      }),
+    );
+  }, [allowDownload, allowView, dispatch, open, submittedDocNo]);
 
   React.useEffect(() => {
     if (!open || sourceRows.length === 0) {
@@ -136,9 +161,7 @@ export default function ExternalView() {
       }
 
       if (!cancelled) {
-        setLoadingFiles(
-          Object.fromEntries(targets.map((row) => [row.eldocNo, true])),
-        );
+        setLoadingFiles(Object.fromEntries(targets.map((row) => [row.eldocNo, true])));
       }
 
       const entries = await Promise.all(
@@ -153,9 +176,7 @@ export default function ExternalView() {
             return [row.eldocNo, files] as const;
           } catch (error) {
             notifications.show(
-              error instanceof Error
-                ? error.message
-                : "첨부파일 목록을 불러오지 못했습니다.",
+              error instanceof Error ? error.message : "첨부파일 목록을 불러오지 못했습니다.",
               {
                 severity: "error",
                 autoHideDuration: 3000,
@@ -172,9 +193,7 @@ export default function ExternalView() {
         ...prev,
         ...Object.fromEntries(entries),
       }));
-      setLoadingFiles(
-        Object.fromEntries(targets.map((row) => [row.eldocNo, false])),
-      );
+      setLoadingFiles(Object.fromEntries(targets.map((row) => [row.eldocNo, false])));
     };
 
     loadFiles().catch(() => undefined);
@@ -197,24 +216,16 @@ export default function ExternalView() {
       throw new Error("다운로드할 파일 정보가 없습니다.");
     }
 
-    const downloadUrls = FileApi.getDownloadStreamUrls(
-      row.file,
-      row.prvcInclYn === "Y"
-        ? {
-            eldocNo: row.eldocNo,
-            reason,
-          }
-        : undefined,
-    );
+    const downloadUrls = getExternalViewFileUrls(row);
 
     await FileApi.downloadFromUrls(downloadUrls, row.file.fileNm || "download");
   }, []);
 
   const handleDownloadClick = React.useCallback(
     async (row: ExternalViewRow) => {
-      if (!row.file) return;
+      if (!row.file || !row.canDownload) return;
 
-      if (row.prvcInclYn === "Y") {
+      if (row.downloadReasonRequired) {
         setPendingDownloadRow(row);
         setDownloadReasonOpen(true);
         setDownloadReason("");
@@ -268,14 +279,15 @@ export default function ExternalView() {
       const baseRow: Omit<ExternalViewRow, "fileKey" | "fileName" | "fileSize" | "file"> = {
         id: 0,
         eldocNo: row.eldocNo,
-        category: [row.docLclsfNm, row.docMclsfNm, row.docSclsfNm]
-          .filter(Boolean)
-          .join(" > "),
+        category: [row.docLclsfNm, row.docMclsfNm, row.docSclsfNm].filter(Boolean).join(" > "),
         title: row.docTtl || "-",
         date: formatCompactDate(row.clctYmd),
         term: formatRetentionTerm(row),
         type: row.eldocYn === "Y" ? "문서" : "파일",
         prvcInclYn: row.prvcInclYn || "N",
+        canView: row.canView,
+        canDownload: row.canDownload,
+        downloadReasonRequired: row.downloadReasonRequired,
       };
 
       if (loadingFiles[row.eldocNo]) {
@@ -331,13 +343,8 @@ export default function ExternalView() {
     }
 
     setOpen(true);
-    dispatch(
-      fetchExternalViewList({
-        ...INITIAL_LIST_PARAMS,
-        docNo,
-      }),
-    );
-  }, [dispatch, docNoInput, notifications]);
+    setSubmittedDocNo(docNo);
+  }, [docNoInput, notifications]);
 
   const handleClose = React.useCallback(() => {
     setOpen(false);
@@ -374,7 +381,7 @@ export default function ExternalView() {
         minWidth: 240,
       },
       {
-        headerName: "수집일자 / 보존기간",
+        headerName: "수집일자 / 보유기간",
         field: "date",
         width: 170,
         minWidth: 170,
@@ -465,28 +472,35 @@ export default function ExternalView() {
           }
 
           const { isPdf, isImage } = getFileKind(row.file);
-          const downloadUrls = FileApi.getDownloadStreamUrls(row.file);
+          const downloadUrls = getExternalViewFileUrls(row);
+          const canPreview = isPdf || isImage;
+
+          if (!row.canView && !row.canDownload) {
+            return <Typography variant="body2" color="text.secondary">-</Typography>;
+          }
 
           return (
             <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ width: "100%" }}>
-              {isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
-              {!isPdf && isImage && (
+              {row.canView && canPreview && isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
+              {row.canView && canPreview && isImage && (
                 <DigitalDocViewerButton fileUrl={downloadUrls} fileType="image" />
               )}
-              {!isPdf && !isImage && (
+              {row.canView && !canPreview && (
                 <Button variant="outlined" size="small" disabled>
                   열람
                 </Button>
               )}
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => {
-                  void handleDownloadClick(row);
-                }}
-              >
-                다운로드
-              </Button>
+              {row.canDownload && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
+                    void handleDownloadClick(row);
+                  }}
+                >
+                  다운로드
+                </Button>
+              )}
             </Stack>
           );
         },
@@ -497,7 +511,7 @@ export default function ExternalView() {
 
   return (
     <>
-      <Stack direction="row" spacing={1.5} alignItems="center">
+      <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
         <Button variant="outlined" onClick={handleOpen}>
           문서열람(외부)
         </Button>
@@ -509,6 +523,23 @@ export default function ExternalView() {
           placeholder="문서 번호 입력"
           sx={{ minWidth: 240 }}
         />
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Typography variant="body2">옵션</Typography>
+          <Button
+            variant={allowView ? "contained" : "outlined"}
+            size="small"
+            onClick={() => setAllowView((prev) => !prev)}
+          >
+            열람
+          </Button>
+          <Button
+            variant={allowDownload ? "contained" : "outlined"}
+            size="small"
+            onClick={() => setAllowDownload((prev) => !prev)}
+          >
+            다운로드
+          </Button>
+        </Stack>
       </Stack>
       <DialogTrigger
         hideTrigger

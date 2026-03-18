@@ -9,6 +9,7 @@ type PrintElementOptions = {
   gridColumns?: Array<{
     headerName?: string;
     field?: string;
+    format?: "date";
   }>;
   gridRows?: Array<Record<string, unknown>>;
 };
@@ -87,11 +88,10 @@ function buildTableFromAgRoot(agRoot: HTMLElement) {
     }
 
     if (headers.length > 0) {
-      for (const [index, header] of headers.entries()) {
+      for (const header of headers) {
         const td = document.createElement("td");
         const rawValue = cellMap.get(header.id) ?? "";
-        td.textContent =
-          index === headers.length - 1 ? formatRegDate(rawValue) : rawValue;
+        td.textContent = rawValue;
         td.style.border = "1px solid #ccc";
         td.style.padding = "6px";
         td.style.textAlign = "center";
@@ -141,7 +141,7 @@ function getByPath(obj: Record<string, unknown>, path: string) {
 }
 
 function buildTableFromData(
-  columns: Array<{ headerName?: string; field?: string }>,
+  columns: Array<{ headerName?: string; field?: string; format?: "date" }>,
   rows: Array<Record<string, unknown>>,
 ) {
   const table = document.createElement("table");
@@ -180,13 +180,10 @@ function buildTableFromData(
   } else {
     for (const rowData of rows) {
       const tr = document.createElement("tr");
-      for (const [index, col] of effectiveColumns.entries()) {
+      for (const col of effectiveColumns) {
         const td = document.createElement("td");
         const rawValue = String(getByPath(rowData, col.field ?? ""));
-        td.textContent =
-          index === effectiveColumns.length - 1
-            ? formatRegDate(rawValue)
-            : rawValue;
+        td.textContent = col.format === "date" ? formatRegDate(rawValue) : rawValue;
         td.style.border = "1px solid #ccc";
         td.style.padding = "6px";
         td.style.textAlign = "center";

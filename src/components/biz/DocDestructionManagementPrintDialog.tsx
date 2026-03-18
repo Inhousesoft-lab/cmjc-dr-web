@@ -1,20 +1,20 @@
 import * as React from "react";
 import { Box, Button, Stack, Typography } from "@mui/material";
-import type { SearchValues, DocDestruction } from "@/types/docDestruction";
-import { listDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
-import DialogTrigger from "../dialog/DialogTrigger";
-import AgGridTable from "../grid/AgGridTable";
 import { ColDef } from "ag-grid-community";
-import { printElement } from "@/utils/print";
+import { z } from "zod";
 import https from "@/api/axiosInstance";
 import { selectDocDestructionListApiPath } from "@/api/docDestruction/DocDestructionApiPaths";
+import DialogTrigger from "../dialog/DialogTrigger";
+import AgGridTable from "../grid/AgGridTable";
+import { printElement } from "@/utils/print";
 import {
   docDestructionListRowSchema,
   docDestructionListSchema,
   type DocDestructionListRowRaw,
 } from "@/features/docDestruction/DocDestructionValidator";
 import { normalizeDocDestructionRow } from "@/features/docDestruction/DocDestructionThunk";
-import { z } from "zod";
+import { listDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
+import type { SearchValues, DocDestruction } from "@/types/docDestruction";
 
 const COMPLETED_PRIVACY_DESTRUCTION_STATUS = "04";
 
@@ -49,22 +49,54 @@ const isCompletedPrivacyRow = (row: DocDestruction) => {
   return personalInfoIncluded === "Y" && row.dstrcPrcsPrstCd === COMPLETED_PRIVACY_DESTRUCTION_STATUS;
 };
 
+const formatPrintDate = (value: unknown) => {
+  const text = String(value ?? "").trim();
+  if (!text) return "-";
+
+  if (/^\d{14}$/.test(text)) {
+    return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+  }
+  if (/^\d{8}$/.test(text)) {
+    return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)}`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}:\d{2})?$/.test(text)) {
+    return text.slice(0, 10);
+  }
+  return text;
+};
+
+const formatPrintDateTime = (value: unknown) => {
+  const text = String(value ?? "").trim();
+  if (!text) return "-";
+
+  if (/^\d{14}$/.test(text)) {
+    return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)} ${text.slice(8, 10)}:${text.slice(10, 12)}:${text.slice(12, 14)}`;
+  }
+  if (/^\d{8}$/.test(text)) {
+    return `${text.slice(0, 4)}-${text.slice(4, 6)}-${text.slice(6, 8)} 00:00:00`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+    return `${text} 00:00:00`;
+  }
+  const isoLike = text.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
+  if (isoLike) {
+    return `${isoLike[1]} ${isoLike[2]}:${isoLike[3]}:${isoLike[4]}`;
+  }
+  return text;
+};
+
 export default function DocDestructionManagementPrintDialog({
   searchValues,
 }: {
   searchValues: SearchValues;
 }) {
-  const printAreaRef2 = React.useRef<HTMLDivElement | null>(null);
-
+  const printAreaRef = React.useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = React.useState(false);
-
   const [columnDefs] = React.useState<ColDef<DocDestruction>[]>(listDefs);
-
   const [rowData, setRowsData] = React.useState<DestructionRowState>({
     rows: [],
     rowCount: 0,
   });
-
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -91,14 +123,20 @@ export default function DocDestructionManagementPrintDialog({
         params: requestParams,
       });
       const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
-      const normalizedRows = normalizePrintRows(payload).filter(isCompletedPrivacyRow);
+      const normalizedRows = normalizePrintRows(payload)
+        .filter(isCompletedPrivacyRow)
+        .map((row) => ({
+          ...row,
+          clctYmd: formatPrintDate(row.clctYmd),
+          dstrcAprvDt: formatPrintDateTime(row.dstrcAprvDt),
+        }));
 
       setRowsData({
         rows: normalizedRows,
         rowCount: normalizedRows.length,
       });
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       setRowsData({
         rows: [],
         rowCount: 0,
@@ -109,16 +147,25 @@ export default function DocDestructionManagementPrintDialog({
   }, [searchValues]);
 
   React.useEffect(() => {
-    if (open) loadData();
+    if (open) {
+      loadData();
+    }
   }, [open, loadData]);
 
   const handlePrint = () => {
-    const root = printAreaRef2.current;
+    const root = printAreaRef.current;
     if (!root) return;
+
+    const printRows = rowData.rows.map((row) => ({
+      ...row,
+      fileName: row.fileName || row.docTitle || "-",
+      dataTypeLabel: row.fileNm || "-",
+      dstrcAutzrId: row.prvcDstrcAutzrId || row.dstrcAutzrId || "-",
+    }));
 
     printElement(root, {
       title: "파기관리대장 출력",
-      subTitle: "[별지 제 5호 서식]",
+      subTitle: "[별지 제5호 서식]",
       popupFeatures: "width=1024,height=768",
       zoom: 0.6,
       pageMarginMm: 12,
@@ -126,7 +173,7 @@ export default function DocDestructionManagementPrintDialog({
         headerName: col.headerName,
         field: typeof col.field === "string" ? col.field : undefined,
       })),
-      gridRows: rowData.rows as unknown as Array<Record<string, unknown>>,
+      gridRows: printRows as Array<Record<string, unknown>>,
     });
   };
 
@@ -142,7 +189,7 @@ export default function DocDestructionManagementPrintDialog({
       actions={
         <Stack direction="row" alignItems="center" sx={{ width: "100%" }}>
           <Box sx={{ minWidth: 180 }}>
-            <Typography variant="subtitle2">[별지 제 5호 서식]</Typography>
+            <Typography variant="subtitle2">[별지 제5호 서식]</Typography>
           </Box>
           <Box sx={{ flex: 1, textAlign: "center" }}>
             <Typography variant="h6">개인정보파일 파기 관리대장</Typography>
@@ -161,12 +208,8 @@ export default function DocDestructionManagementPrintDialog({
         </Stack>
       }
     >
-      <Box ref={printAreaRef2} id="print-area" sx={{ width: "100%" }}>
-        <AgGridTable
-          isLoading={isLoading}
-          colDefs={columnDefs}
-          rowData={rowData.rows}
-        />
+      <Box ref={printAreaRef} id="print-area" sx={{ width: "100%" }}>
+        <AgGridTable isLoading={isLoading} colDefs={columnDefs} rowData={rowData.rows} />
       </Box>
     </DialogTrigger>
   );
