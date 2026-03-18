@@ -16,6 +16,7 @@ import RotateRightIcon from "@mui/icons-material/RotateRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
 import workerSrc from "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs?url";
+import { FileApi } from "@/api/fileApi";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -46,15 +47,11 @@ export default function DigitalDocViewerButton({
   );
   const [pageInput, setPageInput] = React.useState("1");
   const [containerWidth, setContainerWidth] = React.useState(0);
-  const [currentUrlIndex, setCurrentUrlIndex] = React.useState(0);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [resolvedFileUrl, setResolvedFileUrl] = React.useState("");
-  const [resolvedPdfData, setResolvedPdfData] = React.useState<Uint8Array | null>(null);
   const viewerRef = React.useRef<HTMLDivElement | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const pageRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
-
-  const activeFileUrl = fileUrls[currentUrlIndex] ?? "";
 
   const handleOpen = () => {
     setNumPages(0);
@@ -63,14 +60,16 @@ export default function DigitalDocViewerButton({
     setRotation(0);
     setOrientation("portrait");
     setPageInput("1");
-    setCurrentUrlIndex(0);
     setLoadError(null);
+    setResolvedFileUrl("");
     setOpen(true);
   };
 
-  const moveToNextUrl = React.useCallback(() => {
-    setCurrentUrlIndex((prev) => (prev + 1 < fileUrls.length ? prev + 1 : prev));
-  }, [fileUrls.length]);
+  const handleClose = () => {
+    setOpen(false);
+    setResolvedFileUrl("");
+    setLoadError(null);
+  };
 
   const handleMovePage = () => {
     if (fileType !== "pdf") return;
@@ -98,9 +97,8 @@ export default function DigitalDocViewerButton({
   }, [fileType, open]);
 
   React.useEffect(() => {
-    if (!open || !activeFileUrl) {
+    if (!open || fileUrls.length === 0) {
       setResolvedFileUrl("");
-      setResolvedPdfData(null);
       return;
     }
 
@@ -110,43 +108,22 @@ export default function DigitalDocViewerButton({
     const loadFileForViewer = async () => {
       setLoadError(null);
       setResolvedFileUrl("");
-      setResolvedPdfData(null);
 
       try {
-        const response = await fetch(activeFileUrl, {
-          method: "GET",
-          credentials: "include",
-        });
+        const blob = await FileApi.fetchBlobFromUrls(fileUrls);
+        if (cancelled) return;
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const blob = await response.blob();
         console.log("[viewer] fetched blob", {
-          url: activeFileUrl,
+          urls: fileUrls,
           size: blob.size,
           type: blob.type,
         });
-        if (cancelled) return;
-
-        if (fileType === "pdf") {
-          const arrayBuffer = await blob.arrayBuffer();
-          if (cancelled) return;
-          setResolvedPdfData(new Uint8Array(arrayBuffer));
-          setResolvedFileUrl("");
-          return;
-        }
 
         revokedUrl = window.URL.createObjectURL(blob);
         console.log("[viewer] objectUrl =", revokedUrl);
         setResolvedFileUrl(revokedUrl);
       } catch (error) {
         if (cancelled) return;
-        if (currentUrlIndex + 1 < fileUrls.length) {
-          moveToNextUrl();
-          return;
-        }
         setLoadError(
           error instanceof Error
             ? error.message || "파일을 불러오지 못했습니다."
@@ -163,7 +140,7 @@ export default function DigitalDocViewerButton({
         window.URL.revokeObjectURL(revokedUrl);
       }
     };
-  }, [activeFileUrl, currentUrlIndex, fileUrls.length, moveToNextUrl, open]);
+  }, [fileUrls, open]);
 
   React.useEffect(() => {
     if (fileType !== "pdf") return;
@@ -256,13 +233,8 @@ export default function DigitalDocViewerButton({
 
   const handlePdfLoadError = React.useCallback((error: unknown) => {
     console.error("[viewer] pdf load error", error);
-    console.error("[viewer] pdf load error string", String(error));
-    if (currentUrlIndex + 1 < fileUrls.length) {
-      moveToNextUrl();
-      return;
-    }
-    setLoadError("파일을 불러오지 못했습니다.");
-  }, [currentUrlIndex, fileUrls.length, moveToNextUrl]);
+    setLoadError("PDF를 불러오지 못했습니다.");
+  }, []);
 
   const clientIp = "0.0.0.1";
 
@@ -286,14 +258,14 @@ export default function DigitalDocViewerButton({
         : "landscape";
 
   return (
-    <React.Fragment>
+    <>
       <Button variant="outlined" size="small" onClick={handleOpen}>
         {label}
       </Button>
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
         maxWidth={false}
         fullWidth={false}
         PaperProps={{
@@ -348,11 +320,11 @@ export default function DigitalDocViewerButton({
             {fileType === "pdf" ? (
               loadError ? (
                 <Typography color="error">{loadError}</Typography>
-              ) : !resolvedPdfData ? (
+              ) : !resolvedFileUrl ? (
                 <Typography>파일을 불러오는 중입니다...</Typography>
               ) : (
                 <Document
-                  file={resolvedPdfData ? { data: resolvedPdfData.buffer } : null}
+                  file={resolvedFileUrl}
                   onLoadSuccess={handleLoadSuccess}
                   onLoadError={handlePdfLoadError}
                 >
@@ -412,10 +384,6 @@ export default function DigitalDocViewerButton({
                       );
                     }}
                     onError={() => {
-                      if (currentUrlIndex + 1 < fileUrls.length) {
-                        moveToNextUrl();
-                        return;
-                      }
                       setLoadError("파일을 불러오지 못했습니다.");
                     }}
                   />
@@ -424,85 +392,68 @@ export default function DigitalDocViewerButton({
             )}
           </div>
         </DialogContent>
+
         <DialogActions sx={{ position: "relative", zIndex: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", mr: 1 }}>
-            <Tooltip title="반시계 방향으로 회전" placement="bottom" arrow>
-              <IconButton
-                onClick={() =>
-                  setRotation((prev) => {
-                    const next = prev - 90;
-                    return next < 0 ? 270 : next;
-                  })
-                }
-              >
+            <Tooltip title="왼쪽 회전">
+              <IconButton onClick={() => setRotation((prev) => prev - 90)}>
                 <RotateLeftIcon />
               </IconButton>
             </Tooltip>
-            <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
-            <Tooltip title="시계 방향으로 회전" placement="bottom" arrow>
-              <IconButton onClick={() => setRotation((prev) => (prev + 90) % 360)}>
+            <Tooltip title="오른쪽 회전">
+              <IconButton onClick={() => setRotation((prev) => prev + 90)}>
                 <RotateRightIcon />
               </IconButton>
             </Tooltip>
-            <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
-            <Tooltip title="회전 초기화" placement="bottom" arrow>
-              <IconButton onClick={() => setRotation(0)}>
+            <Tooltip title="원래대로">
+              <IconButton
+                onClick={() => {
+                  setZoom(1);
+                  setRotation(0);
+                }}
+              >
                 <RestartAltIcon />
               </IconButton>
             </Tooltip>
           </Box>
-          <Button
-            variant="outlined"
-            onClick={() =>
-              setZoom((prev) => Math.max(0.5, Number((prev - 0.1).toFixed(1))))
-            }
-            disabled={zoom <= 0.5}
-          >
-            축소
-          </Button>
-          <Typography sx={{ minWidth: 52, textAlign: "center" }}>
-            {Math.round(zoom * 100)}%
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={() =>
-              setZoom((prev) => Math.min(2.5, Number((prev + 0.1).toFixed(1))))
-            }
-            disabled={zoom >= 2.5}
-          >
-            확대
-          </Button>
-          <Button variant="outlined" onClick={() => setZoom(1)}>
-            100%
-          </Button>
+
+          <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+
           {fileType === "pdf" ? (
-            <React.Fragment>
-              <Typography sx={{ ml: 1 }}>
-                {currentPage} / {numPages || "-"} 페이지
+            <>
+              <Typography variant="body2">
+                {currentPage} / {numPages || 1}
               </Typography>
               <TextField
                 size="small"
-                type="number"
                 value={pageInput}
                 onChange={(e) => setPageInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleMovePage();
-                }}
-                slotProps={{ htmlInput: { min: 1, max: numPages || undefined } }}
-                sx={{ width: 100, ml: 1 }}
+                sx={{ width: 72 }}
+                inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
               />
-              <Button variant="outlined" onClick={handleMovePage} sx={{ mr: "auto" }}>
-                페이지 이동
-              </Button>
-            </React.Fragment>
-          ) : (
-            <Box sx={{ mr: "auto" }} />
-          )}
-          <Button variant="contained" onClick={() => setOpen(false)}>
+              <Button onClick={handleMovePage}>이동</Button>
+            </>
+          ) : null}
+
+          <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+
+          <Button onClick={() => setZoom((prev) => Math.max(0.5, prev - 0.1))}>
+            축소
+          </Button>
+          <Typography variant="body2" sx={{ minWidth: 56, textAlign: "center" }}>
+            {Math.round(zoom * 100)}%
+          </Typography>
+          <Button onClick={() => setZoom((prev) => Math.min(3, prev + 0.1))}>
+            확대
+          </Button>
+
+          <Box sx={{ flex: 1 }} />
+
+          <Button variant="contained" onClick={handleClose}>
             닫기
           </Button>
         </DialogActions>
       </Dialog>
-    </React.Fragment>
+    </>
   );
 }

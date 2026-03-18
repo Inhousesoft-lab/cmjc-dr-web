@@ -143,17 +143,25 @@ const authSlice = createSlice({
       })
       .addCase(checkSession.fulfilled, (state, action) => {
         state.loading = false;
-        state.isAuthenticated = Boolean(action.payload);
-        state.user = action.payload;
-        if (!action.payload) {
+        if (action.payload) {
+          state.isAuthenticated = true;
+          state.user = action.payload;
+          return;
+        }
+
+        if (!state.isAuthenticated) {
+          state.isAuthenticated = false;
+          state.user = null;
           state.accessToken = null;
         }
       })
       .addCase(checkSession.rejected, (state) => {
         state.loading = false;
-        state.isAuthenticated = false;
-        state.user = null;
-        state.accessToken = null;
+        if (!state.isAuthenticated) {
+          state.isAuthenticated = false;
+          state.user = null;
+          state.accessToken = null;
+        }
       });
   },
 });
