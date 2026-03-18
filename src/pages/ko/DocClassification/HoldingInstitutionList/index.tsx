@@ -112,9 +112,15 @@ export default function HoldingInstitutionList() {
       rows.filter((row) => {
         const before = String(row.endYmd ?? "").trim();
         const after = String(row.endYmdAfterChanged ?? "").trim();
+        const beforeYears = String(row.hldPrdDfyrs ?? "").trim();
+        const beforeMonths = String(row.hldPrdMmCnt ?? "").trim();
+        const afterYears = String(row.docClsf?.prvcFileHldPrst?.hldPrdDfyrs ?? "").trim();
+        const afterMonths = String(row.docClsf?.prvcFileHldPrst?.hldPrdMmCnt ?? "").trim();
 
-        if (!after) return false;
-        return before !== after;
+        const periodChanged = beforeYears !== afterYears || beforeMonths !== afterMonths;
+        const endDateChanged = !!after && before !== after;
+
+        return periodChanged || endDateChanged;
       }),
     [rows],
   );
