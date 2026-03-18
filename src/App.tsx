@@ -1,8 +1,15 @@
 import * as React from "react";
+import { persistor } from "@/app/store";
 import { useAppDispatch } from "@/app/hooks";
 import { checkSession, logout } from "@/features/auth/AuthSlice";
 import Router from "@/routes/Router";
+import { getLangFromPathname } from "@/routes/lang";
 import { https } from "@shared/utils/https";
+import {
+  resetUnauthorizedFlag,
+  UNAUTHORIZED_EVENT_NAME,
+} from "@/utils/authSession";
+import { withAppBase } from "@/utils/appBase";
 
 import NotificationsProvider from "@/hooks/useNotifications/NotificationsProvider";
 import DialogsProvider from "@/hooks/useDialogs/DialogsProvider";
@@ -41,6 +48,30 @@ export default function App() {
       https.interceptors.response.eject(interceptorId);
     };
   }, []);
+
+  React.useEffect(() => {
+    const handleUnauthorized = async () => {
+      const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      const isLoginPage = window.location.pathname.includes("/login");
+      const lang = getLangFromPathname(window.location.pathname);
+
+      dispatch(logout());
+      await persistor.purge();
+
+      if (!isLoginPage) {
+        sessionStorage.setItem("postLoginRedirect", currentPath);
+      }
+
+      window.location.replace(withAppBase(`/${lang}/login`));
+    };
+
+    window.addEventListener(UNAUTHORIZED_EVENT_NAME, handleUnauthorized);
+
+    return () => {
+      window.removeEventListener(UNAUTHORIZED_EVENT_NAME, handleUnauthorized);
+      resetUnauthorizedFlag();
+    };
+  }, [dispatch]);
 
   if (!ready) {
     return null;

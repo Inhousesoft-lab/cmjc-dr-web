@@ -2,6 +2,7 @@ import { Grid, TextField } from "@mui/material";
 import GridField from "../common/GridField";
 import UploadFiles from "../file/UploadFiles";
 import {
+  formatCalculatedEndYmd,
   formatDateDash,
   gvbkLabel,
   holdPeriodLabel,
@@ -43,8 +44,13 @@ export default function DocDetailTable({
     detail?.hldPrdDfyrs ?? "",
     detail?.hldPrdMmCnt ?? "",
   );
-  const clctLabel = detail?.endYmd
-    ? `${formatDateDash(detail.endYmd)}${holdLabel !== "-" ? ` (${holdLabel})` : ""}`
+  const endDateLabel = formatCalculatedEndYmd(
+    detail?.clctYmd ?? "",
+    detail?.hldPrdDfyrs ?? "",
+    detail?.hldPrdMmCnt ?? "",
+  );
+  const clctLabel = endDateLabel !== "-"
+    ? `${endDateLabel}${holdLabel !== "-" ? ` (${holdLabel})` : ""}`
     : "-";
   const mappedGvbkLabel = gvbkLabel(detail?.gvbkYn);
   const mappedPrvcLabel = prvcLabel(detail?.prvcInclYn);

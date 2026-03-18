@@ -2,7 +2,7 @@
  * 목록 조회
  */
 export const selectHoldingInstitutionListApiPath = () =>
-  "/api/dr/electronicdocument/search";
+  "/api/dr/holdinginstitution/search";
 
 /**
  * 보유기간 1건 반영

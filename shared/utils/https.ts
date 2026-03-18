@@ -1,4 +1,5 @@
 import { SafeError } from "@/features/com/Api";
+import { notifyUnauthorized } from "@/utils/authSession";
 import axios, { AxiosInstance } from "axios";
 
 /**
@@ -34,6 +35,9 @@ https.interceptors.response.use(
         status,
         url: error?.config?.url,
       });
+    }
+    if (status === 401) {
+      notifyUnauthorized(error?.config?.url);
     }
 
     const data = error.response?.data;

@@ -14,6 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
+import dayjs from "dayjs";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import MuiSelect from "@/components/elements/MuiSelect";
 import LabelCell from "@/components/table/LabelCell";
@@ -55,6 +56,35 @@ const INITIAL_FORM_VALUES: FormValues = {
   eldocYn: "Y",
   atchFileSn: "",
 };
+
+const PERMANENT_END_YMD = "9999-12-31";
+
+function calculateEndYmd(
+  clctYmd: string,
+  hldPrdDfyrs: string | number,
+  _hldPrdMmCnt: string,
+) {
+  const normalizedClctYmd = String(clctYmd ?? "").trim();
+  const normalizedYears = String(hldPrdDfyrs ?? "").trim();
+
+  if (!normalizedClctYmd || !normalizedYears) return "";
+
+  if (normalizedYears === "90" || normalizedYears === "99") {
+    return PERMANENT_END_YMD;
+  }
+
+  if (normalizedYears === "0") {
+    return "";
+  }
+
+  const start = dayjs(normalizedClctYmd);
+  if (!start.isValid()) return "";
+
+  const totalMonths = Number.parseInt(normalizedYears, 10) * 12;
+  if (Number.isNaN(totalMonths)) return "";
+
+  return start.add(totalMonths, "month").format("YYYY-MM-DD");
+}
 
 export default function DigitalDocForm() {
   const dispatch = useAppDispatch();
@@ -102,6 +132,11 @@ export default function DigitalDocForm() {
     values.docSclsfNo,
   ]);
 
+  const calculatedEndYmd = React.useMemo(
+    () => calculateEndYmd(values.clctYmd, values.hldPrdDfyrs, values.hldPrdMmCnt),
+    [values.clctYmd, values.hldPrdDfyrs, values.hldPrdMmCnt],
+  );
+
   React.useEffect(() => {
     if (!saveError) return;
     notifications.show(saveError, {
@@ -116,6 +151,15 @@ export default function DigitalDocForm() {
     };
   }, [dispatch]);
 
+  React.useEffect(() => {
+    if (values.hldPrdDfyrs === "0") return;
+
+    setValues((prev) => {
+      if (prev.endYmd === calculatedEndYmd) return prev;
+      return { ...prev, endYmd: calculatedEndYmd };
+    });
+  }, [calculatedEndYmd, values.hldPrdDfyrs]);
+
   const handleFieldChange = <K extends keyof FormValues>(
     key: K,
     value: FormValues[K],
@@ -126,10 +170,13 @@ export default function DigitalDocForm() {
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const resolvedEndYmd =
+      values.hldPrdDfyrs === "0" ? values.endYmd : calculatedEndYmd;
 
     const payload: FormValues = {
       ...values,
       docClsfNo: values.docSclsfNo || values.docMclsfNo || values.docLclsfNo,
+      endYmd: resolvedEndYmd,
       // 개인정보 포함 여부는 선택한 문서분류 값을 그대로 따른다.
       prvcInclYn: selectedDocClsf?.prvcInclYn === "Y" ? "Y" : "N",
     };
@@ -297,7 +344,6 @@ export default function DigitalDocForm() {
                     handleFieldChange("hldPrdDfyrs", selected);
                     if (selected !== "0") {
                       handleFieldChange("hldPrdMmCnt", "");
-                      handleFieldChange("endYmd", "");
                     }
                   }}
                   error={!!errors.hldPrdDfyrs}

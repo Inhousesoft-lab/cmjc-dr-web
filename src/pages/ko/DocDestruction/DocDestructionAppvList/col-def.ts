@@ -1,6 +1,10 @@
 import type { ColDef } from "ag-grid-community";
 import type { DocDestruction } from "@/types/docDestruction";
-import { formatDateDash, formatPeriod } from "@/utils/formater";
+import {
+  formatCalculatedEndYmd,
+  formatDateDash,
+  formatPeriod,
+} from "@/utils/formater";
 
 export const listDefs: ColDef<DocDestruction>[] = [
   {
@@ -67,7 +71,12 @@ export const listDefs: ColDef<DocDestruction>[] = [
     maxWidth: 118,
     flex: 0,
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => formatDateDash(params?.value),
+    valueFormatter: (params: any) =>
+      formatCalculatedEndYmd(
+        params?.data?.clctYmd,
+        params?.data?.hldPrdDfyrs,
+        params?.data?.hldPrdMmCnt,
+      ),
   },
   {
     headerName: "종류",

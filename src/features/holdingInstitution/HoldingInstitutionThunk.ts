@@ -13,6 +13,7 @@ import {
 } from "./HoldingInstitutionValidator";
 import type { HoldingInstitution, SearchValues } from "@/types/holdingInstitution";
 import type { RootState } from "@/app/store";
+import { calculateEndYmdByPeriod } from "@/utils/formater";
 
 export interface HoldingInstitutionListPayload {
   rows: HoldingInstitution[];
@@ -44,53 +45,6 @@ export interface HoldingInstitutionHldprdAllUpdatePayload {
 const toStr = (value: unknown): string => (value == null ? "" : String(value));
 const isObj = (v: unknown): v is Record<string, any> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
-
-const toDateParts = (value: unknown) => {
-  const digits = toStr(value).replace(/[^0-9]/g, "");
-  if (digits.length < 8) return null;
-
-  const year = Number(digits.slice(0, 4));
-  const month = Number(digits.slice(4, 6));
-  const day = Number(digits.slice(6, 8));
-
-  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
-    return null;
-  }
-
-  return { year, month, day };
-};
-
-const formatDateParts = (date: Date) => {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(date.getUTCDate()).padStart(2, "0");
-  return `${year}${month}${day}`;
-};
-
-const getCalculatedEndYmd = (
-  clctYmd: unknown,
-  hldPrdDfyrs: unknown,
-  hldPrdMmCnt: unknown,
-) => {
-  const base = toDateParts(clctYmd);
-  const years = toStr(hldPrdDfyrs).trim();
-  const months = toStr(hldPrdMmCnt).trim();
-
-  if (!base || !years) return "";
-  if (years === "90" || years === "99") return "";
-
-  const date = new Date(Date.UTC(base.year, base.month - 1, base.day));
-
-  if (years !== "0") {
-    date.setUTCFullYear(date.getUTCFullYear() + Number(years));
-  }
-
-  if (months) {
-    date.setUTCMonth(date.getUTCMonth() + Number(months));
-  }
-
-  return formatDateParts(date);
-};
 
 const LIST_KEYS = ["list", "rows", "items", "content"] as const;
 const TOTAL_KEYS = ["total", "totalCount", "count"] as const;
@@ -149,9 +103,14 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
   const changedHldPrdMmCnt = toStr(
     item?.hldPrdMmCntAfterChanged ?? prvcFileHldPrst?.hldPrdMmCnt,
   );
+  const currentEndYmd = calculateEndYmdByPeriod(
+    item?.clctYmd,
+    item?.hldPrdDfyrs,
+    item?.hldPrdMmCnt,
+  );
   const endYmdAfterChanged =
     toStr(item?.endYmdAfterChanged) ||
-    getCalculatedEndYmd(item?.clctYmd, changedHldPrdDfyrs, changedHldPrdMmCnt);
+    calculateEndYmdByPeriod(item?.clctYmd, changedHldPrdDfyrs, changedHldPrdMmCnt);
 
   return {
     rowNo: Number(item?.rowNo ?? 0),
@@ -163,7 +122,7 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
     clctYmd: toStr(item?.clctYmd),
     hldPrdDfyrs: toStr(item?.hldPrdDfyrs),
     hldPrdMmCnt: toStr(item?.hldPrdMmCnt),
-    endYmd: toStr(item?.endYmd),
+    endYmd: currentEndYmd,
     prvcInclYn: toStr(item?.prvcInclYn),
     gvbkYn: toStr(item?.gvbkYn),
     addExpln: toStr(item?.addExpln),
