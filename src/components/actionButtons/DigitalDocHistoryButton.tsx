@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Alert, Grid, Stack, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import { Alert, Box, Grid, Stack, TableCell, TableHead, TableRow, Typography } from "@mui/material";
 import type { ColDef, RowClickedEvent } from "ag-grid-community";
 import DialogTrigger from "../dialog/DialogTrigger";
 import TableWrapper from "../table/TableWrapper";
@@ -282,24 +282,36 @@ export default function DigitalDocHistoryButton({
       triggerButtonClassName="btn_fixed-sm btn_fixed-md"
       title="이력"
       maxWidth="xl"
-      paperSx={{ minHeight: 860 }}
+      paperSx={{
+        width: "min(1280px, 94vw)",
+        height: "min(820px, 90vh)",
+        minHeight: "auto",
+        "& .MuiDialogContent-root": {
+          px: 2,
+          py: 1.5,
+          overflow: "hidden",
+        },
+      }}
       onOpen={() => setOpen(true)}
       open={open}
       onClose={() => setOpen(false)}
     >
-      <Stack spacing={3}>
-        <Grid container spacing={3}>
+      <Stack spacing={2} sx={{ height: "100%", minHeight: 0 }}>
+        <Grid container spacing={2} sx={{ minHeight: 0 }}>
           <Grid size={6}>
-            <AgGridTable
-              height={500}
-              colDefs={docColumnDefs}
-              rowData={docHistoryRows}
-              isLoading={docHistoryLoading}
-              onRowClicked={handleRowClicked}
-            />
+            <Box sx={{ height: 360, maxHeight: "38vh" }}>
+              <AgGridTable
+                height={360}
+                colDefs={docColumnDefs}
+                rowData={docHistoryRows}
+                isLoading={docHistoryLoading}
+                onRowClicked={handleRowClicked}
+              />
+            </Box>
           </Grid>
           <Grid size={6}>
-            <Stack spacing={2}>
+            <Box sx={{ height: 360, maxHeight: "38vh", overflow: "auto" }}>
+              <Stack spacing={1}>
               <TableWrapper
                 tableAriaLabel="공람 이력"
                 tableHead={
@@ -365,10 +377,11 @@ export default function DigitalDocHistoryButton({
                 )}
               </TableWrapper>
             </Stack>
+            </Box>
           </Grid>
         </Grid>
 
-        <Stack spacing={1} sx={{ minHeight: 360 }}>
+        <Stack spacing={1} sx={{ flex: 1, minHeight: 0, overflow: "hidden" }}>
           <Typography variant="subtitle1" fontWeight={700}>
             이력 시점 전자문서 메타데이터
           </Typography>
@@ -379,12 +392,14 @@ export default function DigitalDocHistoryButton({
                 {formatDateDash(selectedHistory.regDt)} / 행위내용{" "}
                 {selectedHistory.actCn || "-"}
               </Alert>
-              <DocDetailTable
-                eldocNo={eldocNo}
-                detail={selectedHistory}
-                showAttachments
-                attachmentsContent={historyAttachmentsContent}
-              />
+              <Box sx={{ flex: 1, minHeight: 0, overflow: "auto", pr: 0.5 }}>
+                <DocDetailTable
+                  eldocNo={eldocNo}
+                  detail={selectedHistory}
+                  showAttachments
+                  attachmentsContent={historyAttachmentsContent}
+                />
+              </Box>
             </>
           ) : (
             <Alert severity="info" sx={{ py: 0 }}>
