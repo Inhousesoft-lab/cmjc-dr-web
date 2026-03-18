@@ -10,6 +10,16 @@ const numberField = z
   .optional()
   .default(0);
 
+const booleanField = z.preprocess((v) => {
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string") {
+    const normalized = v.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return Boolean(v);
+}, z.boolean());
+
 export const externalViewDocumentRowSchema = z.looseObject({
   rowNo: numberField,
   eldocNo: stringField,
@@ -31,6 +41,9 @@ export const externalViewDocumentRowSchema = z.looseObject({
   atchFileSn: stringField,
   deptId: stringField,
   addExpln: stringField,
+  canView: booleanField,
+  canDownload: booleanField,
+  downloadReasonRequired: booleanField,
 });
 
 export const externalViewDocumentListSchema = z.looseObject({

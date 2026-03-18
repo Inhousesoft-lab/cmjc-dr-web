@@ -6,6 +6,8 @@ export interface ExternalViewSearchValues extends Paging {
   docSclsfNo: string;
   docNo: string;
   docTtl: string;
+  allowView: boolean;
+  allowDownload: boolean;
 }
 
 export interface ExternalViewDocument {
@@ -29,6 +31,9 @@ export interface ExternalViewDocument {
   atchFileSn: string;
   deptId: string;
   addExpln: string;
+  canView: boolean;
+  canDownload: boolean;
+  downloadReasonRequired: boolean;
 }
 
 export interface ExternalViewFilePayload {

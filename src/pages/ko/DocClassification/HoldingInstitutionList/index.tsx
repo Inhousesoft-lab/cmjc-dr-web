@@ -107,6 +107,17 @@ export default function HoldingInstitutionList() {
   );
 
   const rows = useAppSelector(selectHoldingInstitutionRows);
+  const filteredRows = React.useMemo(
+    () =>
+      rows.filter((row) => {
+        const before = String(row.endYmd ?? "").trim();
+        const after = String(row.endYmdAfterChanged ?? "").trim();
+
+        if (!after) return false;
+        return before !== after;
+      }),
+    [rows],
+  );
   const rowCount = useAppSelector(selectHoldingInstitutionRowCount);
   const isLoading = useAppSelector(selectHoldingInstitutionLoading);
   const listError = useAppSelector(selectHoldingInstitutionError);
@@ -481,10 +492,10 @@ export default function HoldingInstitutionList() {
         isLoading={isLoading}
         enableRowSelection={true}
         colDefs={columnDefs}
-        rowData={rows}
+        rowData={filteredRows}
         pageNum={searchParams.pageNum}
         pageSize={searchParams.pageSize}
-        count={rowCount}
+        count={filteredRows.length}
         onSelectionChange={handleSelectionChange}
         onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {
           const nextParams = {

@@ -80,16 +80,6 @@ const menuItems: Menu[] = [
     menu: false,
   },
   {
-    path: "digitalDoc/:eldocNo",
-    label: "전자문서 상세",
-    menuType: "MENU",
-    element: {
-      ko: "DigitalDocDetail",
-      en: "DigitalDocDetail",
-    },
-    menu: false,
-  },
-  {
     path: "destruction",
     label: "파기문서 관리",
     menuType: "MENU",
@@ -160,6 +150,16 @@ const menuItems: Menu[] = [
       en: "DigitalDocFormTemp",
     },
     menu: true,
+  },
+  {
+    path: "digitalDoc/:eldocNo",
+    label: "전자문서 상세",
+    menuType: "MENU",
+    element: {
+      ko: "DigitalDocDetail",
+      en: "DigitalDocDetail",
+    },
+    menu: false,
   },
 ];
 

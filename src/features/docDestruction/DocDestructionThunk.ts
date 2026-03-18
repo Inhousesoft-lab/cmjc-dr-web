@@ -87,29 +87,58 @@ const getRegistrantLabel = (
   return `${registrant} (${dept})`;
 };
 
+const buildDocCategory = (
+  lclsfNm: unknown,
+  mclsfNm: unknown,
+  sclsfNm: unknown,
+  fallback: unknown,
+) => {
+  const parts = [lclsfNm, mclsfNm, sclsfNm]
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean);
+
+  if (parts.length > 0) {
+    return parts.join(" > ");
+  }
+
+  return String(fallback ?? "").trim();
+};
+
 export const normalizeDocDestructionRow = (
   raw: DocDestructionListRowRaw,
   index: number,
 ): DocDestruction => {
+  const docTitle = String(raw.docTitle || raw.docTtl || "").trim();
   const personalInfo = raw.hasPersonalInfo || getPersonalInfoLabel(raw.prvcInclYn);
   const holdingPeriod = getHoldingPeriodLabel(raw.hldPrdDfyrs, raw.hldPrdMmCnt);
   const collectDateLabel =
     raw.collectDateLabel || (raw.clctYmd ? `${raw.clctYmd}${holdingPeriod ? `(${holdingPeriod})` : ""}` : "");
   const nestedDocClsf = (raw as any)?.docClsf;
   const nestedPrvcFile = nestedDocClsf?.prvcFileHldPrst;
-  const fileName =
-    String(raw.fileName || nestedPrvcFile?.fileNm || "").trim();
-  const fileNm = String((raw as any).fileNm || "").trim();
+  const docLclsfNm = String((raw as any).docLclsfNm || nestedDocClsf?.docLclsfNm || "").trim();
+  const docMclsfNm = String((raw as any).docMclsfNm || nestedDocClsf?.docMclsfNm || "").trim();
+  const docSclsfNm = String((raw as any).docSclsfNm || nestedDocClsf?.docSclsfNm || "").trim();
+  const docCategory = buildDocCategory(
+    docLclsfNm,
+    docMclsfNm,
+    docSclsfNm,
+    raw.docCategory || raw.docClsfNm,
+  );
+  const fileNm = String((raw as any).fileNm || nestedPrvcFile?.fileNm || "").trim();
+  const fileName = docTitle;
   const rawDocType = String(raw.docType || raw.eldocYn || "").trim();
   const docType = getDocTypeLabel(raw.eldocYn || raw.docType);
-  const dataTypeLabel = String(raw.dataTypeLabel || fileNm || docType || rawDocType).trim();
+  const dataTypeLabel = fileNm || String(raw.dataTypeLabel || docType || rawDocType).trim();
 
   return {
     rowNo: raw.rowNo || index + 1,
     eldocNo: raw.eldocNo,
-    docCategory: raw.docCategory || raw.docClsfNm,
+    docCategory,
+    docLclsfNm,
+    docMclsfNm,
+    docSclsfNm,
     docNo: raw.docNo,
-    docTitle: raw.docTitle || raw.docTtl,
+    docTitle,
     hasPersonalInfo: personalInfo,
     prvcInclYn: raw.prvcInclYn,
     clctYmd: raw.clctYmd,
@@ -197,7 +226,7 @@ const normalizeDocDestructionDetail = (
   const docType = getDocTypeLabel(raw.eldocYn || raw.docType);
   const nestedDocClsf = (raw as any)?.docClsf;
   const nestedPrvcFile = nestedDocClsf?.prvcFileHldPrst;
-  const fileNm = String(raw.fileNm || raw.fileName || nestedPrvcFile?.fileNm || "").trim();
+  const fileNm = String(raw.fileNm || nestedPrvcFile?.fileNm || "").trim();
 
   return {
     ...raw,

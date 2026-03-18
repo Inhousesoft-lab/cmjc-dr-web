@@ -15,9 +15,9 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
+import workerSrc from "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `${import.meta.env.BASE_URL}pdf/pdf.worker.min.js`;
-console.log("[viewer] workerSrc =", pdfjs.GlobalWorkerOptions.workerSrc);
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface DigitalDocViewerButtonProps {
   fileUrl: string | string[];
@@ -352,7 +352,7 @@ export default function DigitalDocViewerButton({
                 <Typography>파일을 불러오는 중입니다...</Typography>
               ) : (
                 <Document
-                  file={resolvedPdfData}
+                  file={resolvedPdfData ? { data: resolvedPdfData.buffer } : null}
                   onLoadSuccess={handleLoadSuccess}
                   onLoadError={handlePdfLoadError}
                 >

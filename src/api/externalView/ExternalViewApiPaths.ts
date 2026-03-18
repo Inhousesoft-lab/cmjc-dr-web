@@ -7,5 +7,13 @@ export const selectExternalViewListApiPath = () =>
 export const selectExternalViewDetailApiPath = (eldocNo: string) =>
   `/api/dr/external-view/documents/${eldocNo}`;
 
-export const downloadExternalViewFileApiPath = (eldocNo: string) =>
-  `/api/dr/external-view/documents/${eldocNo}/file`;
+export const downloadExternalViewFileApiPath = (eldocNo: string, filename?: string) => {
+  const path = `/api/dr/external-view/documents/${eldocNo}/file`;
+  if (!filename) return path;
+
+  const params = new URLSearchParams({
+    filename,
+  });
+
+  return `${path}?${params.toString()}`;
+};
