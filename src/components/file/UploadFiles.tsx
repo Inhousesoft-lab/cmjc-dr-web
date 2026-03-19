@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  CircularProgress,
 } from "@mui/material";
 
 import {
@@ -78,6 +79,7 @@ export default function UploadFiles({
   const [downloadReasonError, setDownloadReasonError] = useState("");
   const [pendingDownloadFile, setPendingDownloadFile] = useState<FileItem | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -122,12 +124,17 @@ export default function UploadFiles({
     }
 
     try {
+      setIsDownloading(true);
+      setDownloadingFileId(file.atchFileId ?? null);
       await runDownload(file);
     } catch (error) {
       showSnackbar(
         error instanceof Error ? error.message : "다운로드에 실패했습니다.",
         "error",
       );
+    } finally {
+      setIsDownloading(false);
+      setDownloadingFileId(null);
     }
   };
 
@@ -147,6 +154,7 @@ export default function UploadFiles({
 
     try {
       setIsDownloading(true);
+      setDownloadingFileId(pendingDownloadFile.atchFileId ?? null);
       await runDownload(pendingDownloadFile, trimmedReason);
       succeeded = true;
     } catch (error) {
@@ -155,6 +163,7 @@ export default function UploadFiles({
       );
     } finally {
       setIsDownloading(false);
+      setDownloadingFileId(null);
     }
 
     if (succeeded) {
@@ -220,6 +229,7 @@ export default function UploadFiles({
 
   const handleFileSelect = (files: FileList | null) => {
     if (readOnly) return;
+    if (isUploading) return;
     if (!files) return;
 
     // File 객체를 유지하면서 uid 속성만 추가
@@ -267,6 +277,7 @@ export default function UploadFiles({
 
   const handleDrop = (e: React.DragEvent) => {
     if (readOnly) return;
+    if (isUploading) return;
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
@@ -445,7 +456,10 @@ export default function UploadFiles({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            if (isUploading || loadingFiles) return;
+            fileInputRef.current?.click();
+          }}
           sx={(theme) => ({
             "--upload-border-color": isDragging
               ? theme.palette.primary.main
@@ -466,6 +480,14 @@ export default function UploadFiles({
           <Typography variant="body2" color="text.secondary">
             여러 파일을 선택할 수 있습니다
           </Typography>
+          {isUploading && (
+            <Stack direction="row" spacing={1} alignItems="center" mt={2}>
+              <CircularProgress size={18} />
+              <Typography variant="body2" color="text.secondary">
+                파일 업로드 중...
+              </Typography>
+            </Stack>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -474,7 +496,19 @@ export default function UploadFiles({
             aria-label="파일 업로드"
             title="파일 업로드"
             onChange={handleFileInputChange}
+            disabled={isUploading || loadingFiles}
           />
+        </Box>
+      )}
+
+      {(loadingFiles || isDownloading) && (
+        <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <CircularProgress size={18} />
+          <Typography variant="body2" color="text.secondary">
+            {loadingFiles
+              ? "파일 목록을 불러오는 중입니다..."
+              : "파일 다운로드 중입니다..."}
+          </Typography>
         </Box>
       )}
 
@@ -485,7 +519,7 @@ export default function UploadFiles({
               <Button
                 variant="outlined"
                 color="error"
-                disabled={!savedFileList.some((f) => f.check)}
+                disabled={!savedFileList.some((f) => f.check) || loadingFiles || isUploading}
                 onClick={handleDeleteSelected}
               >
                 선택삭제
@@ -517,6 +551,7 @@ export default function UploadFiles({
                     readOnly ? undefined : (
                       <IconButton
                         edge="end"
+                        disabled={loadingFiles || isUploading || isDownloading}
                         onClick={() => fileRemoveOnly(file.atchFileId ?? "")}
                       >
                         <DeleteIcon />
@@ -582,6 +617,13 @@ export default function UploadFiles({
                           <Button
                             variant="outlined"
                             size="small"
+                            disabled={loadingFiles || isUploading || isDownloading}
+                            endIcon={
+                              isDownloading &&
+                              downloadingFileId === (file.atchFileId ?? null) ? (
+                                <CircularProgress size={14} color="inherit" />
+                              ) : undefined
+                            }
                             onClick={() => {
                               void handleDownloadClick(file);
                             }}
@@ -643,6 +685,9 @@ export default function UploadFiles({
               void handleReasonDownloadConfirm();
             }}
             disabled={isDownloading}
+            startIcon={
+              isDownloading ? <CircularProgress size={16} color="inherit" /> : undefined
+            }
           >
             다운로드
           </Button>
