@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,17 +25,22 @@ interface DigitalDocViewerButtonProps {
   fileUrl: string | string[];
   label?: string;
   fileType?: "pdf" | "image";
+  disabled?: boolean;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 export default function DigitalDocViewerButton({
   fileUrl,
   label = "열람",
   fileType = "pdf",
+  disabled = false,
+  onLoadingChange,
 }: DigitalDocViewerButtonProps) {
-  const fileUrls = React.useMemo(
-    () => (Array.isArray(fileUrl) ? fileUrl : [fileUrl]).filter(Boolean),
-    [fileUrl],
-  );
+  const fileUrls = React.useMemo(() => {
+    const normalized = Array.isArray(fileUrl) ? fileUrl : [fileUrl];
+    return normalized.filter(Boolean);
+  }, [fileUrl]);
+  const fileUrlsKey = React.useMemo(() => fileUrls.join("||"), [fileUrls]);
   const [open, setOpen] = React.useState(false);
   const [numPages, setNumPages] = React.useState(0);
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -49,9 +55,15 @@ export default function DigitalDocViewerButton({
   const [containerWidth, setContainerWidth] = React.useState(0);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [resolvedFileUrl, setResolvedFileUrl] = React.useState("");
+  const [isPreparing, setIsPreparing] = React.useState(false);
   const viewerRef = React.useRef<HTMLDivElement | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const pageRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+  const loadingChangeRef = React.useRef(onLoadingChange);
+
+  React.useEffect(() => {
+    loadingChangeRef.current = onLoadingChange;
+  }, [onLoadingChange]);
 
   const handleOpen = () => {
     setNumPages(0);
@@ -99,6 +111,8 @@ export default function DigitalDocViewerButton({
   React.useEffect(() => {
     if (!open || fileUrls.length === 0) {
       setResolvedFileUrl("");
+      setIsPreparing(false);
+      loadingChangeRef.current?.(false);
       return;
     }
 
@@ -108,6 +122,8 @@ export default function DigitalDocViewerButton({
     const loadFileForViewer = async () => {
       setLoadError(null);
       setResolvedFileUrl("");
+      setIsPreparing(true);
+      loadingChangeRef.current?.(true);
 
       try {
         const blob = await FileApi.fetchBlobFromUrls(fileUrls);
@@ -129,6 +145,11 @@ export default function DigitalDocViewerButton({
             ? error.message || "파일을 불러오지 못했습니다."
             : "파일을 불러오지 못했습니다.",
         );
+      } finally {
+        if (!cancelled) {
+          setIsPreparing(false);
+          loadingChangeRef.current?.(false);
+        }
       }
     };
 
@@ -139,8 +160,10 @@ export default function DigitalDocViewerButton({
       if (revokedUrl) {
         window.URL.revokeObjectURL(revokedUrl);
       }
+      loadingChangeRef.current?.(false);
+      setIsPreparing(false);
     };
-  }, [fileUrls, open]);
+  }, [fileUrlsKey, open]);
 
   React.useEffect(() => {
     if (fileType !== "pdf") return;
@@ -256,10 +279,33 @@ export default function DigitalDocViewerButton({
       : orientation === "landscape"
         ? "portrait"
         : "landscape";
+  const loadingContent = (
+    <Box
+      sx={{
+        minHeight: 240,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <CircularProgress size={18} />
+        <Typography variant="body2" color="text.secondary">
+          파일 열람을 준비하고 있습니다...
+        </Typography>
+      </Box>
+    </Box>
+  );
 
   return (
     <>
-      <Button variant="outlined" size="small" onClick={handleOpen}>
+      <Button
+        variant="outlined"
+        size="small"
+        onClick={handleOpen}
+        disabled={disabled || isPreparing}
+        endIcon={isPreparing ? <CircularProgress size={14} color="inherit" /> : undefined}
+      >
         {label}
       </Button>
 
@@ -321,7 +367,7 @@ export default function DigitalDocViewerButton({
               loadError ? (
                 <Typography color="error">{loadError}</Typography>
               ) : !resolvedFileUrl ? (
-                <Typography>파일을 불러오는 중입니다...</Typography>
+                loadingContent
               ) : (
                 <Document
                   file={resolvedFileUrl}
@@ -363,7 +409,7 @@ export default function DigitalDocViewerButton({
                 {loadError ? (
                   <Typography color="error">{loadError}</Typography>
                 ) : !resolvedFileUrl ? (
-                  <Typography>파일을 불러오는 중입니다...</Typography>
+                  loadingContent
                 ) : (
                   <img
                     src={resolvedFileUrl}

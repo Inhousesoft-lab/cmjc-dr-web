@@ -80,6 +80,8 @@ export default function UploadFiles({
   const [pendingDownloadFile, setPendingDownloadFile] = useState<FileItem | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+  const [isViewing, setIsViewing] = useState(false);
+  const [viewingFileId, setViewingFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -98,6 +100,11 @@ export default function UploadFiles({
     setDownloadReason("");
     setDownloadReasonError("");
     setPendingDownloadFile(null);
+  };
+
+  const handleViewerLoadingChange = (file: FileItem, loading: boolean) => {
+    setIsViewing(loading);
+    setViewingFileId(loading ? (file.atchFileId ?? file.fileNm ?? null) : null);
   };
 
   const runDownload = async (file: FileItem, reason?: string) => {
@@ -501,13 +508,15 @@ export default function UploadFiles({
         </Box>
       )}
 
-      {(loadingFiles || isDownloading) && (
+      {(loadingFiles || isDownloading || isViewing) && (
         <Box sx={{ mt: 2, display: "flex", alignItems: "center", gap: 1 }}>
           <CircularProgress size={18} />
           <Typography variant="body2" color="text.secondary">
             {loadingFiles
               ? "파일 목록을 불러오는 중입니다..."
-              : "파일 다운로드 중입니다..."}
+              : isViewing && !!viewingFileId
+                ? "파일 열람을 준비하고 있습니다..."
+                : "파일 다운로드 중입니다..."}
           </Typography>
         </Box>
       )}
@@ -551,7 +560,7 @@ export default function UploadFiles({
                     readOnly ? undefined : (
                       <IconButton
                         edge="end"
-                        disabled={loadingFiles || isUploading || isDownloading}
+                        disabled={loadingFiles || isUploading || isDownloading || isViewing}
                         onClick={() => fileRemoveOnly(file.atchFileId ?? "")}
                       >
                         <DeleteIcon />
@@ -607,17 +616,39 @@ export default function UploadFiles({
                           justifyContent="flex-end"
                           flexWrap="nowrap"
                         >
-                          {isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
+                          {isPdf && (
+                            <DigitalDocViewerButton
+                              fileUrl={downloadUrls}
+                              disabled={
+                                loadingFiles ||
+                                isUploading ||
+                                isDownloading ||
+                                (isViewing && viewingFileId !== (file.atchFileId ?? file.fileNm ?? null))
+                              }
+                              onLoadingChange={(loading) => {
+                                handleViewerLoadingChange(file, loading);
+                              }}
+                            />
+                          )}
                           {!isPdf && isImage && (
                             <DigitalDocViewerButton
                               fileUrl={downloadUrls}
                               fileType="image"
+                              disabled={
+                                loadingFiles ||
+                                isUploading ||
+                                isDownloading ||
+                                (isViewing && viewingFileId !== (file.atchFileId ?? file.fileNm ?? null))
+                              }
+                              onLoadingChange={(loading) => {
+                                handleViewerLoadingChange(file, loading);
+                              }}
                             />
                           )}
                           <Button
                             variant="outlined"
                             size="small"
-                            disabled={loadingFiles || isUploading || isDownloading}
+                            disabled={loadingFiles || isUploading || isDownloading || isViewing}
                             endIcon={
                               isDownloading &&
                               downloadingFileId === (file.atchFileId ?? null) ? (

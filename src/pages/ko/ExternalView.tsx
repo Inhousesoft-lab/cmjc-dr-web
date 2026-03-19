@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   Box,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -112,6 +113,9 @@ export default function ExternalView() {
   const [downloadReasonError, setDownloadReasonError] = React.useState("");
   const [pendingDownloadRow, setPendingDownloadRow] = React.useState<ExternalViewRow | null>(null);
   const [isDownloading, setIsDownloading] = React.useState(false);
+  const [downloadingFileKey, setDownloadingFileKey] = React.useState<string | null>(null);
+  const [isViewing, setIsViewing] = React.useState(false);
+  const [viewingFileKey, setViewingFileKey] = React.useState<string | null>(null);
 
   const sourceRows = useAppSelector(selectExternalViewRows);
   const isLoading = useAppSelector(selectExternalViewLoading);
@@ -211,6 +215,14 @@ export default function ExternalView() {
     setPendingDownloadRow(null);
   }, [isDownloading]);
 
+  const handleViewerLoadingChange = React.useCallback(
+    (row: ExternalViewRow, loading: boolean) => {
+      setIsViewing(loading);
+      setViewingFileKey(loading ? row.fileKey : null);
+    },
+    [],
+  );
+
   const runDownload = React.useCallback(async (row: ExternalViewRow, reason?: string) => {
     if (!row.file) {
       throw new Error("다운로드할 파일 정보가 없습니다.");
@@ -234,6 +246,8 @@ export default function ExternalView() {
       }
 
       try {
+        setIsDownloading(true);
+        setDownloadingFileKey(row.fileKey);
         await runDownload(row);
       } catch (error) {
         notifications.show(
@@ -243,6 +257,9 @@ export default function ExternalView() {
             autoHideDuration: 3000,
           },
         );
+      } finally {
+        setIsDownloading(false);
+        setDownloadingFileKey(null);
       }
     },
     [notifications, runDownload],
@@ -263,6 +280,7 @@ export default function ExternalView() {
 
     try {
       setIsDownloading(true);
+      setDownloadingFileKey(pendingDownloadRow.fileKey);
       await runDownload(pendingDownloadRow, trimmedReason);
       closeDownloadReasonDialog();
     } catch (error) {
@@ -271,6 +289,7 @@ export default function ExternalView() {
       );
     } finally {
       setIsDownloading(false);
+      setDownloadingFileKey(null);
     }
   }, [closeDownloadReasonDialog, downloadReason, pendingDownloadRow, runDownload]);
 
@@ -481,9 +500,24 @@ export default function ExternalView() {
 
           return (
             <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ width: "100%" }}>
-              {row.canView && canPreview && isPdf && <DigitalDocViewerButton fileUrl={downloadUrls} />}
+              {row.canView && canPreview && isPdf && (
+                <DigitalDocViewerButton
+                  fileUrl={downloadUrls}
+                  disabled={isDownloading || (isViewing && viewingFileKey !== row.fileKey)}
+                  onLoadingChange={(loading) => {
+                    handleViewerLoadingChange(row, loading);
+                  }}
+                />
+              )}
               {row.canView && canPreview && isImage && (
-                <DigitalDocViewerButton fileUrl={downloadUrls} fileType="image" />
+                <DigitalDocViewerButton
+                  fileUrl={downloadUrls}
+                  fileType="image"
+                  disabled={isDownloading || (isViewing && viewingFileKey !== row.fileKey)}
+                  onLoadingChange={(loading) => {
+                    handleViewerLoadingChange(row, loading);
+                  }}
+                />
               )}
               {row.canView && !canPreview && (
                 <Button variant="outlined" size="small" disabled>
@@ -494,6 +528,12 @@ export default function ExternalView() {
                 <Button
                   variant="outlined"
                   size="small"
+                  disabled={isDownloading || isViewing}
+                  endIcon={
+                    isDownloading && downloadingFileKey === row.fileKey ? (
+                      <CircularProgress size={14} color="inherit" />
+                    ) : undefined
+                  }
                   onClick={() => {
                     void handleDownloadClick(row);
                   }}
@@ -506,7 +546,7 @@ export default function ExternalView() {
         },
       },
     ],
-    [handleDownloadClick],
+    [downloadingFileKey, handleDownloadClick, handleViewerLoadingChange, isDownloading, isViewing],
   );
 
   return (
@@ -557,6 +597,16 @@ export default function ExternalView() {
           rowHeight={44}
           headerHeight={36}
         />
+        {(isViewing || isDownloading) && (
+          <Box sx={{ px: 2, pb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+            <CircularProgress size={18} />
+            <Typography variant="body2" color="text.secondary">
+              {isViewing && !!viewingFileKey
+                ? "파일 열람을 준비하고 있습니다..."
+                : "파일 다운로드 중입니다..."}
+            </Typography>
+          </Box>
+        )}
       </DialogTrigger>
 
       <Dialog
@@ -595,6 +645,9 @@ export default function ExternalView() {
               void handleReasonDownloadConfirm();
             }}
             disabled={isDownloading}
+            startIcon={
+              isDownloading ? <CircularProgress size={16} color="inherit" /> : undefined
+            }
           >
             다운로드
           </Button>
