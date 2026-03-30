@@ -166,6 +166,7 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
       useEn: toStr(docClsf?.useEn),
       regDt: toStr(docClsf?.regDt),
       rgtrId: toStr(docClsf?.rgtrId),
+      rgtrNm: toStr(docClsf?.rgtrNm),
       mdfcnDt: toStr(docClsf?.mdfcnDt),
       mdfrId: toStr(docClsf?.mdfrId),
       prvcFileHldPrst: {

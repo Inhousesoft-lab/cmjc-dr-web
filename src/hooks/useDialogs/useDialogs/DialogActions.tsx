@@ -258,11 +258,11 @@ export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
       slotProps={{
         paper: {
           component: "form",
-          onSubmit: async (event: React.FormEvent<HTMLFormElement>) => {
+          onSubmit: async (event: React.FormEvent<HTMLDivElement>) => {
             event.preventDefault();
             try {
               setLoading(true);
-              const formData = new FormData(event.currentTarget);
+              const formData = new FormData(event.currentTarget as unknown as HTMLFormElement);
               const value = formData.get(name) ?? "";
 
               if (typeof value !== "string") {

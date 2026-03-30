@@ -160,7 +160,7 @@ export const normalizeDocDestructionRow = (
     fileName,
     fileNm,
     dataTypeLabel,
-  };
+  } as DocDestruction;
 };
 
 export const fetchDocDestructionList = createAsyncThunk<

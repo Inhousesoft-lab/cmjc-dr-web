@@ -76,6 +76,7 @@ export interface DocClsf {
   useEn: string;
   regDt: string;
   rgtrId: string;
+  rgtrNm: string;
   mdfcnDt: string;
   mdfrId: string;
   prvcFileHldPrst: PrvcFileHldPrst;
