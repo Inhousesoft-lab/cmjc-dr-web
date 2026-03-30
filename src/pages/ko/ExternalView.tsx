@@ -11,12 +11,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import type { ColDef, ICellRendererParams } from "ag-grid-community";
+import type { CellStyle, ColDef, ICellRendererParams } from "ag-grid-community";
 import DialogTrigger from "@/components/dialog/DialogTrigger";
 import AgGridTable from "@/components/grid/AgGridTable";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { FileApi, type FileItem } from "@/api/fileApi";
-import { downloadExternalViewFileApiPath } from "@/api/externalView/ExternalViewApiPaths";
 import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
 import useNotifications from "@/hooks/useNotifications";
 import {
@@ -26,7 +25,6 @@ import {
 } from "@/features/ExternalViewSelectors";
 import { fetchExternalViewList } from "@/features/ExternalViewThunk";
 import type { ExternalViewDocument } from "@/types/externalView";
-import { resolveApiUrl } from "@/api/ApiClient";
 
 type ExternalViewRow = {
   id: number;
@@ -52,6 +50,24 @@ const INITIAL_LIST_PARAMS = {
   pageNum: 1,
   pageSize: 100,
 } as const;
+
+const centeredCellStyle: CellStyle = {
+  textAlign: "center",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const alignedCellStyle: CellStyle = {
+  display: "flex",
+  alignItems: "center",
+};
+
+const multilineCenteredCellStyle: CellStyle = {
+  ...centeredCellStyle,
+  whiteSpace: "pre-line",
+  lineHeight: 1.35,
+};
 
 const formatCompactDate = (value: string) => {
   if (!value) return "-";
@@ -90,12 +106,15 @@ const getFileKind = (file: FileItem) => {
   };
 };
 
-const getExternalViewFileUrls = (row: Pick<ExternalViewRow, "eldocNo" | "file">) => {
+const getExternalViewDownloadUrls = (
+  row: Pick<ExternalViewRow, "eldocNo" | "file">,
+  reason?: string,
+) => {
   if (!row.file) return [];
-
-  const path = downloadExternalViewFileApiPath(row.eldocNo, row.file.srvrFileNm);
-  const apiUrl = resolveApiUrl(path);
-  return [apiUrl || path];
+  return FileApi.getDownloadStreamUrls(row.file, {
+    eldocNo: row.eldocNo,
+    reason,
+  });
 };
 
 export default function ExternalView() {
@@ -114,8 +133,6 @@ export default function ExternalView() {
   const [pendingDownloadRow, setPendingDownloadRow] = React.useState<ExternalViewRow | null>(null);
   const [isDownloading, setIsDownloading] = React.useState(false);
   const [downloadingFileKey, setDownloadingFileKey] = React.useState<string | null>(null);
-  const [isViewing, setIsViewing] = React.useState(false);
-  const [viewingFileKey, setViewingFileKey] = React.useState<string | null>(null);
 
   const sourceRows = useAppSelector(selectExternalViewRows);
   const isLoading = useAppSelector(selectExternalViewLoading);
@@ -215,20 +232,12 @@ export default function ExternalView() {
     setPendingDownloadRow(null);
   }, [isDownloading]);
 
-  const handleViewerLoadingChange = React.useCallback(
-    (row: ExternalViewRow, loading: boolean) => {
-      setIsViewing(loading);
-      setViewingFileKey(loading ? row.fileKey : null);
-    },
-    [],
-  );
-
   const runDownload = React.useCallback(async (row: ExternalViewRow, reason?: string) => {
     if (!row.file) {
       throw new Error("다운로드할 파일 정보가 없습니다.");
     }
 
-    const downloadUrls = getExternalViewFileUrls(row);
+    const downloadUrls = getExternalViewDownloadUrls(row, reason);
 
     await FileApi.downloadFromUrls(downloadUrls, row.file.fileNm || "download");
   }, []);
@@ -378,24 +387,19 @@ export default function ExternalView() {
         minWidth: 64,
         maxWidth: 64,
         flex: 0,
-        cellStyle: {
-          textAlign: "center",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        },
+        cellStyle: centeredCellStyle,
       },
       {
         headerName: "문서분류",
         field: "category",
         width: 220,
         minWidth: 200,
-        cellStyle: { display: "flex", alignItems: "center" },
+        cellStyle: alignedCellStyle,
       },
       {
         headerName: "문서제목",
         field: "title",
-        cellStyle: { display: "flex", alignItems: "center" },
+        cellStyle: alignedCellStyle,
         flex: 1,
         minWidth: 240,
       },
@@ -409,14 +413,7 @@ export default function ExternalView() {
         wrapHeaderText: true,
         autoHeaderHeight: true,
         headerClass: "ag-center-header",
-        cellStyle: {
-          textAlign: "center",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          whiteSpace: "pre-line",
-          lineHeight: 1.35,
-        },
+        cellStyle: multilineCenteredCellStyle,
         cellRenderer: (params: ICellRendererParams<ExternalViewRow>) => {
           const row = params.data;
           if (!row) return "-";
@@ -428,10 +425,7 @@ export default function ExternalView() {
         field: "fileName",
         flex: 1,
         minWidth: 260,
-        cellStyle: {
-          display: "flex",
-          alignItems: "center",
-        },
+        cellStyle: alignedCellStyle,
         cellRenderer: (params: ICellRendererParams<ExternalViewRow>) => {
           const row = params.data;
           if (!row) return null;
@@ -476,10 +470,9 @@ export default function ExternalView() {
         maxWidth: 210,
         flex: 0,
         cellStyle: {
-          display: "flex",
-          alignItems: "center",
+          ...alignedCellStyle,
           justifyContent: "center",
-        },
+        } satisfies CellStyle,
         cellRenderer: (params: ICellRendererParams<ExternalViewRow>) => {
           const row = params.data;
           if (!row?.file) {
@@ -491,7 +484,7 @@ export default function ExternalView() {
           }
 
           const { isPdf, isImage } = getFileKind(row.file);
-          const downloadUrls = getExternalViewFileUrls(row);
+          const viewerUrls = getExternalViewDownloadUrls(row);
           const canPreview = isPdf || isImage;
 
           if (!row.canView && !row.canDownload) {
@@ -502,21 +495,15 @@ export default function ExternalView() {
             <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ width: "100%" }}>
               {row.canView && canPreview && isPdf && (
                 <DigitalDocViewerButton
-                  fileUrl={downloadUrls}
-                  disabled={isDownloading || (isViewing && viewingFileKey !== row.fileKey)}
-                  onLoadingChange={(loading) => {
-                    handleViewerLoadingChange(row, loading);
-                  }}
+                  fileUrl={viewerUrls}
+                  disabled={isDownloading}
                 />
               )}
               {row.canView && canPreview && isImage && (
                 <DigitalDocViewerButton
-                  fileUrl={downloadUrls}
+                  fileUrl={viewerUrls}
                   fileType="image"
-                  disabled={isDownloading || (isViewing && viewingFileKey !== row.fileKey)}
-                  onLoadingChange={(loading) => {
-                    handleViewerLoadingChange(row, loading);
-                  }}
+                  disabled={isDownloading}
                 />
               )}
               {row.canView && !canPreview && (
@@ -528,7 +515,7 @@ export default function ExternalView() {
                 <Button
                   variant="outlined"
                   size="small"
-                  disabled={isDownloading || isViewing}
+                  disabled={isDownloading}
                   endIcon={
                     isDownloading && downloadingFileKey === row.fileKey ? (
                       <CircularProgress size={14} color="inherit" />
@@ -546,7 +533,7 @@ export default function ExternalView() {
         },
       },
     ],
-    [downloadingFileKey, handleDownloadClick, handleViewerLoadingChange, isDownloading, isViewing],
+    [downloadingFileKey, handleDownloadClick, isDownloading],
   );
 
   return (
@@ -597,13 +584,11 @@ export default function ExternalView() {
           rowHeight={44}
           headerHeight={36}
         />
-        {(isViewing || isDownloading) && (
+        {isDownloading && (
           <Box sx={{ px: 2, pb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
             <CircularProgress size={18} />
             <Typography variant="body2" color="text.secondary">
-              {isViewing && !!viewingFileKey
-                ? "파일 열람을 준비하고 있습니다..."
-                : "파일 다운로드 중입니다..."}
+              파일 다운로드 중입니다...
             </Typography>
           </Box>
         )}

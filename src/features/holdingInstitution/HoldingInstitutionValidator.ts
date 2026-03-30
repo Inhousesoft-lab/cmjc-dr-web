@@ -32,6 +32,7 @@ const EMPTY_DOC_CLSF = {
   useEn: "",
   regDt: "",
   rgtrId: "",
+  rgtrNm: "",
   mdfcnDt: "",
   mdfrId: "",
   prvcFileHldPrst: EMPTY_PRVC_FILE_HLD_PRST,

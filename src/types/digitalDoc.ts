@@ -75,6 +75,7 @@ export interface DigitalAuthrt {
 }
 
 export interface DigitalDocHistory {
+  rowNo?: number;
   docLclsfNo: string;
   docMclsfNo: string;
   docSclsfNo: string;
