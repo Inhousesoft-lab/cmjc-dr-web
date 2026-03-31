@@ -103,11 +103,6 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
   const changedHldPrdMmCnt = toStr(
     item?.hldPrdMmCntAfterChanged ?? prvcFileHldPrst?.hldPrdMmCnt,
   );
-  const currentEndYmd = calculateEndYmdByPeriod(
-    item?.clctYmd,
-    item?.hldPrdDfyrs,
-    item?.hldPrdMmCnt,
-  );
   const endYmdAfterChanged =
     toStr(item?.endYmdAfterChanged) ||
     calculateEndYmdByPeriod(item?.clctYmd, changedHldPrdDfyrs, changedHldPrdMmCnt);
@@ -122,7 +117,7 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
     clctYmd: toStr(item?.clctYmd),
     hldPrdDfyrs: toStr(item?.hldPrdDfyrs),
     hldPrdMmCnt: toStr(item?.hldPrdMmCnt),
-    endYmd: currentEndYmd,
+    endYmd: toStr(item?.endYmd),
     prvcInclYn: toStr(item?.prvcInclYn),
     gvbkYn: toStr(item?.gvbkYn),
     addExpln: toStr(item?.addExpln),
