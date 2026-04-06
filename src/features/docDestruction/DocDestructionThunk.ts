@@ -15,6 +15,7 @@ import {
   docDestructionDetailSchema,
   docDestructionListRowSchema,
   docDestructionListSchema,
+  docDestructionSearchValidator,
   type DocDestructionDetailRaw,
   type DocDestructionListRowRaw,
 } from "./DocDestructionValidator";
@@ -171,12 +172,17 @@ export const fetchDocDestructionList = createAsyncThunk<
   "docDestruction/list",
   async (params, { rejectWithValue }) => {
   try {
+    const validatedSearch = docDestructionSearchValidator(params ?? {});
+    if (!validatedSearch.success) {
+      return rejectWithValue(validatedSearch.issues[0]?.message ?? "날짜 검색 조건을 다시 확인해 주세요.");
+    }
+
     if (isDocDestructionMockEnabled()) {
       return getMockDocDestructionList(params);
     }
 
     const requestParams = {
-      ...(params ?? {}),
+      ...(validatedSearch.data ?? params ?? {}),
     };
 
     const res = await https.get(selectDocDestructionListApiPath(), {

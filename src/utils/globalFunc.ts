@@ -74,6 +74,25 @@ export function getErrorMessage(error: unknown): string {
   );
 }
 
+function normalizeComparableDate(value: string): string {
+  return value.replace(/[^0-9]/g, "");
+}
+
+export function isDateRangeInvalid(fromValue: string, toValue: string): boolean {
+  if (isEmpty(fromValue) || isEmpty(toValue)) {
+    return false;
+  }
+
+  const normalizedFrom = normalizeComparableDate(fromValue);
+  const normalizedTo = normalizeComparableDate(toValue);
+
+  if (normalizedFrom.length !== 8 || normalizedTo.length !== 8) {
+    return false;
+  }
+
+  return normalizedTo < normalizedFrom;
+}
+
 (globalThis as any).formatDate = formatDate;
 (globalThis as any).formatYYMMDD = formatYYMMDD;
 (globalThis as any).isEmpty = isEmpty;
@@ -81,3 +100,4 @@ export function getErrorMessage(error: unknown): string {
 (globalThis as any).deepClone = deepClone;
 (globalThis as any).uniqueArray = uniqueArray;
 (globalThis as any).getErrorMessage = getErrorMessage;
+(globalThis as any).isDateRangeInvalid = isDateRangeInvalid;

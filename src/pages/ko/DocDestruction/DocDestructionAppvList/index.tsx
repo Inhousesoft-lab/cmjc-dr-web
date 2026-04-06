@@ -31,6 +31,7 @@ import type { SearchValues } from "@/types/docDestruction";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import DocDestructionAppvButton from "@/components/actionButtons/DocDestructionAppvButton";
 import { isDocDestructionMockEnabled } from "@/features/docDestruction/docDestructionMock";
+import { isDateRangeInvalid } from "@/utils/globalFunc";
 
 const buildSearchValues = (): SearchValues => ({
   reqCd: "APRV",
@@ -53,6 +54,7 @@ const buildSearchValues = (): SearchValues => ({
 });
 
 export default function DocDestructionList() {
+  const dateRangeErrorMessage = "종료일은 시작일보다 빠를 수 없습니다.";
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -93,6 +95,7 @@ export default function DocDestructionList() {
   const [pageSize, setPageSize] = useState(
     restoredState?.pageSize ?? initialSearchValues.pageSize,
   );
+  const [dateRangeError, setDateRangeError] = useState("");
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     docLclsfNo,
     docMclsfNo,
@@ -144,6 +147,10 @@ export default function DocDestructionList() {
   }, [dispatch, searchValues]);
 
   const loadData = () => {
+    if (isDateRangeInvalid(fromEndYmd, toEndYmd)) {
+      setDateRangeError(dateRangeErrorMessage);
+      return;
+    }
     const nextParams = { ...searchValues, pageNum: 1 };
     setPageNum(1);
     dispatch(fetchDocDestructionList(nextParams));
@@ -162,6 +169,7 @@ export default function DocDestructionList() {
     setDocTtl(initialSearchValues.docTtl);
     setFromEndYmd(initialSearchValues.fromEndYmd);
     setToEndYmd(initialSearchValues.toEndYmd);
+    setDateRangeError("");
     setPageNum(initialSearchValues.pageNum);
     setPageSize(initialSearchValues.pageSize);
     dispatch(
@@ -187,6 +195,10 @@ export default function DocDestructionList() {
       autoHideDuration: 3000,
     });
   }, [listError, notifications]);
+
+  useEffect(() => {
+    setDateRangeError(isDateRangeInvalid(fromEndYmd, toEndYmd) ? dateRangeErrorMessage : "");
+  }, [dateRangeErrorMessage, fromEndYmd, toEndYmd]);
 
   const handleRowClick = (row: DocDestruction) => {
     if (!row.eldocNo) return;
@@ -265,9 +277,19 @@ export default function DocDestructionList() {
             valueSize={{ xs: 8, sm: 11 }}
             value={
               <div className="filter-range">
-                <MuiDatePickerFt value={fromEndYmd} onChange={setFromEndYmd} />
+                <MuiDatePickerFt
+                  value={fromEndYmd}
+                  onChange={setFromEndYmd}
+                  error={Boolean(dateRangeError)}
+                  helperText={dateRangeError}
+                />
                 <span className="filter-range-sep">-</span>{" "}
-                <MuiDatePickerFt value={toEndYmd} onChange={setToEndYmd} />
+                <MuiDatePickerFt
+                  value={toEndYmd}
+                  onChange={setToEndYmd}
+                  error={Boolean(dateRangeError)}
+                  helperText={dateRangeError}
+                />
               </div>
             }
           />

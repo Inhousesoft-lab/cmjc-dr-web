@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isDateRangeInvalid } from "@/utils/globalFunc";
 
 const stringField = z.preprocess((v) => (v == null ? "" : String(v)), z.string());
 
@@ -162,22 +163,22 @@ const optionalString = z.preprocess(
 
 export const digitalDocFormSchema = z
   .object({
-    docLclsfNo: z.string().trim().min(1, "대분류를 선택하세요."),
-    docMclsfNo: z.string().trim().min(1, "중분류를 선택하세요."),
-    docSclsfNo: z.string().trim().min(1, "소분류를 선택하세요."),
+    docLclsfNo: z.string().trim().min(1, "대분류를 선택해 주세요."),
+    docMclsfNo: z.string().trim().min(1, "중분류를 선택해 주세요."),
+    docSclsfNo: z.string().trim().min(1, "소분류를 선택해 주세요."),
     prvcInclYn: z.enum(["Y", "N"]).default("N"),
-    docNo: z.string().trim().min(1, "문서번호를 입력하세요."),
-    docTtl: z.string().trim().min(1, "문서제목을 입력하세요."),
+    docNo: z.string().trim().min(1, "문서번호를 입력해 주세요."),
+    docTtl: z.string().trim().min(1, "문서제목을 입력해 주세요."),
     clctYmd: dateField,
     hldPrdDfyrs: z.preprocess(
       (v) => (v == null ? "" : String(v)),
-      z.string().trim().min(1, "보존연한을 선택하세요."),
+      z.string().trim().min(1, "보존연한을 선택해 주세요."),
     ),
     hldPrdMmCnt: optionalString,
     endYmd: optionalString,
     addExpln: optionalString,
     eldocYn: z.enum(["Y", "N"], {
-      message: "첨부파일 유형을 선택하세요.",
+      message: "첨부파일 유형을 선택해 주세요.",
     }),
     atchFileSn: optionalString,
     docClsfNo: optionalString,
@@ -189,7 +190,7 @@ export const digitalDocFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["hldPrdMmCnt"],
-        message: "직접입력 시 보존 개월 수를 입력하세요.",
+        message: "직접입력 시 보존 개월 수를 입력해 주세요.",
       });
     }
 
@@ -197,7 +198,16 @@ export const digitalDocFormSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["endYmd"],
-        message: "직접입력 시 종료일자를 선택하세요.",
+        message: "직접입력 시 종료일자를 선택해 주세요.",
+      });
+      return;
+    }
+
+    if (isDateRangeInvalid(data.clctYmd, data.endYmd)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["endYmd"],
+        message: "종료일은 수집일보다 빠를 수 없습니다.",
       });
     }
   });

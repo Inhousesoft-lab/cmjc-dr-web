@@ -16,7 +16,7 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
-import workerSrc from "react-pdf/node_modules/pdfjs-dist/build/pdf.worker.min.mjs?url";
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { FileApi } from "@/api/fileApi";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;

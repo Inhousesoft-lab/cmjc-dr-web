@@ -34,6 +34,7 @@ import {
 } from "@/features/holdingInstitution/HoldingInstitutionSelectors";
 import type { HoldingInstitution, SearchValues } from "@/types/holdingInstitution";
 import { langPath, getLangFromPathname } from "@/routes/lang";
+import { isDateRangeInvalid } from "@/utils/globalFunc";
 
 const INITIAL_SEARCH_PARAMS: SearchValues = {
   fromClctYmd: "",
@@ -65,6 +66,8 @@ const HOLD_PERIOD_ITEMS = [
 ];
 
 export default function HoldingInstitutionList() {
+  const collectDateRangeErrorMessage = "수집일 종료일은 시작일보다 빠를 수 없습니다.";
+  const endDateRangeErrorMessage = "보유기간 종료일은 시작일보다 빠를 수 없습니다.";
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -98,6 +101,8 @@ export default function HoldingInstitutionList() {
   const [columnDefs] = React.useState<ColDef[]>(listDefs);
   const [searchParams, setSearchParams] =
     React.useState<SearchValues>(initialSearchParams);
+  const [collectDateRangeError, setCollectDateRangeError] = React.useState("");
+  const [endDateRangeError, setEndDateRangeError] = React.useState("");
 
   const { lclsfList, mclsfList, sclsfList, lclsfError } = useDocClsfOptions(
     searchParams.docLclsfNo,
@@ -199,6 +204,14 @@ export default function HoldingInstitutionList() {
   }, [dialogs, dispatch, notifications, searchParams, selectedRows, syncSearchParams]);
 
   const handleApplyAllRows = React.useCallback(async () => {
+    if (isDateRangeInvalid(searchParams.fromClctYmd, searchParams.toClctYmd)) {
+      setCollectDateRangeError(collectDateRangeErrorMessage);
+      return;
+    }
+    if (isDateRangeInvalid(searchParams.fromEndYmd, searchParams.toEndYmd)) {
+      setEndDateRangeError(endDateRangeErrorMessage);
+      return;
+    }
     const confirmed = await dialogs.confirm(
       "전체 파일에 대한 문서분류의 현재 보유기간으로 변경됩니다. 변경하시겠습니까? (※ 정보주체 동의를 받아 수집한 경우, 반드시 변경된 보유기간으로 재동의를 받으셔야 합니다. )",
       {
@@ -247,16 +260,40 @@ export default function HoldingInstitutionList() {
         autoHideDuration: 3000,
       });
     }
-  }, [dialogs, dispatch, notifications, searchParams, syncSearchParams]);
+  }, [
+    collectDateRangeErrorMessage,
+    dialogs,
+    dispatch,
+    endDateRangeErrorMessage,
+    notifications,
+    searchParams,
+    syncSearchParams,
+  ]);
 
   const handleSearch = React.useCallback(() => {
+    if (isDateRangeInvalid(searchParams.fromClctYmd, searchParams.toClctYmd)) {
+      setCollectDateRangeError(collectDateRangeErrorMessage);
+      return;
+    }
+    if (isDateRangeInvalid(searchParams.fromEndYmd, searchParams.toEndYmd)) {
+      setEndDateRangeError(endDateRangeErrorMessage);
+      return;
+    }
     const nextParams = { ...searchParams, pageNum: 1 };
     syncSearchParams(nextParams);
     dispatch(fetchHoldingInstitutionList(nextParams));
-  }, [dispatch, searchParams, syncSearchParams]);
+  }, [
+    collectDateRangeErrorMessage,
+    dispatch,
+    endDateRangeErrorMessage,
+    searchParams,
+    syncSearchParams,
+  ]);
 
   const handleResetSearchValues = React.useCallback(() => {
     const resetParams = { ...INITIAL_SEARCH_PARAMS };
+    setCollectDateRangeError("");
+    setEndDateRangeError("");
     syncSearchParams(resetParams);
     dispatch(fetchHoldingInstitutionList(resetParams));
   }, [dispatch, syncSearchParams]);
@@ -268,6 +305,22 @@ export default function HoldingInstitutionList() {
     },
     [handleSearch],
   );
+
+  React.useEffect(() => {
+    setCollectDateRangeError(
+      isDateRangeInvalid(searchParams.fromClctYmd, searchParams.toClctYmd)
+        ? collectDateRangeErrorMessage
+        : "",
+    );
+  }, [collectDateRangeErrorMessage, searchParams.fromClctYmd, searchParams.toClctYmd]);
+
+  React.useEffect(() => {
+    setEndDateRangeError(
+      isDateRangeInvalid(searchParams.fromEndYmd, searchParams.toEndYmd)
+        ? endDateRangeErrorMessage
+        : "",
+    );
+  }, [endDateRangeErrorMessage, searchParams.fromEndYmd, searchParams.toEndYmd]);
 
   return (
     <div>
@@ -291,6 +344,8 @@ export default function HoldingInstitutionList() {
                   onChange={(value) =>
                     setSearchParams((prev) => ({ ...prev, fromClctYmd: value }))
                   }
+                  error={Boolean(collectDateRangeError)}
+                  helperText={collectDateRangeError}
                 />
                 <span className="filter-range-sep">-</span>{" "}
                 <MuiDatePickerFt
@@ -298,6 +353,8 @@ export default function HoldingInstitutionList() {
                   onChange={(value) =>
                     setSearchParams((prev) => ({ ...prev, toClctYmd: value }))
                   }
+                  error={Boolean(collectDateRangeError)}
+                  helperText={collectDateRangeError}
                 />
               </div>
             }
@@ -314,6 +371,8 @@ export default function HoldingInstitutionList() {
                   onChange={(value) =>
                     setSearchParams((prev) => ({ ...prev, fromEndYmd: value }))
                   }
+                  error={Boolean(endDateRangeError)}
+                  helperText={endDateRangeError}
                 />
                 <span className="filter-range-sep">-</span>{" "}
                 <MuiDatePickerFt
@@ -321,6 +380,8 @@ export default function HoldingInstitutionList() {
                   onChange={(value) =>
                     setSearchParams((prev) => ({ ...prev, toEndYmd: value }))
                   }
+                  error={Boolean(endDateRangeError)}
+                  helperText={endDateRangeError}
                 />
               </div>
             }

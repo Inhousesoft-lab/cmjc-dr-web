@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isDateRangeInvalid } from "@/utils/globalFunc";
 
 const stringField = z.preprocess((v) => (v == null ? "" : String(v)), z.string());
 
@@ -148,10 +149,61 @@ export const holdingInstitutionHldprdAllUpdateSchema = z.object({
   toClctYmd: searchStringField,
   fromEndYmd: searchStringField,
   toEndYmd: searchStringField,
+}).superRefine((data, ctx) => {
+  if (isDateRangeInvalid(data.fromClctYmd, data.toClctYmd)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["toClctYmd"],
+      message: "수집일 종료일은 시작일보다 빠를 수 없습니다.",
+    });
+  }
+
+  if (isDateRangeInvalid(data.fromEndYmd, data.toEndYmd)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["toEndYmd"],
+      message: "보유기간 종료일은 시작일보다 빠를 수 없습니다.",
+    });
+  }
 });
 
 export function holdingInstitutionHldprdAllUpdateValidator(data: unknown) {
   const result = holdingInstitutionHldprdAllUpdateSchema.safeParse(data);
+  return result.success
+    ? { success: true as const, data: result.data, issues: [] }
+    : { success: false as const, data: null, issues: result.error.issues };
+}
+
+export const holdingInstitutionSearchSchema = z
+  .object({
+    fromClctYmd: searchStringField.optional().default(""),
+    toClctYmd: searchStringField.optional().default(""),
+    fromEndYmd: searchStringField.optional().default(""),
+    toEndYmd: searchStringField.optional().default(""),
+    pageNum: z.coerce.number().int().positive().optional(),
+    pageSize: z.coerce.number().int().positive().optional(),
+  })
+  .passthrough()
+  .superRefine((data, ctx) => {
+    if (isDateRangeInvalid(data.fromClctYmd, data.toClctYmd)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["toClctYmd"],
+        message: "수집일 종료일은 시작일보다 빠를 수 없습니다.",
+      });
+    }
+
+    if (isDateRangeInvalid(data.fromEndYmd, data.toEndYmd)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["toEndYmd"],
+        message: "종료일 종료일은 시작일보다 빠를 수 없습니다.",
+      });
+    }
+  });
+
+export function holdingInstitutionSearchValidator(data: unknown) {
+  const result = holdingInstitutionSearchSchema.safeParse(data);
   return result.success
     ? { success: true as const, data: result.data, issues: [] }
     : { success: false as const, data: null, issues: result.error.issues };

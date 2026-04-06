@@ -7,6 +7,7 @@ import {
 } from "@/api/holdingInstitution/HoldingInstitutionApiPaths";
 import {
   holdingInstitutionHldprdAllUpdateValidator,
+  holdingInstitutionSearchValidator,
   holdingInstitutionHldprdUpdateValidator,
   holdingInstitutionListSchema,
   holdingInstitutionRowSchema,
@@ -220,7 +221,14 @@ export const fetchHoldingInstitutionList = createAsyncThunk<
   "holdingInstitution/list",
   async (params, { rejectWithValue }) => {
   try {
-    const rawParams = { ...(params ?? {}) } as Record<string, unknown>;
+    const validatedSearch = holdingInstitutionSearchValidator(params ?? {});
+    if (!validatedSearch.success) {
+      return rejectWithValue(
+        validatedSearch.issues[0]?.message ?? "날짜 검색 조건을 다시 확인해 주세요.",
+      );
+    }
+
+    const rawParams = { ...(validatedSearch.data ?? params ?? {}) } as Record<string, unknown>;
     const requestParams = Object.fromEntries(
       Object.entries(rawParams).filter(([key, value]) => {
         if (key === "pageNum" || key === "pageSize") return true;

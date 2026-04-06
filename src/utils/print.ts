@@ -293,7 +293,7 @@ export function printElement(
   `;
   doc.head.appendChild(printStyle);
 
-  doc.body.innerHTML = "";
+  doc.body.replaceChildren();
   if (subTitle) {
     const headerWrapper = doc.createElement("div");
     headerWrapper.style.marginBottom = "12px";
