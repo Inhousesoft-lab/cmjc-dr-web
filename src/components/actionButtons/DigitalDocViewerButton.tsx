@@ -16,10 +16,12 @@ import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import RotateRightIcon from "@mui/icons-material/RotateRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
-import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { FileApi } from "@/api/fileApi";
 
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+pdfjs.GlobalWorkerOptions.workerPort = new Worker(
+  new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url),
+  { type: "module" },
+);
 
 interface DigitalDocViewerButtonProps {
   fileUrl: string | string[];
