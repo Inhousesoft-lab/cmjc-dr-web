@@ -128,7 +128,8 @@ const normalizeBlobResponse = (response: any) => {
 
 export const FileApi = {
   getFileList: async (request: FileListRequest): Promise<FileItem[]> => {
-    const responseData = (await apiClient.post("/api/dr/file/list", request)) as any;
+    const response = await apiClient.post("/api/dr/file/list", request);
+    const responseData = (response as any)?.data;
 
     if (responseData?.list && Array.isArray(responseData.list)) {
       return responseData.list;
@@ -160,7 +161,7 @@ export const FileApi = {
       "/api/dr/file/deleteGroupFiles",
       request,
     );
-    return response.data || (response.data as unknown as FileDeleteResponse);
+    return (response.data ?? {}) as FileDeleteResponse;
   },
 
   selectDelete: async (
@@ -170,7 +171,7 @@ export const FileApi = {
       "/api/dr/file/deleteMultiFile",
       request,
     );
-    return response.data || (response.data as unknown as FileDeleteResponse);
+    return (response.data ?? {}) as FileDeleteResponse;
   },
 
   fileDelete: async (
@@ -180,14 +181,15 @@ export const FileApi = {
       "/api/dr/file/deleteFileOne",
       request,
     );
-    return response.data || (response.data as unknown as FileDeleteResponse);
+    return (response.data ?? {}) as FileDeleteResponse;
   },
 
   getFileGroupData: async (request: FileGroupDataRequest): Promise<string> => {
     try {
-      const response = (await apiClient.post("/api/dr/file/groupData", request)) as any;
+      const response = await apiClient.post("/api/dr/file/groupData", request);
+      const responseData = (response as any)?.data;
       const atchFileGroupId =
-        response?.data?.atchFileGroupId || response?.atchFileGroupId || "";
+        responseData?.atchFileGroupId || "";
       return String(atchFileGroupId.toString());
     } catch (err) {
       console.error("[getFileGroupData] error:", err);
@@ -198,8 +200,8 @@ export const FileApi = {
   insertFileGroup: async (
     request: FileGroupInsertRequest,
   ): Promise<FileGroupInsertResponse> => {
-    const response = (await apiClient.post("/api/dr/file/groupInsert", request)) as any;
-    return response || (response as unknown as FileDeleteResponse);
+    const response = await apiClient.post("/api/dr/file/groupInsert", request);
+    return ((response as any)?.data ?? {}) as FileGroupInsertResponse;
   },
 
   downloadFileWithReason: async (filename: string, reason: string): Promise<void> => {
@@ -211,7 +213,7 @@ export const FileApi = {
       responseType: "blob",
     });
 
-    const blob = new Blob([response as any]);
+    const blob = normalizeBlobResponse(response);
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -223,9 +225,9 @@ export const FileApi = {
   },
 
   isFileGroup: async (request: FileGroupData): Promise<string> => {
-    const response = (await apiClient.post("/api/dr/file/isGroupData", request)) as any;
-    const atchFileGroupId =
-      response?.data?.atchFileGroupId || response?.atchFileGroupId || "";
+    const response = await apiClient.post("/api/dr/file/isGroupData", request);
+    const responseData = (response as any)?.data;
+    const atchFileGroupId = responseData?.atchFileGroupId || "";
 
     return String(atchFileGroupId.toString());
   },

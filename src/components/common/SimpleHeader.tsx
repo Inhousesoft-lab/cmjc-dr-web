@@ -2,6 +2,7 @@ import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { requestLogout } from "@/features/auth/AuthSlice";
+import { clearPostLoginRedirect } from "@/utils/authSession";
 import { useTranslation } from "react-i18next";
 import { getLangFromPathname } from "@/routes/lang";
 
@@ -15,6 +16,7 @@ export default function SimpleHeader() {
   const lang = getLangFromPathname(location.pathname);
 
   const onLogout = React.useCallback(() => {
+    clearPostLoginRedirect();
     dispatch(requestLogout()).finally(() => {
       navigate(`/${lang}/login`, { replace: true });
     });

@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
+import { setPostLoginRedirect } from "@/utils/authSession";
 import { JSX } from "react";
 import { Navigate, useLocation, useParams } from "react-router-dom";
 
@@ -10,8 +11,7 @@ export default function AuthGuard({ children }: { children: JSX.Element }) {
   if (loading) return null;
 
   if (!isAuthenticated) {
-    sessionStorage.setItem(
-      "postLoginRedirect",
+    setPostLoginRedirect(
       `${location.pathname}${location.search}${location.hash}`,
     );
 

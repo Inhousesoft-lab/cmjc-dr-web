@@ -1,4 +1,5 @@
 import { AppDispatch } from "@/app/store";
+import { DR_ADMIN_AUTH_API } from "@/features/auth/authApi";
 import { normalizeDocDestructionRoles } from "@/features/docDestruction/docDestructionAccess";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { https } from "@shared/utils/https";
@@ -17,6 +18,11 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   loading: boolean;
+}
+
+interface AuthError {
+  status?: number;
+  message: string;
 }
 
 const normalizeUser = (payload: Partial<User>): User | null => {
@@ -51,19 +57,19 @@ const initialState: AuthState = {
 export const login = createAsyncThunk<
   User,
   { userId: string; password: string },
-  { dispatch: AppDispatch; rejectValue: string }
+  { dispatch: AppDispatch; rejectValue: AuthError }
 >("auth/login", async ({ userId, password }, thunkAPI) => {
   try {
     const normalizedUserId = String(userId ?? "").trim();
     const normalizedPassword = String(password ?? "").trim();
 
-    const res = await https.post("/api/dr/temp/auth/login", {
+    await https.post(DR_ADMIN_AUTH_API.login, {
       userId: normalizedUserId,
       password: normalizedPassword,
     });
 
-    const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
-    // 로그인 직후 받은 권한셋도 같은 규칙으로 보정한다.
+    const meRes = await https.get(DR_ADMIN_AUTH_API.me);
+    const payload = (meRes.data?.data ?? meRes.data ?? {}) as Partial<User>;
     const roles = normalizeDocDestructionRoles(
       Array.isArray(payload.roles)
         ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
@@ -79,39 +85,52 @@ export const login = createAsyncThunk<
       roles,
     };
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(
-      err.response?.data?.message ?? "로그인 실패",
-    );
+    return thunkAPI.rejectWithValue({
+      status: err?.response?.status,
+      message: err?.response?.data?.message ?? "로그인 실패",
+    });
   }
 });
 
 export const checkSession = createAsyncThunk<
   User | null,
   void,
-  { dispatch: AppDispatch; rejectValue: string }
+  { dispatch: AppDispatch; rejectValue: AuthError }
 >("auth/checkSession", async (_, thunkAPI) => {
   try {
-    // 운영/임시 세션 엔드포인트를 순서대로 확인한다.
-    for (const path of ["/api/dr/auth/me", "/api/dr/temp/auth/me"]) {
-      try {
-        const res = await https.get(path);
-        const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
-        const normalized = normalizeUser(payload);
-        if (normalized) {
-          return normalized;
-        }
-      } catch (error: any) {
-        if (error?.response?.status !== 404) {
-          throw error;
-        }
-      }
+    const res = await https.get(DR_ADMIN_AUTH_API.me);
+    const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
+    return normalizeUser(payload);
+  } catch (err: any) {
+    const status = err?.response?.status;
+
+    if (status === 401) {
+      return null;
     }
 
-    return null;
+    return thunkAPI.rejectWithValue({
+      status,
+      message: err?.response?.data?.message ?? "세션 확인 실패",
+    });
+  }
+});
+
+export const extendSession = createAsyncThunk<
+  User | null,
+  void,
+  { dispatch: AppDispatch; rejectValue: AuthError }
+>("auth/extendSession", async (_, thunkAPI) => {
+  try {
+    await https.post(DR_ADMIN_AUTH_API.extend);
+
+    const res = await https.get(DR_ADMIN_AUTH_API.me);
+    const payload = (res.data?.data ?? res.data ?? {}) as Partial<User>;
+    return normalizeUser(payload);
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(
-      err.response?.data?.message ?? "세션 확인 실패",
-    );
+    return thunkAPI.rejectWithValue({
+      status: err?.response?.status,
+      message: err?.response?.data?.message ?? "세션 연장 실패",
+    });
   }
 });
 
@@ -155,10 +174,30 @@ const authSlice = createSlice({
           state.accessToken = null;
         }
       })
-      .addCase(checkSession.rejected, (state) => {
+      .addCase(checkSession.rejected, (state, action) => {
         state.loading = false;
+
+        if (action.payload?.status === 401) {
+          state.isAuthenticated = false;
+          state.user = null;
+          state.accessToken = null;
+          return;
+        }
+
         if (!state.isAuthenticated) {
           state.isAuthenticated = false;
+          state.user = null;
+          state.accessToken = null;
+        }
+      })
+      .addCase(extendSession.fulfilled, (state, action) => {
+        if (!action.payload) return;
+
+        state.isAuthenticated = true;
+        state.user = action.payload;
+      })
+      .addCase(extendSession.rejected, (state) => {
+        if (!state.isAuthenticated) {
           state.user = null;
           state.accessToken = null;
         }
@@ -173,18 +212,16 @@ export const requestLogout = createAsyncThunk<
   void,
   { dispatch: AppDispatch; rejectValue: string }
 >("auth/logout", async (_, thunkAPI) => {
-  let errorMessage: string | null = null;
-
   try {
-    await https.post("/api/dr/auth/logout");
+    await https.post(DR_ADMIN_AUTH_API.logout);
   } catch (err: any) {
-    errorMessage = err.response?.data?.message ?? "Logout failed";
+    console.warn(
+      "[auth] logout request failed, clearing local auth state anyway",
+      err?.response?.status,
+      err?.response?.data?.message ?? err?.message,
+    );
   } finally {
     thunkAPI.dispatch(logout());
-  }
-
-  if (errorMessage) {
-    throw thunkAPI.rejectWithValue(errorMessage);
   }
 });
 

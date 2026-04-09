@@ -1,12 +1,15 @@
 import * as React from "react";
 import { persistor } from "@/app/store";
 import { useAppDispatch } from "@/app/hooks";
-import { checkSession, logout } from "@/features/auth/AuthSlice";
+import { checkSession, requestLogout } from "@/features/auth/AuthSlice";
 import Router from "@/routes/Router";
 import { getLangFromPathname } from "@/routes/lang";
 import { https } from "@shared/utils/https";
 import {
+  beginUnauthorizedRedirect,
   resetUnauthorizedFlag,
+  setPostLoginRedirect,
+  isLoginPath,
   UNAUTHORIZED_EVENT_NAME,
 } from "@/utils/authSession";
 import { withAppBase } from "@/utils/appBase";
@@ -28,7 +31,7 @@ export default function App() {
   const ready = UseLangStylesReady();
 
   React.useEffect(() => {
-    const isLoginPage = window.location.pathname.includes("/login");
+    const isLoginPage = isLoginPath(window.location.pathname);
     if (isLoginPage) return;
     dispatch(checkSession());
   }, [dispatch]);
@@ -51,17 +54,14 @@ export default function App() {
 
   React.useEffect(() => {
     const handleUnauthorized = async () => {
+      if (!beginUnauthorizedRedirect()) return;
+
       const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-      const isLoginPage = window.location.pathname.includes("/login");
       const lang = getLangFromPathname(window.location.pathname);
 
-      dispatch(logout());
+      await dispatch(requestLogout());
       await persistor.purge();
-
-      if (!isLoginPage) {
-        sessionStorage.setItem("postLoginRedirect", currentPath);
-      }
-
+      setPostLoginRedirect(currentPath);
       window.location.replace(withAppBase(`/${lang}/login`));
     };
 

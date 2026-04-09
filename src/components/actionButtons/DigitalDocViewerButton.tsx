@@ -18,10 +18,10 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
 import { FileApi } from "@/api/fileApi";
 
-pdfjs.GlobalWorkerOptions.workerPort = new Worker(
-  new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url),
-  { type: "module" },
-);
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url,
+).toString();
 
 interface DigitalDocViewerButtonProps {
   fileUrl: string | string[];
@@ -372,6 +372,7 @@ export default function DigitalDocViewerButton({
                 loadingContent
               ) : (
                 <Document
+                  key={resolvedFileUrl}
                   file={resolvedFileUrl}
                   onLoadSuccess={handleLoadSuccess}
                   onLoadError={handlePdfLoadError}

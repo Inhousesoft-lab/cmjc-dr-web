@@ -1,9 +1,10 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import { fireWorkAccessLog } from "@/api/workAccessLog";
 import { notifyUnauthorized } from "@/utils/authSession";
 
 export const getApiBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
-  return envUrl || "";
+  return envUrl || "/";
 };
 
 export const getFileFallbackBaseURL = () => {
@@ -47,6 +48,8 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  fireWorkAccessLog(config);
+
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
   }
@@ -55,10 +58,15 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 apiClient.interceptors.response.use((response: AxiosResponse) => {
   const res = response.data;
-  if (res.code && res.code !== "200") {
-    return Promise.reject(new Error(res.msg || "API Error"));
+  if (res?.code && res.code !== "200") {
+    return Promise.reject(new Error(res.msg || res.message || "API Error"));
   }
-  return res.data;
+
+  if (res && typeof res === "object" && Object.prototype.hasOwnProperty.call(res, "data")) {
+    response.data = res.data;
+  }
+
+  return response;
 }, (error) => {
   if (error?.response?.status === 401) {
     notifyUnauthorized(error?.config?.url);

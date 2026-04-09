@@ -1,5 +1,10 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { login } from "@/features/auth/AuthSlice";
+import {
+  clearPostLoginRedirect,
+  canUsePostLoginRedirect,
+  getPostLoginRedirect,
+} from "@/utils/authSession";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -16,13 +21,9 @@ export default function Login() {
 
   const fallbackPath = `/${lang ?? "ko"}/docClassification/list`;
   const fromPath = (location.state as any)?.from?.pathname;
-  const storedRedirect = sessionStorage.getItem("postLoginRedirect");
-  const storedPath =
-    storedRedirect && !storedRedirect.endsWith("/login")
-      ? storedRedirect
-      : null;
+  const storedPath = getPostLoginRedirect();
   const targetPath =
-    fromPath && !fromPath.endsWith("/login")
+    canUsePostLoginRedirect(fromPath)
       ? fromPath
       : storedPath || fallbackPath;
 
@@ -43,7 +44,7 @@ export default function Login() {
     );
 
     if (login.fulfilled.match(result)) {
-      sessionStorage.removeItem("postLoginRedirect");
+      clearPostLoginRedirect();
       navigate(targetPath, { replace: true });
     } else {
       setErrorMsg("아이디 또는 비밀번호가 올바르지 않습니다.");
