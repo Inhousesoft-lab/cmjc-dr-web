@@ -16,7 +16,7 @@ import DialogTrigger from "@/components/dialog/DialogTrigger";
 import AgGridTable from "@/components/grid/AgGridTable";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { FileApi, type FileItem } from "@/api/fileApi";
-import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
+import DigitalDocViewerDialog from "@/components/actionButtons/DigitalDocViewerDialog";
 import useNotifications from "@/hooks/useNotifications";
 import {
   selectExternalViewError,
@@ -42,6 +42,12 @@ type ExternalViewRow = {
   fileName: string;
   fileSize: string;
   file: FileItem | null;
+};
+
+type ExternalViewViewerState = {
+  fileUrl: string[];
+  fileType: "pdf" | "image";
+  fileKey: string;
 };
 
 type FileMap = Record<string, FileItem[]>;
@@ -133,6 +139,8 @@ export default function ExternalView() {
   const [pendingDownloadRow, setPendingDownloadRow] = React.useState<ExternalViewRow | null>(null);
   const [isDownloading, setIsDownloading] = React.useState(false);
   const [downloadingFileKey, setDownloadingFileKey] = React.useState<string | null>(null);
+  const [viewerState, setViewerState] = React.useState<ExternalViewViewerState | null>(null);
+  const [viewerLoading, setViewerLoading] = React.useState(false);
 
   const sourceRows = useAppSelector(selectExternalViewRows);
   const isLoading = useAppSelector(selectExternalViewLoading);
@@ -376,6 +384,26 @@ export default function ExternalView() {
 
   const handleClose = React.useCallback(() => {
     setOpen(false);
+    setViewerState(null);
+    setViewerLoading(false);
+  }, []);
+
+  const handleViewerClose = React.useCallback(() => {
+    setViewerState(null);
+    setViewerLoading(false);
+  }, []);
+
+  const handleViewerOpen = React.useCallback((row: ExternalViewRow) => {
+    if (!row.file || !row.canView) return;
+
+    const { isPdf, isImage } = getFileKind(row.file);
+    if (!isPdf && !isImage) return;
+
+    setViewerState({
+      fileUrl: getExternalViewDownloadUrls(row),
+      fileType: isPdf ? "pdf" : "image",
+      fileKey: row.fileKey,
+    });
   }, []);
 
   const columnDefs = React.useMemo<ColDef<ExternalViewRow>[]>(
@@ -484,7 +512,6 @@ export default function ExternalView() {
           }
 
           const { isPdf, isImage } = getFileKind(row.file);
-          const viewerUrls = getExternalViewDownloadUrls(row);
           const canPreview = isPdf || isImage;
 
           if (!row.canView && !row.canDownload) {
@@ -493,18 +520,20 @@ export default function ExternalView() {
 
           return (
             <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ width: "100%" }}>
-              {row.canView && canPreview && isPdf && (
-                <DigitalDocViewerButton
-                  fileUrl={viewerUrls}
-                  disabled={isDownloading}
-                />
-              )}
-              {row.canView && canPreview && isImage && (
-                <DigitalDocViewerButton
-                  fileUrl={viewerUrls}
-                  fileType="image"
-                  disabled={isDownloading}
-                />
+              {row.canView && canPreview && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={isDownloading || viewerLoading}
+                  endIcon={
+                    viewerLoading && viewerState?.fileKey === row.fileKey ? (
+                      <CircularProgress size={14} color="inherit" />
+                    ) : undefined
+                  }
+                  onClick={() => handleViewerOpen(row)}
+                >
+                  열람
+                </Button>
               )}
               {row.canView && !canPreview && (
                 <Button variant="outlined" size="small" disabled>
@@ -533,7 +562,7 @@ export default function ExternalView() {
         },
       },
     ],
-    [downloadingFileKey, handleDownloadClick, isDownloading],
+    [downloadingFileKey, handleDownloadClick, handleViewerOpen, isDownloading, viewerLoading, viewerState?.fileKey],
   );
 
   return (
@@ -638,6 +667,16 @@ export default function ExternalView() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {viewerState ? (
+        <DigitalDocViewerDialog
+          open
+          onClose={handleViewerClose}
+          fileUrl={viewerState.fileUrl}
+          fileType={viewerState.fileType}
+          onLoadingChange={setViewerLoading}
+        />
+      ) : null}
     </>
   );
 }

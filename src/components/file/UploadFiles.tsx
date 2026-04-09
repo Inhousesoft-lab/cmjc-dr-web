@@ -27,7 +27,7 @@ import {
 import "./UploadFile.css";
 import { FileApi, type FileItem } from "@/api/fileApi";
 import MuiCheckbox from "../elements/MuiCheckbox";
-import DigitalDocViewerButton from "@/components/actionButtons/DigitalDocViewerButton";
+import DigitalDocViewerDialog from "@/components/actionButtons/DigitalDocViewerDialog";
 
 interface FileWithId extends File {
   uid: string;
@@ -40,6 +40,12 @@ interface FileProps {
   setGroupId?: (id: string) => void;
   readOnly?: boolean;
   requireDownloadReason?: boolean;
+}
+
+interface ViewerState {
+  fileUrl: string[];
+  fileType: "pdf" | "image";
+  fileKey: string;
 }
 
 export default function UploadFiles({
@@ -82,6 +88,7 @@ export default function UploadFiles({
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const [isViewing, setIsViewing] = useState(false);
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
+  const [viewerState, setViewerState] = useState<ViewerState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
 
@@ -105,6 +112,24 @@ export default function UploadFiles({
   const handleViewerLoadingChange = (file: FileItem, loading: boolean) => {
     setIsViewing(loading);
     setViewingFileId(loading ? (file.atchFileId ?? file.fileNm ?? null) : null);
+  };
+
+  const handleViewerOpen = (file: FileItem, fileType: "pdf" | "image") => {
+    const fileKey = file.atchFileId ?? file.fileNm ?? "viewer-file";
+
+    setViewerState({
+      fileUrl: FileApi.getDownloadStreamUrls(file),
+      fileType,
+      fileKey,
+    });
+    setIsViewing(true);
+    setViewingFileId(fileKey);
+  };
+
+  const handleViewerClose = () => {
+    setViewerState(null);
+    setIsViewing(false);
+    setViewingFileId(null);
   };
 
   const runDownload = async (file: FileItem, reason?: string) => {
@@ -514,7 +539,7 @@ export default function UploadFiles({
           <Typography variant="body2" color="text.secondary">
             {loadingFiles
               ? "파일 목록을 불러오는 중입니다..."
-              : isViewing && !!viewingFileId
+              : isViewing && !!viewerState?.fileKey
                 ? "파일 열람을 준비하고 있습니다..."
                 : "파일 다운로드 중입니다..."}
           </Typography>
@@ -537,8 +562,8 @@ export default function UploadFiles({
           )}
           <List dense>
             {savedFileList.map((file) => {
-              const downloadUrls = FileApi.getDownloadStreamUrls(file);
-              const downloadUrl = downloadUrls[0] ?? "";
+              const fileKey = file.atchFileId ?? file.fileNm ?? "";
+              const downloadUrl = FileApi.getDownloadStreamUrls(file)[0] ?? "";
               const ext =
                 (file.fileExtnNm ??
                   file.fileNm?.split(".").pop() ??
@@ -617,38 +642,51 @@ export default function UploadFiles({
                           flexWrap="nowrap"
                         >
                           {isPdf && (
-                            <DigitalDocViewerButton
-                              fileUrl={downloadUrls}
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => handleViewerOpen(file, "pdf")}
                               disabled={
                                 loadingFiles ||
                                 isUploading ||
                                 isDownloading ||
-                                (isViewing && viewingFileId !== (file.atchFileId ?? file.fileNm ?? null))
+                                (isViewing && viewingFileId !== fileKey)
                               }
-                              onLoadingChange={(loading) => {
-                                handleViewerLoadingChange(file, loading);
-                              }}
-                            />
+                              endIcon={
+                                isViewing && viewingFileId === fileKey ? (
+                                  <CircularProgress size={14} color="inherit" />
+                                ) : undefined
+                              }
+                            >
+                              열람
+                            </Button>
                           )}
                           {!isPdf && isImage && (
-                            <DigitalDocViewerButton
-                              fileUrl={downloadUrls}
-                              fileType="image"
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => handleViewerOpen(file, "image")}
                               disabled={
                                 loadingFiles ||
                                 isUploading ||
                                 isDownloading ||
-                                (isViewing && viewingFileId !== (file.atchFileId ?? file.fileNm ?? null))
+                                (isViewing && viewingFileId !== fileKey)
                               }
-                              onLoadingChange={(loading) => {
-                                handleViewerLoadingChange(file, loading);
-                              }}
-                            />
+                              endIcon={
+                                isViewing && viewingFileId === fileKey ? (
+                                  <CircularProgress size={14} color="inherit" />
+                                ) : undefined
+                              }
+                            >
+                              열람
+                            </Button>
                           )}
                           <Button
                             variant="outlined"
                             size="small"
-                            disabled={loadingFiles || isUploading || isDownloading || isViewing}
+                            disabled={
+                              loadingFiles || isUploading || isDownloading || isViewing
+                            }
                             endIcon={
                               isDownloading &&
                               downloadingFileId === (file.atchFileId ?? null) ? (
@@ -740,6 +778,29 @@ export default function UploadFiles({
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {viewerState ? (
+        <DigitalDocViewerDialog
+          key={viewerState.fileKey}
+          open
+          onClose={handleViewerClose}
+          fileUrl={viewerState.fileUrl}
+          fileType={viewerState.fileType}
+          onLoadingChange={(loading) => {
+            const activeFile = savedFileList.find(
+              (file) => (file.atchFileId ?? file.fileNm ?? "viewer-file") === viewerState.fileKey,
+            );
+
+            if (activeFile) {
+              handleViewerLoadingChange(activeFile, loading);
+              return;
+            }
+
+            setIsViewing(loading);
+            setViewingFileId(loading ? viewerState.fileKey : null);
+          }}
+        />
+      ) : null}
     </Box>
   );
 }
