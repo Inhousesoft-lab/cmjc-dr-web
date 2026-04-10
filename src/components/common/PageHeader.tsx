@@ -1,12 +1,13 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAppSelector } from "@/app/hooks";
 import { Menu } from "@/features/menu/MenuSlice";
+import { getRuntimeMenuTree, joinPath, normalizePath } from "@/features/menu/runtimeMenu";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { Breadcrumbs, Link, Typography } from "@mui/material";
 import { stripAppBase } from "@/utils/appBase";
 import { getLangFromPathname } from "@/routes/lang";
-import menuItems from "@/routes/menuItems";
-
+import { getDefaultLandingPath } from "@/routes/defaultLanding";
 
 interface PageHeaderProps {
   children?: React.ReactNode;
@@ -18,10 +19,6 @@ type BreadcrumbItem = {
   hasPage: boolean;
 };
 
-function normalizePath(path: string): string {
-  return path.replace(/^\/+|\/+$/g, "");
-}
-
 export default function PageHeader({ children }: PageHeaderProps) {
   const { pathname } = useLocation();
   const normalizedLocationPath = stripAppBase(pathname);
@@ -29,41 +26,42 @@ export default function PageHeader({ children }: PageHeaderProps) {
   const normalizedPath = normalizePath(
     normalizedLocationPath.replace(/^\/(ko|en|ja|zh)(\/|$)/, ""),
   );
-  const isPathMatch = (routePath: string, currentPath: string): boolean => {
-    const escaped = routePath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const pathPattern = escaped.replace(/:([^/]+)/g, "[^/]+");
-    const regex = new RegExp(`^${pathPattern}$`);
 
-    return regex.test(currentPath);
-  };
-
-  const findBreadcrumbs = (routes: Menu[]): BreadcrumbItem[] | null => {
+  const findBreadcrumbs = (
+    routes: Menu[],
+    parentPath = "",
+  ): BreadcrumbItem[] | null => {
     for (const route of routes) {
-      const routePath = route.path ?? "";
-      const current: BreadcrumbItem[] =
-        route.menuType === "MENU"
+      const fullPath = joinPath(parentPath, route.path);
+      const isMatched =
+        !!fullPath &&
+        (normalizedPath === fullPath || normalizedPath.startsWith(`${fullPath}/`));
+
+      if (isMatched) {
+        const current: BreadcrumbItem[] = route.label
           ? [
               {
-                path: routePath,
+                path: fullPath,
                 label: route.label,
-                hasPage: true,
+                hasPage: !!route.element,
               },
             ]
-          : [
-              {
-                label: route.label,
-                hasPage: false,
-              },
-            ];
+          : [];
 
-      if (routePath && isPathMatch(routePath, normalizedPath)) {
+        if (route.children?.length) {
+          const childResult = findBreadcrumbs(route.children, fullPath);
+          if (childResult) {
+            return [...current, ...childResult];
+          }
+        }
+
         return current;
       }
 
-      if (route.children && route.children.length > 0) {
-        const childResult = findBreadcrumbs(route.children);
-        if (childResult) {
-          return [...current, ...childResult];
+      if (route.children?.length) {
+        const childOnlyResult = findBreadcrumbs(route.children, fullPath);
+        if (childOnlyResult) {
+          return childOnlyResult;
         }
       }
     }
@@ -71,7 +69,10 @@ export default function PageHeader({ children }: PageHeaderProps) {
     return null;
   };
 
-  const breadcrumbs = findBreadcrumbs(menuItems) ?? [];
+  const { list } = useAppSelector((s) => s.menuList);
+  const runtimeMenuTree = React.useMemo(() => getRuntimeMenuTree(list), [list]);
+  const homePath = getDefaultLandingPath(lang, list);
+  const breadcrumbs = findBreadcrumbs(runtimeMenuTree) ?? [];
   const pageTitle =
     breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].label : "Home";
 
@@ -89,7 +90,7 @@ export default function PageHeader({ children }: PageHeaderProps) {
           >
             <Link
               component={NavLink}
-              to={`/${lang}/docClassification/list`}
+              to={homePath}
               className="home_icon"
             >
               <span className="home">

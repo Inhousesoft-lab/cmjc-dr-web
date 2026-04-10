@@ -12,7 +12,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import DigitalDocHistoryButton from "@/components/actionButtons/DigitalDocHistoryButton";
 import { AuthrtTable } from "@/components/table/AuthrtTable";
 import TableWrapper from "@/components/table/TableWrapper";
@@ -35,8 +35,10 @@ import URL from "@/constants/url";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 import DocDetailTable from "@/components/table/DocDetailTable";
+import type { SearchValues } from "@/types/digitalDoc";
 
 export default function DigitalDocDetail() {
+  const location = useLocation();
   const { eldocNo = "" } = useParams<{ eldocNo?: string }>();
   const navigate = useNavigate();
   const notifications = useNotifications();
@@ -86,8 +88,19 @@ export default function DigitalDocDetail() {
   }, [detail]);
 
   const handleBack = React.useCallback(() => {
-    navigate(langPath(URL.DIGITAL_DOC_LIST, curLang));
-  }, [curLang, navigate]);
+    const detailState = location.state as
+      | {
+          sourceListPath?: string;
+          listState?: SearchValues;
+        }
+      | null;
+
+    navigate(langPath(detailState?.sourceListPath ?? URL.DIGITAL_DOC_LIST, curLang), {
+      state: {
+        restoreListState: detailState?.listState,
+      },
+    });
+  }, [curLang, location.state, navigate]);
 
   const handleToggleTempEdit = React.useCallback(() => {
     if (isTempEditEnabled) {

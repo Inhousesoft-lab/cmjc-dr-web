@@ -37,6 +37,7 @@ interface FileProps {
   taskSeCd?: string;
   menuSn?: number;
   taskSeTrgtId?: string; // 해당 업무의 pk
+  initialGroupId?: string;
   setGroupId?: (id: string) => void;
   readOnly?: boolean;
   requireDownloadReason?: boolean;
@@ -52,6 +53,7 @@ export default function UploadFiles({
   taskSeCd = "dr",
   menuSn = 1,
   taskSeTrgtId,
+  initialGroupId,
   setGroupId,
   readOnly = false,
   requireDownloadReason = false,
@@ -472,6 +474,14 @@ export default function UploadFiles({
     if (hasFetched.current) return;
 
     hasFetched.current = true;
+
+    const normalizedInitialGroupId = String(initialGroupId ?? "").trim();
+    if (normalizedInitialGroupId && normalizedInitialGroupId !== "0") {
+      setGroupId?.(normalizedInitialGroupId);
+      setFileGroupId(normalizedInitialGroupId);
+      void fetchFileList(normalizedInitialGroupId);
+      return;
+    }
 
     getFileGroupData();
   }, []);

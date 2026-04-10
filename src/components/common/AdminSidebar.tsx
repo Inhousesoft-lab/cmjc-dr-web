@@ -1,8 +1,10 @@
 import * as React from "react";
 
 import { getLangFromPathname, langPath, SupportedLang } from "@/routes/lang";
+import { getDefaultLandingHref } from "@/routes/defaultLanding";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { stripAppBase, withAppBase } from "@/utils/appBase";
+import { useAppSelector } from "@/app/hooks";
 
 type MenuItem = {
   key: string;
@@ -69,13 +71,14 @@ export default function AdminSidebar({
     () => getLangFromPathname(location.pathname),
     [location.pathname],
   );
+  const { list } = useAppSelector((s) => s.menuList);
 
   const normalizedPathname = React.useMemo(
     () => stripAppBase(location.pathname),
     [location.pathname],
   );
   const logoSrc = withAppBase("/img/logo.png");
-  const homeHref = withAppBase(`/${curLang}/home`);
+  const homeHref = withAppBase(getDefaultLandingHref(curLang, list));
 
   const matchPathPrefix = (pathname: string, target: string) => {
     return pathname === target || pathname?.startsWith(target + "/");

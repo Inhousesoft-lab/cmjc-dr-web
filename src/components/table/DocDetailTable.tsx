@@ -117,6 +117,7 @@ export default function DocDetailTable({
               (eldocNo ? (
                 <UploadFiles
                   taskSeTrgtId={eldocNo}
+                  initialGroupId={String((detail as any)?.atchFileSn ?? "")}
                   readOnly
                   requireDownloadReason={detail?.prvcInclYn === "Y"}
                 />

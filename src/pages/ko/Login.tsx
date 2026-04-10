@@ -7,6 +7,7 @@ import {
 } from "@/utils/authSession";
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { getDefaultLandingPath } from "@/routes/defaultLanding";
 
 export default function Login() {
   const dispatch = useAppDispatch();
@@ -14,12 +15,14 @@ export default function Login() {
   const location = useLocation();
   const { lang } = useParams<{ lang: string }>();
   const { loading } = useAppSelector((s) => s.auth);
+  const { list } = useAppSelector((s) => s.menuList);
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const fallbackPath = `/${lang ?? "ko"}/docClassification/list`;
+  const fallbackPath =
+    list.length > 0 ? getDefaultLandingPath(lang, list) : `/${lang ?? "ko"}`;
   const fromPath = (location.state as any)?.from?.pathname;
   const storedPath = getPostLoginRedirect();
   const targetPath =

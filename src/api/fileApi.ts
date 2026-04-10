@@ -96,6 +96,11 @@ export interface DownloadStreamOptions {
   reason?: string;
 }
 
+export interface BlobFetchResult {
+  blob: Blob;
+  clientIp?: string;
+}
+
 const buildDownloadStreamPath = (
   file: Pick<FileItem, "srvrFileNm" | "fileNm">,
   options?: DownloadStreamOptions,
@@ -124,6 +129,14 @@ const normalizeBlobResponse = (response: any) => {
     return response.data;
   }
   return new Blob([response as any]);
+};
+
+const unwrapApiClientPayload = <T = any>(response: any): T => {
+  if (response && typeof response === "object" && "data" in response) {
+    return response.data as T;
+  }
+
+  return response as T;
 };
 
 const FILE_URL_PROBE_TIMEOUT_MS = 2000;
@@ -170,7 +183,7 @@ const resolvePreferredDownloadUrl = async (urls: string[]): Promise<string | nul
 export const FileApi = {
   getFileList: async (request: FileListRequest): Promise<FileItem[]> => {
     const response = await apiClient.post("/api/dr/file/list", request);
-    const responseData = (response as any)?.data;
+    const responseData = unwrapApiClientPayload<any>(response);
 
     if (responseData?.list && Array.isArray(responseData.list)) {
       return responseData.list;
@@ -178,6 +191,14 @@ export const FileApi = {
 
     if (Array.isArray(responseData)) {
       return responseData;
+    }
+
+    if (responseData?.data?.list && Array.isArray(responseData.data.list)) {
+      return responseData.data.list;
+    }
+
+    if (Array.isArray(responseData?.data)) {
+      return responseData.data;
     }
 
     return [];
@@ -202,7 +223,7 @@ export const FileApi = {
       "/api/dr/file/deleteGroupFiles",
       request,
     );
-    return (response.data ?? {}) as FileDeleteResponse;
+    return (unwrapApiClientPayload<FileDeleteResponse>(response) ?? {}) as FileDeleteResponse;
   },
 
   selectDelete: async (
@@ -212,7 +233,7 @@ export const FileApi = {
       "/api/dr/file/deleteMultiFile",
       request,
     );
-    return (response.data ?? {}) as FileDeleteResponse;
+    return (unwrapApiClientPayload<FileDeleteResponse>(response) ?? {}) as FileDeleteResponse;
   },
 
   fileDelete: async (
@@ -222,15 +243,15 @@ export const FileApi = {
       "/api/dr/file/deleteFileOne",
       request,
     );
-    return (response.data ?? {}) as FileDeleteResponse;
+    return (unwrapApiClientPayload<FileDeleteResponse>(response) ?? {}) as FileDeleteResponse;
   },
 
   getFileGroupData: async (request: FileGroupDataRequest): Promise<string> => {
     try {
       const response = await apiClient.post("/api/dr/file/groupData", request);
-      const responseData = (response as any)?.data;
+      const responseData = unwrapApiClientPayload<any>(response);
       const atchFileGroupId =
-        responseData?.atchFileGroupId || "";
+        responseData?.atchFileGroupId || responseData?.data?.atchFileGroupId || "";
       return String(atchFileGroupId.toString());
     } catch (err) {
       console.error("[getFileGroupData] error:", err);
@@ -242,7 +263,7 @@ export const FileApi = {
     request: FileGroupInsertRequest,
   ): Promise<FileGroupInsertResponse> => {
     const response = await apiClient.post("/api/dr/file/groupInsert", request);
-    return ((response as any)?.data ?? {}) as FileGroupInsertResponse;
+    return (unwrapApiClientPayload<FileGroupInsertResponse>(response) ?? {}) as FileGroupInsertResponse;
   },
 
   downloadFileWithReason: async (filename: string, reason: string): Promise<void> => {
@@ -267,8 +288,8 @@ export const FileApi = {
 
   isFileGroup: async (request: FileGroupData): Promise<string> => {
     const response = await apiClient.post("/api/dr/file/isGroupData", request);
-    const responseData = (response as any)?.data;
-    const atchFileGroupId = responseData?.atchFileGroupId || "";
+    const responseData = unwrapApiClientPayload<any>(response);
+    const atchFileGroupId = responseData?.atchFileGroupId || responseData?.data?.atchFileGroupId || "";
 
     return String(atchFileGroupId.toString());
   },
@@ -296,14 +317,14 @@ export const FileApi = {
     return urls.length > 0 ? urls : [path];
   },
 
-  fetchBlobFromUrls: async (urls: string[]): Promise<Blob> => {
+  fetchBlobWithMetaFromUrls: async (urls: string[]): Promise<BlobFetchResult> => {
     let lastError: unknown = null;
     const preferredUrl = await resolvePreferredDownloadUrl(urls);
     const orderedUrls = preferredUrl
       ? [preferredUrl, ...urls.filter((url) => url !== preferredUrl)]
       : urls;
 
-    console.log("[fileApi] fetchBlobFromUrls:start", {
+    console.log("[fileApi] fetchBlobWithMetaFromUrls:start", {
       urls,
       preferredUrl,
       orderedUrls,
@@ -311,26 +332,39 @@ export const FileApi = {
 
     for (const url of orderedUrls) {
       try {
-        console.log("[fileApi] fetchBlobFromUrls:trying", { url });
+        console.log("[fileApi] fetchBlobWithMetaFromUrls:trying", { url });
         const response = await https.get(url, {
           responseType: "blob",
         });
         const blob = normalizeBlobResponse(response);
+        const clientIpHeader =
+          response?.headers?.["x-viewer-client-ip"] ??
+          response?.headers?.["X-Viewer-Client-Ip"] ??
+          "";
 
-        console.log("[fileApi] fetchBlobFromUrls:blob", {
+        console.log("[fileApi] fetchBlobWithMetaFromUrls:blob", {
           url,
           size: blob.size,
           type: blob.type,
+          clientIpHeader,
         });
 
-        return blob;
+        return {
+          blob,
+          clientIp: String(clientIpHeader || "").trim() || undefined,
+        };
       } catch (error) {
-        console.error("[fileApi] fetchBlobFromUrls:failed", { url, error });
+        console.error("[fileApi] fetchBlobWithMetaFromUrls:failed", { url, error });
         lastError = error;
       }
     }
 
     throw lastError ?? new Error("다운로드에 실패했습니다.");
+  },
+
+  fetchBlobFromUrls: async (urls: string[]): Promise<Blob> => {
+    const result = await FileApi.fetchBlobWithMetaFromUrls(urls);
+    return result.blob;
   },
 
   downloadFromUrls: async (urls: string[], filename: string) => {

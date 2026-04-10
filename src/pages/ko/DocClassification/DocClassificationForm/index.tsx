@@ -127,7 +127,7 @@ const PrvcDetailTable = React.memo(
       <TableWrapper aria-label="개인정보 상세 입력">
         {/* 부서명 / 파일명 */}
         <TableRow>
-          <LabelCell>부서명</LabelCell>
+          <LabelCell required>부서명</LabelCell>
           <TableCell>
             <TextField
               fullWidth
@@ -139,7 +139,7 @@ const PrvcDetailTable = React.memo(
               helperText={formErrors.deptNm ?? ""}
             />
           </TableCell>
-          <LabelCell>파일명</LabelCell>
+          <LabelCell required>파일명</LabelCell>
           <TableCell>
             <TextField
               fullWidth
@@ -155,7 +155,7 @@ const PrvcDetailTable = React.memo(
 
         {/* 보유목적 */}
         <TableRow>
-          <LabelCell>보유목적</LabelCell>
+          <LabelCell required>보유목적</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -171,7 +171,7 @@ const PrvcDetailTable = React.memo(
 
         {/* 수집근거(법령) */}
         <TableRow>
-          <LabelCell>수집근거(법령)</LabelCell>
+          <LabelCell required>수집근거(법령)</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -189,7 +189,7 @@ const PrvcDetailTable = React.memo(
 
         {/* 사용부서명(내부,외부) / 보유기간 */}
         <TableRow>
-          <LabelCell>사용부서명(내부,외부)</LabelCell>
+          <LabelCell required>사용부서명(내부,외부)</LabelCell>
           <TableCell>
             <TextField
               fullWidth
@@ -201,7 +201,7 @@ const PrvcDetailTable = React.memo(
               helperText={formErrors.useDeptNm ?? ""}
             />
           </TableCell>
-          <LabelCell>보유기간</LabelCell>
+          <LabelCell required>보유기간</LabelCell>
           <TableCell>
             <Stack direction="row" spacing={1} alignItems="center">
               <TextField
@@ -252,7 +252,7 @@ const PrvcDetailTable = React.memo(
 
         {/* 개인정보 처리방법  */}
         <TableRow>
-          <LabelCell>개인정보 처리방법</LabelCell>
+          <LabelCell required>개인정보 처리방법</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -270,7 +270,7 @@ const PrvcDetailTable = React.memo(
 
         {/* 정보주체의 개인정보항목 */}
         <TableRow>
-          <LabelCell>정보주체의 개인정보항목</LabelCell>
+          <LabelCell required>정보주체의 개인정보항목</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -287,7 +287,7 @@ const PrvcDetailTable = React.memo(
         </TableRow>
         {/* 법정대리인의 개인정보항목 */}
         <TableRow>
-          <LabelCell>법정대리인의 개인정보항목</LabelCell>
+          <LabelCell required>법정대리인의 개인정보항목</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -326,7 +326,7 @@ const PrvcDetailTable = React.memo(
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>주민등록번호 수집 법령근거</LabelCell>
+          <LabelCell required>주민등록번호 수집 법령근거</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -360,7 +360,7 @@ const PrvcDetailTable = React.memo(
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>정보주체 동의 없이 수집 법령근거</LabelCell>
+          <LabelCell required={!isInfoAgree}>정보주체 동의 없이 수집 법령근거</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -422,7 +422,7 @@ const PrvcDetailTable = React.memo(
         </TableRow>
 
         <TableRow>
-          <LabelCell>민감 정보 보유 법령근거</LabelCell>
+          <LabelCell required>민감 정보 보유 법령근거</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -481,7 +481,7 @@ const PrvcDetailTable = React.memo(
         </TableRow>
 
         <TableRow>
-          <LabelCell>고유식별정보 보유 법령근거</LabelCell>
+          <LabelCell required>고유식별정보 보유 법령근거</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -518,7 +518,7 @@ const PrvcDetailTable = React.memo(
               />
             </RadioGroup>
           </TableCell>
-          <LabelCell>취급담당자</LabelCell>
+          <LabelCell required>취급담당자</LabelCell>
           <TableCell>
             <TextField
               fullWidth
@@ -534,7 +534,7 @@ const PrvcDetailTable = React.memo(
 
         {/* 제3자 제공받는 자 / 제3자 제공 근거 */}
         <TableRow>
-          <LabelCell>제3자 제공받는 자</LabelCell>
+          <LabelCell required>제3자 제공받는 자</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -550,7 +550,7 @@ const PrvcDetailTable = React.memo(
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>제3자 제공 근거</LabelCell>
+          <LabelCell required>제3자 제공 근거</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -568,7 +568,7 @@ const PrvcDetailTable = React.memo(
 
         {/* 제3자 제공사항 / 개인정보처리 위탁 업체명 */}
         <TableRow>
-          <LabelCell>제3자 제공사항</LabelCell>
+          <LabelCell required>제3자 제공사항</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -1132,7 +1132,7 @@ export default function DocClassificationForm() {
         >
           {!defaults.docClsfNo && (
             <TableRow>
-              <LabelCell>문서분류</LabelCell>
+              <LabelCell required>문서분류</LabelCell>
               <TableCell>
                 <FormControl component="fieldset">
                   <RadioGroup
@@ -1164,7 +1164,7 @@ export default function DocClassificationForm() {
 
           {/* 대분류 */}
           <TableRow>
-            <LabelCell>대분류</LabelCell>
+            <LabelCell required>대분류</LabelCell>
             <TableCell>
               {docClsfSeCd === "L" ? (
                 <TextField
@@ -1181,6 +1181,8 @@ export default function DocClassificationForm() {
                   label="대분류"
                   items={lclsfList}
                   value={defaults.docLclsfNo ?? ""}
+                  error={!!formErrors.docLclsfNo}
+                  helperText={formErrors.docLclsfNo ?? ""}
                   onChange={handleSelectChange}
                 />
               )}
@@ -1189,7 +1191,7 @@ export default function DocClassificationForm() {
 
           {/* 중분류 */}
           <TableRow>
-            <LabelCell>중분류</LabelCell>
+            <LabelCell required={docClsfSeCd === "M" || docClsfSeCd === "S"}>중분류</LabelCell>
             <TableCell>
               {docClsfSeCd === "M" ? (
                 <TextField
@@ -1205,8 +1207,8 @@ export default function DocClassificationForm() {
                   id="docMclsfNo"
                   items={mclsfList}
                   value={defaults.docMclsfNo ?? ""}
-                  error={!!formErrors.docMclsfNm}
-                  helperText={formErrors.docMclsfNm ?? ""}
+                  error={!!formErrors.docMclsfNo}
+                  helperText={formErrors.docMclsfNo ?? ""}
                   onChange={handleSelectChange}
                 />
               )}
@@ -1215,7 +1217,7 @@ export default function DocClassificationForm() {
           {/* 소분류 */}
           {docClsfSeCd === "S" && (
             <TableRow>
-              <LabelCell>소분류</LabelCell>
+              <LabelCell required>소분류</LabelCell>
               <TableCell>
                 <Stack direction="row" spacing={1}>
                   <TextField

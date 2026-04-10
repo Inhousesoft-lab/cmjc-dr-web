@@ -1,10 +1,10 @@
 import * as React from "react";
 import { persistor } from "@/app/store";
-import { useAppDispatch } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { checkSession, requestLogout } from "@/features/auth/AuthSlice";
+import { getMenuList } from "@/features/menu/MenuThunk";
 import Router from "@/routes/Router";
 import { getLangFromPathname } from "@/routes/lang";
-import { https } from "@shared/utils/https";
 import {
   beginUnauthorizedRedirect,
   resetUnauthorizedFlag,
@@ -29,28 +29,24 @@ dayjs.locale("ko");
 export default function App() {
   const dispatch = useAppDispatch();
   const ready = UseLangStylesReady();
+  const { isAuthenticated, initialized } = useAppSelector((s) => s.auth);
+  const { loaded: menuLoaded, loading: menuLoading } = useAppSelector(
+    (s) => s.menuList,
+  );
 
   React.useEffect(() => {
     const isLoginPage = isLoginPath(window.location.pathname);
-    if (isLoginPage) return;
-    dispatch(checkSession());
-  }, [dispatch]);
+    if (isLoginPage || initialized) return;
+    void dispatch(checkSession());
+  }, [dispatch, initialized]);
 
   React.useEffect(() => {
-    const interceptorId = https.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error?.response?.status === 401) {
-          console.warn("[auth] 401 received", error?.config?.url);
-        }
-        return Promise.reject(error);
-      },
-    );
+    if (!ready || !initialized || !isAuthenticated || menuLoaded || menuLoading) {
+      return;
+    }
 
-    return () => {
-      https.interceptors.response.eject(interceptorId);
-    };
-  }, []);
+    void dispatch(getMenuList());
+  }, [dispatch, initialized, isAuthenticated, menuLoaded, menuLoading, ready]);
 
   React.useEffect(() => {
     const handleUnauthorized = async () => {

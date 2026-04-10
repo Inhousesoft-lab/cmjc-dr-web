@@ -11,7 +11,6 @@ import "./i18n/i18n"; /* first load */
 
 import App from "./App";
 
-import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import dayjs from "dayjs";
 import "dayjs/locale/ko";

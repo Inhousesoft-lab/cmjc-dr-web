@@ -62,6 +62,8 @@ export default function DigitalDocViewerDialog({
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [resolvedFileUrl, setResolvedFileUrl] = React.useState("");
   const [isPreparing, setIsPreparing] = React.useState(false);
+  const [isPdfRendering, setIsPdfRendering] = React.useState(false);
+  const [clientIp, setClientIp] = React.useState("-");
   const [basePageViewport, setBasePageViewport] = React.useState<{
     width: number;
     height: number;
@@ -122,6 +124,8 @@ export default function DigitalDocViewerDialog({
     setResolvedFileUrl("");
     setContainerWidth(0);
     setBasePageViewport(null);
+    setIsPdfRendering(false);
+    setClientIp("-");
   }, []);
 
   const releaseObjectUrl = React.useCallback((targetUrl?: string | null) => {
@@ -150,6 +154,7 @@ export default function DigitalDocViewerDialog({
 
       cleanupViewerResources();
       setIsPreparing(false);
+      setIsPdfRendering(false);
       resetViewerState();
     },
     [cleanupViewerResources, resetViewerState],
@@ -221,12 +226,15 @@ export default function DigitalDocViewerDialog({
     const loadFileForViewer = async () => {
       resetViewerState();
       setIsPreparing(true);
+      setIsPdfRendering(fileType === "pdf");
       loadingChangeRef.current?.(true);
       releaseObjectUrl();
 
       try {
-        const blob = await FileApi.fetchBlobFromUrls(fileUrls);
+        const { blob, clientIp: resolvedClientIp } = await FileApi.fetchBlobWithMetaFromUrls(fileUrls);
         if (cancelled || sessionId !== viewerSessionIdRef.current) return;
+
+        setClientIp(resolvedClientIp || "-");
 
         const objectUrl = window.URL.createObjectURL(blob);
         if (cancelled || sessionId !== viewerSessionIdRef.current) {
@@ -247,6 +255,9 @@ export default function DigitalDocViewerDialog({
       } finally {
         if (!cancelled && sessionId === viewerSessionIdRef.current) {
           setIsPreparing(false);
+          if (fileType !== "pdf") {
+            setIsPdfRendering(false);
+          }
           loadingChangeRef.current?.(false);
         }
       }
@@ -259,6 +270,7 @@ export default function DigitalDocViewerDialog({
       if (sessionId === viewerSessionIdRef.current) {
         loadingChangeRef.current?.(false);
         setIsPreparing(false);
+        setIsPdfRendering(false);
       }
     };
   }, [fileUrls, fileUrlsKey, open, releaseObjectUrl, resetViewerState]);
@@ -335,6 +347,7 @@ export default function DigitalDocViewerDialog({
 
       setNumPages(pdf.numPages);
       setLoadError(null);
+      setIsPdfRendering(true);
 
       try {
         const firstPage = await pdf.getPage(1);
@@ -391,11 +404,13 @@ export default function DigitalDocViewerDialog({
       if (measuredHeight <= 0) return;
 
       pageHeightOverridesRef.current[pageNumber] = measuredHeight;
+
+      if (pageNumber === 1) {
+        setIsPdfRendering(false);
+      }
     },
     [],
   );
-
-  const clientIp = "0.0.0.1";
 
   const watermarkText = React.useMemo(() => {
     const time = watermarkAt.toLocaleString("ko-KR", {
@@ -458,21 +473,28 @@ export default function DigitalDocViewerDialog({
     );
   }, [virtualWindow.endPage, virtualWindow.startPage]);
 
-  const loadingContent = (
+  const loadingIndicator = (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <CircularProgress size={18} />
+      <Typography variant="body2" color="text.secondary">
+        파일 열람을 준비하고 있습니다...
+      </Typography>
+    </Box>
+  );
+
+  const loadingOverlay = (
     <Box
       sx={{
-        minHeight: 240,
+        position: "absolute",
+        inset: 0,
+        zIndex: 5,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: "rgba(255,255,255,0.72)",
       }}
     >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <CircularProgress size={18} />
-        <Typography variant="body2" color="text.secondary">
-          파일 열람을 준비하고 있습니다...
-        </Typography>
-      </Box>
+      {loadingIndicator}
     </Box>
   );
 
@@ -549,47 +571,52 @@ export default function DigitalDocViewerDialog({
           {fileType === "pdf" ? (
             loadError ? (
               <Typography color="error">{loadError}</Typography>
-            ) : isPreparing || !resolvedFileUrl ? (
-              loadingContent
             ) : (
-              <Document
-                key={resolvedFileUrl}
-                file={resolvedFileUrl}
-                onLoadSuccess={handleLoadSuccess}
-                onLoadError={handlePdfLoadError}
-              >
-                {virtualWindow.topSpacerHeight > 0 ? (
-                  <div style={{ height: virtualWindow.topSpacerHeight }} />
-                ) : null}
+              <Box sx={{ position: "relative", minHeight: 240 }}>
+                {(!resolvedFileUrl || isPreparing || isPdfRendering) && loadingOverlay}
 
-                {visiblePageNumbers.map((pageNumber) => (
-                  <div
-                    key={pageNumber}
-                    ref={(el) => {
-                      pageRefs.current[pageNumber] = el;
-                    }}
-                    style={{
-                      marginBottom: PDF_PAGE_GAP,
-                      position: "relative",
-                      minHeight: getEstimatedPageHeight(pageNumber) - PDF_PAGE_GAP,
-                    }}
+                {!!resolvedFileUrl && (
+                    <Document
+                    key={resolvedFileUrl}
+                    file={resolvedFileUrl}
+                    onLoadSuccess={handleLoadSuccess}
+                    onLoadError={handlePdfLoadError}
+                    loading={<></>}
                   >
-                    <Page
-                      pageNumber={pageNumber}
-                      width={containerWidth > 0 ? containerWidth : undefined}
-                      scale={zoom}
-                      rotate={rotation}
-                      renderAnnotationLayer={false}
-                      renderTextLayer={false}
-                      onRenderSuccess={() => handlePageRenderSuccess(pageNumber)}
-                    />
-                  </div>
-                ))}
+                    {virtualWindow.topSpacerHeight > 0 ? (
+                      <div style={{ height: virtualWindow.topSpacerHeight }} />
+                    ) : null}
 
-                {virtualWindow.bottomSpacerHeight > 0 ? (
-                  <div style={{ height: virtualWindow.bottomSpacerHeight }} />
-                ) : null}
-              </Document>
+                    {visiblePageNumbers.map((pageNumber) => (
+                      <div
+                        key={pageNumber}
+                        ref={(el) => {
+                          pageRefs.current[pageNumber] = el;
+                        }}
+                        style={{
+                          marginBottom: PDF_PAGE_GAP,
+                          position: "relative",
+                          minHeight: getEstimatedPageHeight(pageNumber) - PDF_PAGE_GAP,
+                        }}
+                      >
+                        <Page
+                          pageNumber={pageNumber}
+                          width={containerWidth > 0 ? containerWidth : undefined}
+                          scale={zoom}
+                          rotate={rotation}
+                          renderAnnotationLayer={false}
+                          renderTextLayer={false}
+                          onRenderSuccess={() => handlePageRenderSuccess(pageNumber)}
+                        />
+                      </div>
+                    ))}
+
+                    {virtualWindow.bottomSpacerHeight > 0 ? (
+                      <div style={{ height: virtualWindow.bottomSpacerHeight }} />
+                    ) : null}
+                  </Document>
+                )}
+              </Box>
             )
           ) : (
             <Box

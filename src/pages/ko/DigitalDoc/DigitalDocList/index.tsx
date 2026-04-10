@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import { listDefs } from "./col-def";
 import AgGridContainer from "@/components/grid/AgGridContainer";
@@ -26,6 +26,7 @@ import {
   selectDigitalDocRowCount,
   selectDigitalDocRows,
 } from "@/features/digitalDoc/DigitalDocSelectors";
+import URL from "@/constants/url";
 
 const INITIAL_SEARCH_PARAMS: SearchValues = {
   docLclsfNo: "",
@@ -39,14 +40,27 @@ const INITIAL_SEARCH_PARAMS: SearchValues = {
 };
 
 export default function DigitalDocList() {
+  const location = useLocation();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dispatch = useAppDispatch();
   const curLang = getLangFromPathname(location.pathname);
 
+  const restoredState = (
+    location.state as { restoreListState?: SearchValues } | null
+  )?.restoreListState;
+
+  const initialSearchParams = React.useMemo(
+    () => ({
+      ...INITIAL_SEARCH_PARAMS,
+      ...(restoredState ?? {}),
+    }),
+    [restoredState],
+  );
+
   const [columnDefs] = React.useState<ColDef<DigitalDoc>[]>(listDefs);
   const [searchParams, setSearchParams] =
-    React.useState<SearchValues>(INITIAL_SEARCH_PARAMS);
+    React.useState<SearchValues>(initialSearchParams);
   const docLclsfNo = searchParams.docLclsfNo;
   const docMclsfNo = searchParams.docMclsfNo;
   const { lclsfList, mclsfList, sclsfList, lclsfError } = useDocClsfOptions(
@@ -61,7 +75,12 @@ export default function DigitalDocList() {
 
   const handleRowClick = (row: DigitalDoc) => {
     if (!row.eldocNo) return;
-    navigate(langPath(`digitalDoc/${row.eldocNo}`, curLang));
+    navigate(langPath(`digitalDoc/${row.eldocNo}`, curLang), {
+      state: {
+        sourceListPath: URL.DIGITAL_DOC_LIST,
+        listState: searchParams,
+      },
+    });
   };
 
   const handleCreateClick = () => {
@@ -69,8 +88,9 @@ export default function DigitalDocList() {
   };
 
   React.useEffect(() => {
-    dispatch(fetchDigitalDocList(INITIAL_SEARCH_PARAMS));
-  }, [dispatch]);
+    setSearchParams(initialSearchParams);
+    dispatch(fetchDigitalDocList(initialSearchParams));
+  }, [dispatch, initialSearchParams]);
 
   React.useEffect(() => {
     if (!listError) return;

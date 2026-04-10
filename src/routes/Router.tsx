@@ -1,3 +1,4 @@
+import { useAppSelector } from "@/app/hooks";
 import i18n from "@/i18n/i18n";
 import { JSX, ReactElement, useEffect, useMemo } from "react";
 import { appBase } from "@/utils/appBase";
@@ -13,10 +14,12 @@ import {
 import { FALLBACK_LANG, detectBrowserLang, normalizeLang } from "./lang";
 
 import AuthGuard from "@/routes/AuthGuard";
+import MenuGate from "@/components/gate/MenuGate";
 import { Menu } from "@/features/menu/MenuSlice";
+import { getRuntimeMenuTree } from "@/features/menu/runtimeMenu";
 import { ComponentKey, componentMap } from "./ComponentMap";
+import { getDefaultLandingPath } from "./defaultLanding";
 import Layout from "@/components/layout/Layout";
-import menuItems from "./menuItems";
 
 type LangElementProps = {
   byLang: Record<string, ComponentKey | null | undefined>;
@@ -24,9 +27,18 @@ type LangElementProps = {
 
 function NotFoundRedirect() {
   const { lang } = useParams<{ lang?: string }>();
+  const { list } = useAppSelector((s) => s.menuList);
   const normalized = normalizeLang(lang) ?? detectBrowserLang();
 
-  return <Navigate to={`/${normalized}/docClassification/list`} replace />;
+  return <Navigate to={getDefaultLandingPath(normalized, list)} replace />;
+}
+
+function DefaultLandingRedirect() {
+  const { lang } = useParams<{ lang?: string }>();
+  const { list } = useAppSelector((s) => s.menuList);
+  const normalized = normalizeLang(lang) ?? detectBrowserLang();
+
+  return <Navigate to={getDefaultLandingPath(normalized, list)} replace />;
 }
 
 function LangElement({ byLang }: LangElementProps) {
@@ -110,18 +122,29 @@ const LangGuard = ({ children }: { children: JSX.Element }) => {
 };
 
 export default function Router() {
+  const { list, loaded, loading, error } = useAppSelector((s) => s.menuList);
+  const runtimeMenuTree = useMemo(() => getRuntimeMenuTree(list), [list]);
+  const shouldHandleNotFound = !loading && (loaded || !!error || list.length > 0);
+
   const renderRoutes = (routes: Menu[]): ReactElement[] => {
     return routes.flatMap((route) => {
       const result: ReactElement[] = [];
 
       if (route.element) {
-        result.push(
-          <Route
-            key={`route-${route.path}`}
-            path={`/:lang/${route.path}`}
-            element={<LangElement byLang={route.element} />}
-          />,
-        );
+        const koKey = route.element.ko;
+        const enKey = route.element.en;
+        const hasMappedComponent =
+          (!!koKey && !!componentMap[koKey]) || (!!enKey && !!componentMap[enKey]);
+
+        if (hasMappedComponent) {
+          result.push(
+            <Route
+              key={`route-${route.path}`}
+              path={`/:lang/${route.path}`}
+              element={<LangElement byLang={route.element} />}
+            />,
+          );
+        }
       }
 
       if (route.children && route.children.length > 0) {
@@ -142,9 +165,11 @@ export default function Router() {
         <Route
           element={
             <AuthGuard>
-              <LangGuard>
-                <Layout />
-              </LangGuard>
+              <MenuGate>
+                <LangGuard>
+                  <Layout />
+                </LangGuard>
+              </MenuGate>
             </AuthGuard>
           }
         >
@@ -152,8 +177,12 @@ export default function Router() {
             index
             element={<Navigate to={`/${detectBrowserLang()}`} replace />}
           />
-          {renderRoutes(menuItems)}
-          <Route path="/:lang/*" element={<NotFoundRedirect />} />
+          <Route path="/:lang" element={<DefaultLandingRedirect />} />
+          {renderRoutes(runtimeMenuTree)}
+          <Route
+            path="/:lang/*"
+            element={shouldHandleNotFound ? <NotFoundRedirect /> : null}
+          />
         </Route>
       </Routes>
     </BrowserRouter>

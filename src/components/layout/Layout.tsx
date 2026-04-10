@@ -1,9 +1,10 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
+import { useAppSelector } from "@/app/hooks";
 import AdminSidebar from "@/components/common/AdminSidebar";
-import menuItems from "@/routes/menuItems";
 import PageHeader from "@/components/common/PageHeader";
 import type { Menu } from "@/features/menu/MenuSlice";
+import { getRuntimeMenuTree } from "@/features/menu/runtimeMenu";
 import SimpleHeader from "@/components/common/SimpleHeader";
 
 type SidebarMenuItem = {
@@ -39,6 +40,8 @@ const convertToMenuItems = (
     });
 
 export default function Layout() {
+  const { list } = useAppSelector((s) => s.menuList);
+  const runtimeMenuTree = React.useMemo(() => getRuntimeMenuTree(list), [list]);
   const [isNavigationExpanded, setIsNavigationExpanded] = React.useState(true);
 
   React.useEffect(() => {
@@ -62,7 +65,10 @@ export default function Layout() {
     setIsNavigationExpanded((prev) => !prev);
   };
 
-  const sidebarItems = convertToMenuItems(menuItems);
+  const sidebarItems = React.useMemo(
+    () => convertToMenuItems(runtimeMenuTree),
+    [runtimeMenuTree],
+  );
 
   return (
     <div id="wrap" className={isNavigationExpanded ? "" : "collapsed"}>

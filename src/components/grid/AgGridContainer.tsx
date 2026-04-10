@@ -32,6 +32,12 @@ import { AgGridReact } from "ag-grid-react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+const GRID_HEADER_HEIGHT = 32;
+const GRID_ROW_HEIGHT = 32;
+const GRID_FRAME_HEIGHT = 24;
+const DEFAULT_GRID_MIN_HEIGHT = 355;
+const DEFAULT_GRID_MAX_HEIGHT = 760;
+
 type AgGridProps<TData> = {
   isLoading?: boolean;
   printOn?: boolean;
@@ -84,7 +90,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
     pageNum = 1,
     pageSize = 10,
     count = 0,
-    height = 400,
+    height,
     onPageChange,
     onRowClick,
     onSelectionChange,
@@ -151,6 +157,24 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
   useEffect(() => {
     setRowsPerPage(pageSize);
   }, [pageSize]);
+
+  const calculatedHeight = useMemo(() => {
+    if (typeof height === "number") {
+      return height;
+    }
+
+    const visibleRowCount = Math.max(
+      1,
+      Math.min(rowData.length || rowsPerPage, rowsPerPage),
+    );
+    const contentHeight =
+      GRID_HEADER_HEIGHT + visibleRowCount * GRID_ROW_HEIGHT + GRID_FRAME_HEIGHT;
+
+    return Math.min(
+      DEFAULT_GRID_MAX_HEIGHT,
+      Math.max(DEFAULT_GRID_MIN_HEIGHT, contentHeight),
+    );
+  }, [height, rowData.length, rowsPerPage]);
 
   const handleGridReady = (event: GridReadyEvent<TData>) => {
     gridApiRef.current = event.api;
@@ -261,7 +285,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
           </Stack>
         ) : null}
       </Box>
-      <div id="myGrid" style={{ height, width: "100%" }}>
+      <div id="myGrid" style={{ height: calculatedHeight, width: "100%" }}>
         <AgGridReact<TData>
           theme={themeQuartz}
           rowData={rowData}
@@ -272,7 +296,7 @@ export default function AgGridContainer<TData>(props: AgGridProps<TData>) {
           headerHeight={32}
           rowSelection={enableRowSelection ? rowSelection : undefined}
           pagination={enablePagination}
-          paginationPageSize={pageSize}
+          paginationPageSize={rowsPerPage}
           getRowStyle={getRowStyle}
           getRowId={getRowId}
           rowDragManaged={rowDragManaged}
