@@ -668,15 +668,13 @@ export default function ExternalView() {
         </DialogActions>
       </Dialog>
 
-      {viewerState ? (
-        <DigitalDocViewerDialog
-          open
-          onClose={handleViewerClose}
-          fileUrl={viewerState.fileUrl}
-          fileType={viewerState.fileType}
-          onLoadingChange={setViewerLoading}
-        />
-      ) : null}
+      <DigitalDocViewerDialog
+        open={!!viewerState}
+        onClose={handleViewerClose}
+        fileUrl={viewerState?.fileUrl ?? []}
+        fileType={viewerState?.fileType ?? "pdf"}
+        onLoadingChange={setViewerLoading}
+      />
     </>
   );
 }

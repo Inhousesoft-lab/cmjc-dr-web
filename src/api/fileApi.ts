@@ -126,6 +126,47 @@ const normalizeBlobResponse = (response: any) => {
   return new Blob([response as any]);
 };
 
+const FILE_URL_PROBE_TIMEOUT_MS = 2000;
+
+const probeDownloadUrl = async (url: string): Promise<string> => {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), FILE_URL_PROBE_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, {
+      method: "HEAD",
+      credentials: "include",
+      signal: controller.signal,
+    });
+
+    if (response.ok || response.status === 405 || response.status === 501) {
+      return url;
+    }
+
+    throw new Error(`HEAD probe failed: ${response.status}`);
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+};
+
+const resolvePreferredDownloadUrl = async (urls: string[]): Promise<string | null> => {
+  if (urls.length <= 1) {
+    return urls[0] ?? null;
+  }
+
+  try {
+    const preferredUrl = await Promise.any(urls.map((url) => probeDownloadUrl(url)));
+    console.log("[fileApi] resolvePreferredDownloadUrl:success", {
+      urls,
+      preferredUrl,
+    });
+    return preferredUrl;
+  } catch (error) {
+    console.warn("[fileApi] resolvePreferredDownloadUrl:failed", { urls, error });
+    return null;
+  }
+};
+
 export const FileApi = {
   getFileList: async (request: FileListRequest): Promise<FileItem[]> => {
     const response = await apiClient.post("/api/dr/file/list", request);
@@ -257,10 +298,18 @@ export const FileApi = {
 
   fetchBlobFromUrls: async (urls: string[]): Promise<Blob> => {
     let lastError: unknown = null;
+    const preferredUrl = await resolvePreferredDownloadUrl(urls);
+    const orderedUrls = preferredUrl
+      ? [preferredUrl, ...urls.filter((url) => url !== preferredUrl)]
+      : urls;
 
-    console.log("[fileApi] fetchBlobFromUrls:start", { urls });
+    console.log("[fileApi] fetchBlobFromUrls:start", {
+      urls,
+      preferredUrl,
+      orderedUrls,
+    });
 
-    for (const url of urls) {
+    for (const url of orderedUrls) {
       try {
         console.log("[fileApi] fetchBlobFromUrls:trying", { url });
         const response = await https.get(url, {

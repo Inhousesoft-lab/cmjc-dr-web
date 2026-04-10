@@ -23,6 +23,11 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url,
 ).toString();
 
+const PDF_WINDOW_SIZE = 7;
+const PDF_WINDOW_OVERSCAN = 2;
+const PDF_PAGE_GAP = 16;
+const DEFAULT_PAGE_HEIGHT = 1100;
+
 export interface DigitalDocViewerDialogProps {
   open: boolean;
   onClose: () => void;
@@ -57,20 +62,56 @@ export default function DigitalDocViewerDialog({
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [resolvedFileUrl, setResolvedFileUrl] = React.useState("");
   const [isPreparing, setIsPreparing] = React.useState(false);
+  const [basePageViewport, setBasePageViewport] = React.useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const viewerRef = React.useRef<HTMLDivElement | null>(null);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const pageRefs = React.useRef<Record<number, HTMLDivElement | null>>({});
+  const pageHeightOverridesRef = React.useRef<Record<number, number>>({});
   const loadingChangeRef = React.useRef(onLoadingChange);
   const activePdfRenderIdRef = React.useRef(0);
   const objectUrlRef = React.useRef<string | null>(null);
+  const viewerSessionIdRef = React.useRef(0);
+  const closingSessionIdRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     loadingChangeRef.current = onLoadingChange;
   }, [onLoadingChange]);
 
+  const estimatedRenderedPageHeight = React.useMemo(() => {
+    if (!basePageViewport) {
+      return DEFAULT_PAGE_HEIGHT * zoom + PDF_PAGE_GAP;
+    }
+
+    const baseWidth = containerWidth > 0 ? containerWidth : basePageViewport.width;
+    const fittedScale = basePageViewport.width > 0 ? baseWidth / basePageViewport.width : 1;
+    return basePageViewport.height * fittedScale * zoom + PDF_PAGE_GAP;
+  }, [basePageViewport, containerWidth, zoom]);
+
+  const getEstimatedPageOffset = React.useCallback(
+    (pageNumber: number) => {
+      let offset = 0;
+      for (let page = 1; page < pageNumber; page += 1) {
+        offset += pageHeightOverridesRef.current[page] ?? estimatedRenderedPageHeight;
+      }
+      return offset;
+    },
+    [estimatedRenderedPageHeight],
+  );
+
+  const getEstimatedPageHeight = React.useCallback(
+    (pageNumber: number) => {
+      return pageHeightOverridesRef.current[pageNumber] ?? estimatedRenderedPageHeight;
+    },
+    [estimatedRenderedPageHeight],
+  );
+
   const resetViewerState = React.useCallback(() => {
     activePdfRenderIdRef.current += 1;
     pageRefs.current = {};
+    pageHeightOverridesRef.current = {};
     setNumPages(0);
     setCurrentPage(1);
     setZoom(1);
@@ -80,32 +121,65 @@ export default function DigitalDocViewerDialog({
     setLoadError(null);
     setResolvedFileUrl("");
     setContainerWidth(0);
+    setBasePageViewport(null);
   }, []);
 
-  const releaseObjectUrl = React.useCallback(() => {
-    if (objectUrlRef.current) {
-      window.URL.revokeObjectURL(objectUrlRef.current);
+  const releaseObjectUrl = React.useCallback((targetUrl?: string | null) => {
+    const nextTarget = targetUrl ?? objectUrlRef.current;
+    if (!nextTarget) return;
+
+    window.URL.revokeObjectURL(nextTarget);
+    if (objectUrlRef.current === nextTarget) {
       objectUrlRef.current = null;
     }
   }, []);
 
-  React.useEffect(() => {
-    if (!open) {
-      loadingChangeRef.current?.(false);
+  const cleanupViewerResources = React.useCallback(() => {
+    loadingChangeRef.current?.(false);
+    releaseObjectUrl();
+    activePdfRenderIdRef.current += 1;
+    pageRefs.current = {};
+    pageHeightOverridesRef.current = {};
+  }, [releaseObjectUrl]);
+
+  const cleanupViewer = React.useCallback(
+    (sessionId?: number | null) => {
+      if (sessionId != null && sessionId !== viewerSessionIdRef.current) {
+        return;
+      }
+
+      cleanupViewerResources();
       setIsPreparing(false);
-      releaseObjectUrl();
       resetViewerState();
-    }
-  }, [open, releaseObjectUrl, resetViewerState]);
+    },
+    [cleanupViewerResources, resetViewerState],
+  );
+
+  React.useEffect(() => () => cleanupViewerResources(), [cleanupViewerResources]);
 
   const handleMovePage = () => {
     if (fileType !== "pdf") return;
     const nextPage = Number(pageInput);
     if (!Number.isInteger(nextPage) || nextPage < 1) return;
     if (numPages > 0 && nextPage > numPages) return;
-    pageRefs.current[nextPage]?.scrollIntoView({
+
+    setCurrentPage(nextPage);
+
+    const scroller = scrollRef.current;
+    if (!scroller) return;
+
+    const renderedPage = pageRefs.current[nextPage];
+    if (renderedPage) {
+      renderedPage.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
+
+    scroller.scrollTo({
+      top: getEstimatedPageOffset(nextPage),
       behavior: "smooth",
-      block: "start",
     });
   };
 
@@ -124,47 +198,54 @@ export default function DigitalDocViewerDialog({
   }, [fileType, open]);
 
   React.useEffect(() => {
-    if (!open || fileUrls.length === 0) {
+    if (!open) {
+      closingSessionIdRef.current = viewerSessionIdRef.current;
       loadingChangeRef.current?.(false);
       setIsPreparing(false);
-      releaseObjectUrl();
-      setResolvedFileUrl("");
+      return;
+    }
+
+    const sessionId = viewerSessionIdRef.current + 1;
+    viewerSessionIdRef.current = sessionId;
+    closingSessionIdRef.current = null;
+
+    if (fileUrls.length === 0) {
+      resetViewerState();
+      loadingChangeRef.current?.(false);
+      setIsPreparing(false);
       return;
     }
 
     let cancelled = false;
 
     const loadFileForViewer = async () => {
-      activePdfRenderIdRef.current += 1;
-      pageRefs.current = {};
-      setNumPages(0);
-      setCurrentPage(1);
-      setZoom(1);
-      setRotation(0);
-      setOrientation("portrait");
-      setPageInput("1");
-      setLoadError(null);
-      setResolvedFileUrl("");
+      resetViewerState();
       setIsPreparing(true);
       loadingChangeRef.current?.(true);
       releaseObjectUrl();
 
       try {
         const blob = await FileApi.fetchBlobFromUrls(fileUrls);
-        if (cancelled) return;
+        if (cancelled || sessionId !== viewerSessionIdRef.current) return;
 
         const objectUrl = window.URL.createObjectURL(blob);
+        if (cancelled || sessionId !== viewerSessionIdRef.current) {
+          releaseObjectUrl(objectUrl);
+          return;
+        }
+
         objectUrlRef.current = objectUrl;
         setResolvedFileUrl(objectUrl);
       } catch (error) {
-        if (cancelled) return;
+        if (cancelled || sessionId !== viewerSessionIdRef.current) return;
+
         setLoadError(
           error instanceof Error
             ? error.message || "파일을 불러오지 못했습니다."
             : "파일을 불러오지 못했습니다.",
         );
       } finally {
-        if (!cancelled) {
+        if (!cancelled && sessionId === viewerSessionIdRef.current) {
           setIsPreparing(false);
           loadingChangeRef.current?.(false);
         }
@@ -175,11 +256,12 @@ export default function DigitalDocViewerDialog({
 
     return () => {
       cancelled = true;
-      loadingChangeRef.current?.(false);
-      setIsPreparing(false);
-      releaseObjectUrl();
+      if (sessionId === viewerSessionIdRef.current) {
+        loadingChangeRef.current?.(false);
+        setIsPreparing(false);
+      }
     };
-  }, [fileUrls, fileUrlsKey, open, releaseObjectUrl]);
+  }, [fileUrls, fileUrlsKey, open, releaseObjectUrl, resetViewerState]);
 
   React.useEffect(() => {
     if (fileType !== "pdf") return;
@@ -188,26 +270,21 @@ export default function DigitalDocViewerDialog({
     if (!scroller) return;
 
     const updateCurrentPage = () => {
-      const scrollerTop = scroller.getBoundingClientRect().top;
-      let nextCurrent = numPages;
-
-      for (let page = 1; page <= numPages; page += 1) {
-        const el = pageRefs.current[page];
-        if (!el) continue;
-        const top = el.getBoundingClientRect().top - scrollerTop;
-        if (top >= -20) {
-          nextCurrent = page;
-          break;
-        }
-      }
-
+      const nextCurrent = Math.min(
+        numPages,
+        Math.max(1, Math.floor(scroller.scrollTop / estimatedRenderedPageHeight) + 1),
+      );
       setCurrentPage(nextCurrent);
     };
 
     updateCurrentPage();
     scroller.addEventListener("scroll", updateCurrentPage, { passive: true });
     return () => scroller.removeEventListener("scroll", updateCurrentPage);
-  }, [fileType, numPages, open, zoom]);
+  }, [estimatedRenderedPageHeight, fileType, numPages, open]);
+
+  React.useEffect(() => {
+    setPageInput(String(currentPage));
+  }, [currentPage]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -264,6 +341,10 @@ export default function DigitalDocViewerDialog({
         if (renderId !== activePdfRenderIdRef.current) return;
 
         const viewport = firstPage.getViewport({ scale: 1 });
+        setBasePageViewport({
+          width: viewport.width,
+          height: viewport.height,
+        });
         setOrientation(
           viewport.width >= viewport.height ? "landscape" : "portrait",
         );
@@ -301,6 +382,19 @@ export default function DigitalDocViewerDialog({
     setLoadError("PDF를 불러오지 못했습니다.");
   }, []);
 
+  const handlePageRenderSuccess = React.useCallback(
+    (pageNumber: number) => {
+      const pageElement = pageRefs.current[pageNumber];
+      if (!pageElement) return;
+
+      const measuredHeight = pageElement.getBoundingClientRect().height + PDF_PAGE_GAP;
+      if (measuredHeight <= 0) return;
+
+      pageHeightOverridesRef.current[pageNumber] = measuredHeight;
+    },
+    [],
+  );
+
   const clientIp = "0.0.0.1";
 
   const watermarkText = React.useMemo(() => {
@@ -321,6 +415,49 @@ export default function DigitalDocViewerDialog({
       : orientation === "landscape"
         ? "portrait"
         : "landscape";
+
+  const virtualWindow = React.useMemo(() => {
+    if (numPages <= 0) {
+      return {
+        startPage: 1,
+        endPage: 0,
+        topSpacerHeight: 0,
+        bottomSpacerHeight: 0,
+      };
+    }
+
+    const halfWindow = Math.floor(PDF_WINDOW_SIZE / 2);
+    const rawStart = Math.max(1, currentPage - halfWindow - PDF_WINDOW_OVERSCAN);
+    const rawEnd = Math.min(
+      numPages,
+      currentPage + halfWindow + PDF_WINDOW_OVERSCAN,
+    );
+
+    const topSpacerHeight = getEstimatedPageOffset(rawStart);
+    const bottomSpacerHeight = Math.max(
+      0,
+      getEstimatedPageOffset(numPages + 1) - getEstimatedPageOffset(rawEnd + 1),
+    );
+
+    return {
+      startPage: rawStart,
+      endPage: rawEnd,
+      topSpacerHeight,
+      bottomSpacerHeight,
+    };
+  }, [currentPage, getEstimatedPageOffset, numPages]);
+
+  const visiblePageNumbers = React.useMemo(() => {
+    if (virtualWindow.endPage < virtualWindow.startPage) {
+      return [] as number[];
+    }
+
+    return Array.from(
+      { length: virtualWindow.endPage - virtualWindow.startPage + 1 },
+      (_, index) => virtualWindow.startPage + index,
+    );
+  }, [virtualWindow.endPage, virtualWindow.startPage]);
+
   const loadingContent = (
     <Box
       sx={{
@@ -343,6 +480,21 @@ export default function DigitalDocViewerDialog({
     <Dialog
       open={open}
       onClose={onClose}
+      keepMounted
+      closeAfterTransition
+      TransitionProps={{
+        onExited: () => {
+          const closingSessionId = closingSessionIdRef.current;
+          if (closingSessionId == null || open) {
+            return;
+          }
+
+          cleanupViewer(closingSessionId);
+          if (closingSessionIdRef.current === closingSessionId) {
+            closingSessionIdRef.current = null;
+          }
+        },
+      }}
       maxWidth={false}
       fullWidth={false}
       PaperProps={{
@@ -406,27 +558,37 @@ export default function DigitalDocViewerDialog({
                 onLoadSuccess={handleLoadSuccess}
                 onLoadError={handlePdfLoadError}
               >
-                {Array.from({ length: numPages }, (_, index) => {
-                  const pageNumber = index + 1;
-                  return (
-                    <div
-                      key={pageNumber}
-                      ref={(el) => {
-                        pageRefs.current[pageNumber] = el;
-                      }}
-                      style={{ marginBottom: 16, position: "relative" }}
-                    >
-                      <Page
-                        pageNumber={pageNumber}
-                        width={containerWidth > 0 ? containerWidth : undefined}
-                        scale={zoom}
-                        rotate={rotation}
-                        renderAnnotationLayer={false}
-                        renderTextLayer={false}
-                      />
-                    </div>
-                  );
-                })}
+                {virtualWindow.topSpacerHeight > 0 ? (
+                  <div style={{ height: virtualWindow.topSpacerHeight }} />
+                ) : null}
+
+                {visiblePageNumbers.map((pageNumber) => (
+                  <div
+                    key={pageNumber}
+                    ref={(el) => {
+                      pageRefs.current[pageNumber] = el;
+                    }}
+                    style={{
+                      marginBottom: PDF_PAGE_GAP,
+                      position: "relative",
+                      minHeight: getEstimatedPageHeight(pageNumber) - PDF_PAGE_GAP,
+                    }}
+                  >
+                    <Page
+                      pageNumber={pageNumber}
+                      width={containerWidth > 0 ? containerWidth : undefined}
+                      scale={zoom}
+                      rotate={rotation}
+                      renderAnnotationLayer={false}
+                      renderTextLayer={false}
+                      onRenderSuccess={() => handlePageRenderSuccess(pageNumber)}
+                    />
+                  </div>
+                ))}
+
+                {virtualWindow.bottomSpacerHeight > 0 ? (
+                  <div style={{ height: virtualWindow.bottomSpacerHeight }} />
+                ) : null}
               </Document>
             )
           ) : (
