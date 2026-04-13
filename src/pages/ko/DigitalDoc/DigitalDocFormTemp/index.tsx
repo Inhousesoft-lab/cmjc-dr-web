@@ -132,10 +132,6 @@ export default function DigitalDocForm() {
         };
 
         await https.post(insertEDocTempApiPath(), payload);
-        notifications.show("생성 완료.", {
-          severity: "success",
-          autoHideDuration: 3000,
-        });
         navigate(URL.DIGITAL_DOC_LIST);
       } catch (e) {
         notifications.show(getErrorMessage(e), {

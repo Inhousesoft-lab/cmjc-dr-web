@@ -70,6 +70,16 @@ const menuItems: Menu[] = [
     menu: true,
   },
   {
+    path: "digitalDoc/create",
+    label: "문서 등록",
+    menuType: "MENU",
+    element: {
+      ko: "DigitalDocForm",
+      en: "DigitalDocForm",
+    },
+    menu: false,
+  },
+  {
     path: "destruction",
     label: "파기문서 관리",
     menuType: "MENU",
