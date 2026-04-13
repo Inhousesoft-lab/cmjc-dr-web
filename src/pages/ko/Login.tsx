@@ -14,7 +14,9 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang } = useParams<{ lang: string }>();
-  const { loading, isAuthenticated, initialized } = useAppSelector((s) => s.auth);
+  const { loginSubmitting, isAuthenticated, initialized } = useAppSelector(
+    (s) => s.auth,
+  );
   const { list, loaded: menuLoaded, loading: menuLoading } = useAppSelector(
     (s) => s.menuList,
   );
@@ -101,8 +103,8 @@ export default function Login() {
 
         {errorMsg && <p style={styles.error}>{errorMsg}</p>}
 
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "로그인 중..." : "로그인"}
+        <button type="submit" style={styles.button} disabled={loginSubmitting}>
+          {loginSubmitting ? "로그인 중..." : "로그인"}
         </button>
       </form>
     </div>

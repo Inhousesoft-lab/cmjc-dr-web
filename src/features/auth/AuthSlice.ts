@@ -20,7 +20,8 @@ interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   accessToken: string | null;
-  loading: boolean;
+  sessionChecking: boolean;
+  loginSubmitting: boolean;
   initialized: boolean;
 }
 
@@ -67,7 +68,8 @@ const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
   accessToken: null,
-  loading: false,
+  sessionChecking: false,
+  loginSubmitting: false,
   initialized: false,
 };
 
@@ -174,32 +176,33 @@ const authSlice = createSlice({
   reducers: {
     logout(state) {
       clearAuthState(state);
-      state.loading = false;
+      state.sessionChecking = false;
+      state.loginSubmitting = false;
       state.initialized = true;
     },
   },
   extraReducers(builder) {
     builder
       .addCase(login.pending, (state) => {
-        state.loading = true;
+        state.loginSubmitting = true;
       })
       .addCase(login.fulfilled, (state, action) => {
-        state.loading = false;
+        state.loginSubmitting = false;
         state.initialized = true;
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
       })
       .addCase(login.rejected, (state) => {
-        state.loading = false;
+        state.loginSubmitting = false;
         state.initialized = true;
         clearAuthState(state);
       })
       .addCase(checkSession.pending, (state) => {
-        state.loading = true;
+        state.sessionChecking = true;
       })
       .addCase(checkSession.fulfilled, (state, action) => {
-        state.loading = false;
+        state.sessionChecking = false;
         state.initialized = true;
 
         if (action.payload) {
@@ -211,7 +214,7 @@ const authSlice = createSlice({
         clearAuthState(state);
       })
       .addCase(checkSession.rejected, (state) => {
-        state.loading = false;
+        state.sessionChecking = false;
         state.initialized = true;
         clearAuthState(state);
       })

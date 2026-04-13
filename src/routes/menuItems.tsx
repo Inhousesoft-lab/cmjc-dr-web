@@ -70,16 +70,6 @@ const menuItems: Menu[] = [
     menu: true,
   },
   {
-    path: "digitalDoc/create",
-    label: "문서 등록",
-    menuType: "MENU",
-    element: {
-      ko: "DigitalDocForm",
-      en: "DigitalDocForm",
-    },
-    menu: false,
-  },
-  {
     path: "destruction",
     label: "파기문서 관리",
     menuType: "MENU",
@@ -140,6 +130,26 @@ const menuItems: Menu[] = [
       en: "DigitalDocDetail",
     },
     menu: false,
+  },
+  {
+    path: "external-view",
+    label: "문서열람(외부)",
+    menuType: "MENU",
+    element: {
+      ko: "ExternalView",
+      en: "ExternalView",
+    },
+    menu: true,
+  },
+  {
+    path: "digitalDoc/temp",
+    label: "문서등록(임시)",
+    menuType: "MENU",
+    element: {
+      ko: "DigitalDocFormTemp",
+      en: "DigitalDocFormTemp",
+    },
+    menu: true,
   },
 ];
 

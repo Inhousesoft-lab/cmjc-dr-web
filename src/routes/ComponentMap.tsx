@@ -8,6 +8,8 @@ import HoldingInstitutionList from "@/pages/ko/DocClassification/HoldingInstitut
 import DigitalDocList from "@/pages/ko/DigitalDoc/DigitalDocList";
 import DigitalDocDetail from "@/pages/ko/DigitalDoc/DigitalDocDetail";
 import DigitalDocForm from "@/pages/ko/DigitalDoc/DigitalDocForm";
+import DigitalDocFormTemp from "@/pages/ko/DigitalDoc/DigitalDocFormTemp";
+import ExternalView from "@/pages/ko/ExternalView";
 
 import DocDestructionReqList from "@/pages/ko/DocDestruction/DocDestructionReqList";
 import DocDestructionAppvList from "@/pages/ko/DocDestruction/DocDestructionAppvList";
@@ -24,6 +26,8 @@ export const componentMap = {
   DigitalDocList,
   DigitalDocDetail,
   DigitalDocForm,
+  DigitalDocFormTemp,
+  ExternalView,
   DocDestructionEntry,
   DocDestructionReqList,
   DocDestructionAppvList,
