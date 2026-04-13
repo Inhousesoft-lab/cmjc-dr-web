@@ -9,7 +9,6 @@ import {
   beginUnauthorizedRedirect,
   resetUnauthorizedFlag,
   setPostLoginRedirect,
-  isLoginPath,
   UNAUTHORIZED_EVENT_NAME,
 } from "@/utils/authSession";
 import { withAppBase } from "@/utils/appBase";
@@ -35,8 +34,7 @@ export default function App() {
   );
 
   React.useEffect(() => {
-    const isLoginPage = isLoginPath(window.location.pathname);
-    if (isLoginPage || initialized) return;
+    if (initialized) return;
     void dispatch(checkSession());
   }, [dispatch, initialized]);
 

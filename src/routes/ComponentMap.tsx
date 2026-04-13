@@ -8,15 +8,12 @@ import HoldingInstitutionList from "@/pages/ko/DocClassification/HoldingInstitut
 import DigitalDocList from "@/pages/ko/DigitalDoc/DigitalDocList";
 import DigitalDocDetail from "@/pages/ko/DigitalDoc/DigitalDocDetail";
 import DigitalDocForm from "@/pages/ko/DigitalDoc/DigitalDocForm";
-import DigitalDocFormTemp from "@/pages/ko/DigitalDoc/DigitalDocFormTemp";
 
 import DocDestructionReqList from "@/pages/ko/DocDestruction/DocDestructionReqList";
 import DocDestructionAppvList from "@/pages/ko/DocDestruction/DocDestructionAppvList";
 import DocDestructionEntry from "@/pages/ko/DocDestruction/DocDestructionEntry";
 import DocDestructionList from "@/pages/ko/DocDestruction/DocDestructionList";
 import DocDestructionDetail from "@/pages/ko/DocDestruction/DocDestructionDetail";
-
-import ExternalView from "@/pages/ko/ExternalView";
 
 export const componentMap = {
   Login,
@@ -27,13 +24,11 @@ export const componentMap = {
   DigitalDocList,
   DigitalDocDetail,
   DigitalDocForm,
-  DigitalDocFormTemp,
   DocDestructionEntry,
   DocDestructionReqList,
   DocDestructionAppvList,
   DocDestructionList,
   DocDestructionDetail,
-  ExternalView,
 };
 
 export type ComponentKey = keyof typeof componentMap;

@@ -49,6 +49,10 @@ const ALL_INDIVIDUAL_OPTION: ResearcherOption = {
   mbrNm: "전체",
 };
 
+const portalAuthorizationEnabled =
+  String(import.meta.env.VITE_ENABLE_PORTAL_AUTHORIZATION ?? "false").toLowerCase() ===
+  "true";
+
 export interface AuthrtTableProps {
   eldocNo: string;
   tableAriaLabel?: string;
@@ -77,6 +81,11 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   }, [dispatch, eldocNo]);
 
   React.useEffect(() => {
+    if (!portalAuthorizationEnabled) {
+      setInstitutions([]);
+      return;
+    }
+
     const fetchInstitutions = async () => {
       try {
         const res = await https.get("/api/dr/portal/institutions", {
@@ -96,7 +105,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   }, [notifications]);
 
   React.useEffect(() => {
-    if (!deptId) {
+    if (!portalAuthorizationEnabled || !deptId) {
       setResearchers([]);
       setIndvId("");
       return;
@@ -168,6 +177,14 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   );
 
   const handleSave = useCallback(async () => {
+    if (!portalAuthorizationEnabled) {
+      await dialogs.alert("내부망 관리자 화면에서는 공람자 포털 연동을 사용하지 않습니다.", {
+        title: "안내",
+        okText: "확인",
+      });
+      return;
+    }
+
     if (isEmpty(deptId) || isEmpty(indvId)) {
       await dialogs.alert("부서와 이름을 모두 선택해 주세요.", {
         title: "알림",
@@ -255,6 +272,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
               value={deptId}
               onChange={(event) => setDeptId(event.target.value as string)}
               aria-label="추가할 부서 선택"
+              disabled={!portalAuthorizationEnabled}
             >
               <MenuItem value="">
                 <Typography>부서</Typography>
@@ -274,7 +292,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
               value={indvId}
               onChange={(event) => setIndvId(event.target.value as string)}
               aria-label="추가할 이름 선택"
-              disabled={!deptId}
+              disabled={!portalAuthorizationEnabled || !deptId}
             >
               <MenuItem value="">
                 <Typography>이름</Typography>
@@ -292,12 +310,19 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
               size="small"
               color="primary"
               onClick={handleSave}
-              disabled={authrtSaving}
+              disabled={authrtSaving || !portalAuthorizationEnabled}
             >
               등록
             </Button>
           </TableCell>
         </TableRow>
+        {!portalAuthorizationEnabled ? (
+          <TableRow>
+            <TableCell colSpan={3} align="center" sx={styleGroup.content}>
+              내부망 관리자 전용 운영에서는 포털 공람자 조회/등록 기능을 비활성화했습니다.
+            </TableCell>
+          </TableRow>
+        ) : null}
       </TableWrapper>
     </div>
   );

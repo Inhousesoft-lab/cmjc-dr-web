@@ -5,7 +5,7 @@ import {
   canUsePostLoginRedirect,
   getPostLoginRedirect,
 } from "@/utils/authSession";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getDefaultLandingPath } from "@/routes/defaultLanding";
 
@@ -14,8 +14,10 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang } = useParams<{ lang: string }>();
-  const { loading } = useAppSelector((s) => s.auth);
-  const { list } = useAppSelector((s) => s.menuList);
+  const { loading, isAuthenticated, initialized } = useAppSelector((s) => s.auth);
+  const { list, loaded: menuLoaded, loading: menuLoading } = useAppSelector(
+    (s) => s.menuList,
+  );
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +31,26 @@ export default function Login() {
     canUsePostLoginRedirect(fromPath)
       ? fromPath
       : storedPath || fallbackPath;
+
+  useEffect(() => {
+    if (!initialized || !isAuthenticated) {
+      return;
+    }
+
+    if (!menuLoaded && menuLoading) {
+      return;
+    }
+
+    clearPostLoginRedirect();
+    navigate(targetPath, { replace: true });
+  }, [
+    initialized,
+    isAuthenticated,
+    menuLoaded,
+    menuLoading,
+    navigate,
+    targetPath,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

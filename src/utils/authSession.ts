@@ -8,8 +8,6 @@ export const POST_LOGIN_REDIRECT_KEY = "postLoginRedirect";
 const AUTH_EXCLUDED_PATHS = [
   DR_ADMIN_AUTH_API.login,
   DR_ADMIN_AUTH_API.logout,
-  DR_ADMIN_AUTH_API.extend,
-  DR_ADMIN_AUTH_API.me,
 ];
 
 let unauthorizedDispatched = false;

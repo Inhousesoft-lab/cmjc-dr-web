@@ -132,26 +132,6 @@ const menuItems: Menu[] = [
     menu: false,
   },
   {
-    path: "exteralView",
-    label: "문서열람(외부)",
-    menuType: "MENU",
-    element: {
-      ko: "ExternalView",
-      en: "ExternalView",
-    },
-    menu: true,
-  },
-  {
-    path: "digitalDoc/temp",
-    label: "문서등록(임시)",
-    menuType: "MENU",
-    element: {
-      ko: "DigitalDocFormTemp",
-      en: "DigitalDocFormTemp",
-    },
-    menu: true,
-  },
-  {
     path: "digitalDoc/:eldocNo",
     label: "전자문서 상세",
     menuType: "MENU",

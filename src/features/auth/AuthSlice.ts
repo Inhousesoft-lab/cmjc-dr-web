@@ -155,8 +155,14 @@ export const extendSession = createAsyncThunk<
 
     return await fetchCurrentUser();
   } catch (err: any) {
+    const status = err?.response?.status;
+
+    if (status === 401 || status === 403) {
+      thunkAPI.dispatch(logout());
+    }
+
     return thunkAPI.rejectWithValue({
-      status: err?.response?.status,
+      status,
       message: err?.response?.data?.message ?? "세션 연장 실패",
     });
   }
@@ -220,10 +226,14 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.user = action.payload;
       })
-      .addCase(extendSession.rejected, (state) => {
+      .addCase(extendSession.rejected, (state, action) => {
         state.initialized = true;
 
-        if (!state.isAuthenticated) {
+        if (
+          action.payload?.status === 401 ||
+          action.payload?.status === 403 ||
+          !state.isAuthenticated
+        ) {
           clearAuthState(state);
         }
       });
