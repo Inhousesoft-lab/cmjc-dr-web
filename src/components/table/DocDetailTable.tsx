@@ -119,7 +119,7 @@ export default function DocDetailTable({
                   taskSeTrgtId={eldocNo}
                   initialGroupId={String((detail as any)?.atchFileSn ?? "")}
                   readOnly
-                  requireDownloadReason={detail?.prvcInclYn === "Y"}
+                  requireDownloadReason
                 />
               ) : (
                 "-"
