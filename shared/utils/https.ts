@@ -21,7 +21,17 @@ import axios, { AxiosInstance } from "axios";
  *
  * `/api`를 baseURL로 넣으면 `/api/dr/...` 호출이 `/api/api/dr/...`로 중복될 수 있다.
  */
-const apiBaseURL = import.meta.env.VITE_API_BASE_URL ?? "/";
+const normalizeApiBaseURL = (value?: string) => {
+  const normalized = String(value ?? "").trim();
+
+  if (!normalized || normalized === "/api" || normalized === "/api/") {
+    return "/";
+  }
+
+  return normalized;
+};
+
+const apiBaseURL = normalizeApiBaseURL(import.meta.env.VITE_API_BASE_URL);
 
 const https: AxiosInstance = axios.create({
   baseURL: apiBaseURL,

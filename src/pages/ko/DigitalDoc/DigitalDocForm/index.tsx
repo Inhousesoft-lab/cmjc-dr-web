@@ -198,10 +198,6 @@ export default function DigitalDocForm() {
 
     try {
       await dispatch(createDigitalDoc(payload)).unwrap();
-      notifications.show("전자문서가 등록되었습니다.", {
-        severity: "success",
-        autoHideDuration: 3000,
-      });
       navigate(URL.DIGITAL_DOC_LIST);
     } catch (error) {
       notifications.show(getErrorMessage(error), {

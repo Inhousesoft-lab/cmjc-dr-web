@@ -33,21 +33,23 @@ export default function PageHeader({ children }: PageHeaderProps) {
   ): BreadcrumbItem[] | null => {
     for (const route of routes) {
       const fullPath = joinPath(parentPath, route.path);
+      const directPath = normalizePath(route.path);
+      const matchPath = directPath || fullPath;
       const isMatched =
-        !!fullPath &&
-        (normalizedPath === fullPath || normalizedPath.startsWith(`${fullPath}/`));
+        !!matchPath &&
+        (normalizedPath === matchPath || normalizedPath.startsWith(`${matchPath}/`));
+
+      const current: BreadcrumbItem[] = route.label
+        ? [
+            {
+              path: matchPath,
+              label: route.label,
+              hasPage: !!route.element,
+            },
+          ]
+        : [];
 
       if (isMatched) {
-        const current: BreadcrumbItem[] = route.label
-          ? [
-              {
-                path: fullPath,
-                label: route.label,
-                hasPage: !!route.element,
-              },
-            ]
-          : [];
-
         if (route.children?.length) {
           const childResult = findBreadcrumbs(route.children, fullPath);
           if (childResult) {
@@ -61,7 +63,7 @@ export default function PageHeader({ children }: PageHeaderProps) {
       if (route.children?.length) {
         const childOnlyResult = findBreadcrumbs(route.children, fullPath);
         if (childOnlyResult) {
-          return childOnlyResult;
+          return [...current, ...childOnlyResult];
         }
       }
     }

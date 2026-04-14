@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_EGOV_CONTEXT_URL?: string
   readonly VITE_ANY_ID_STATIC_URL?: string
   readonly VITE_PROXY_TARGET?: string
+  readonly VITE_ENABLE_PORTAL_AUTHORIZATION?: string
 }
 
 interface ImportMeta {

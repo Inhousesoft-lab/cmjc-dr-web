@@ -32,16 +32,18 @@ export default function DigitalDocViewerButton({
         {label}
       </Button>
 
-      <DigitalDocViewerDialog
-        open={open}
-        onClose={() => setOpen(false)}
-        fileUrl={fileUrl}
-        fileType={fileType}
-        onLoadingChange={(loading) => {
-          setIsPreparing(loading);
-          onLoadingChange?.(loading);
-        }}
-      />
+      {open ? (
+        <DigitalDocViewerDialog
+          open
+          onClose={() => setOpen(false)}
+          fileUrl={fileUrl}
+          fileType={fileType}
+          onLoadingChange={(loading) => {
+            setIsPreparing(loading);
+            onLoadingChange?.(loading);
+          }}
+        />
+      ) : null}
     </>
   );
 }

@@ -125,6 +125,11 @@ const enrichMenuTree = (menus: Menu[], parentPath = ""): Menu[] =>
     };
   });
 
+const FORCED_VISIBLE_STATIC_PATHS = new Set([
+  normalizePath("digitalDoc/temp"),
+  normalizePath("external-view"),
+]);
+
 const appendHiddenStaticRoutes = (menus: Menu[]): Menu[] => {
   const existingPaths = new Set(
     collectMenus(menus)
@@ -137,7 +142,14 @@ const appendHiddenStaticRoutes = (menus: Menu[]): Menu[] => {
     return key && !existingPaths.has(key);
   });
 
-  return [...menus, ...missingHiddenRoutes];
+  const forcedVisibleRoutes = collectMenus(staticMenuItems)
+    .filter((menu) => {
+      const key = normalizePath(menu.path);
+      return key && FORCED_VISIBLE_STATIC_PATHS.has(key) && !existingPaths.has(key);
+    })
+    .map((menu) => ({ ...menu }));
+
+  return [...menus, ...forcedVisibleRoutes, ...missingHiddenRoutes];
 };
 
 export const getRuntimeMenuTree = (menus?: Menu[]): Menu[] => {

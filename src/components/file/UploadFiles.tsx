@@ -789,31 +789,27 @@ export default function UploadFiles({
         </Alert>
       </Snackbar>
 
-      <DigitalDocViewerDialog
-        open={!!viewerState}
-        onClose={handleViewerClose}
-        fileUrl={viewerState?.fileUrl ?? []}
-        fileType={viewerState?.fileType ?? "pdf"}
-        onLoadingChange={(loading) => {
-          if (!viewerState) {
-            setIsViewing(false);
-            setViewingFileId(null);
-            return;
-          }
+      {viewerState ? (
+        <DigitalDocViewerDialog
+          open
+          onClose={handleViewerClose}
+          fileUrl={viewerState.fileUrl}
+          fileType={viewerState.fileType}
+          onLoadingChange={(loading) => {
+            const activeFile = savedFileList.find(
+              (file) => (file.atchFileId ?? file.fileNm ?? "viewer-file") === viewerState.fileKey,
+            );
 
-          const activeFile = savedFileList.find(
-            (file) => (file.atchFileId ?? file.fileNm ?? "viewer-file") === viewerState.fileKey,
-          );
+            if (activeFile) {
+              handleViewerLoadingChange(activeFile, loading);
+              return;
+            }
 
-          if (activeFile) {
-            handleViewerLoadingChange(activeFile, loading);
-            return;
-          }
-
-          setIsViewing(loading);
-          setViewingFileId(loading ? viewerState.fileKey : null);
-        }}
-      />
+            setIsViewing(loading);
+            setViewingFileId(loading ? viewerState.fileKey : null);
+          }}
+        />
+      ) : null}
     </Box>
   );
 }

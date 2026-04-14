@@ -254,7 +254,7 @@ export default function ExternalView() {
     async (row: ExternalViewRow) => {
       if (!row.file || !row.canDownload) return;
 
-      if (row.downloadReasonRequired) {
+      {
         setPendingDownloadRow(row);
         setDownloadReasonOpen(true);
         setDownloadReason("");

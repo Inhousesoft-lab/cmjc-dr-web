@@ -3,8 +3,13 @@ import { fireWorkAccessLog } from "@/api/workAccessLog";
 import { notifyUnauthorized } from "@/utils/authSession";
 
 export const getApiBaseURL = () => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL;
-  return envUrl || "/";
+  const envUrl = String(import.meta.env.VITE_API_BASE_URL ?? "").trim();
+
+  if (!envUrl || envUrl === "/api" || envUrl === "/api/") {
+    return "/";
+  }
+
+  return envUrl;
 };
 
 export const getFileFallbackBaseURL = () => {

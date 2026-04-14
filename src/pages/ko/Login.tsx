@@ -5,7 +5,7 @@ import {
   canUsePostLoginRedirect,
   getPostLoginRedirect,
 } from "@/utils/authSession";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { getDefaultLandingPath } from "@/routes/defaultLanding";
 
@@ -14,8 +14,12 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang } = useParams<{ lang: string }>();
-  const { loading } = useAppSelector((s) => s.auth);
-  const { list } = useAppSelector((s) => s.menuList);
+  const { loginSubmitting, isAuthenticated, initialized } = useAppSelector(
+    (s) => s.auth,
+  );
+  const { list, loaded: menuLoaded, loading: menuLoading } = useAppSelector(
+    (s) => s.menuList,
+  );
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +33,26 @@ export default function Login() {
     canUsePostLoginRedirect(fromPath)
       ? fromPath
       : storedPath || fallbackPath;
+
+  useEffect(() => {
+    if (!initialized || !isAuthenticated) {
+      return;
+    }
+
+    if (!menuLoaded && menuLoading) {
+      return;
+    }
+
+    clearPostLoginRedirect();
+    navigate(targetPath, { replace: true });
+  }, [
+    initialized,
+    isAuthenticated,
+    menuLoaded,
+    menuLoading,
+    navigate,
+    targetPath,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +103,8 @@ export default function Login() {
 
         {errorMsg && <p style={styles.error}>{errorMsg}</p>}
 
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "로그인 중..." : "로그인"}
+        <button type="submit" style={styles.button} disabled={loginSubmitting}>
+          {loginSubmitting ? "로그인 중..." : "로그인"}
         </button>
       </form>
     </div>

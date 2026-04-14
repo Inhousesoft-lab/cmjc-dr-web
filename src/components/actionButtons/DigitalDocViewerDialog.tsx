@@ -502,8 +502,20 @@ export default function DigitalDocViewerDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      keepMounted
-      closeAfterTransition
+      container={typeof window !== "undefined" ? document.body : undefined}
+      disablePortal={false}
+      sx={{ zIndex: (theme) => theme.zIndex.modal + 100 }}
+      slotProps={{
+        root: {
+          sx: { zIndex: (theme) => theme.zIndex.modal + 100 },
+        },
+        backdrop: {
+          sx: { zIndex: (theme) => theme.zIndex.modal + 99 },
+        },
+        paper: {
+          sx: { zIndex: (theme) => theme.zIndex.modal + 101 },
+        },
+      }}
       TransitionProps={{
         onExited: () => {
           const closingSessionId = closingSessionIdRef.current;

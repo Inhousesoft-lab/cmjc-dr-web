@@ -4,13 +4,13 @@ import { JSX } from "react";
 import { Navigate, useLocation, useParams } from "react-router-dom";
 
 export default function AuthGuard({ children }: { children: JSX.Element }) {
-  const { isAuthenticated, loading, initialized } = useAppSelector(
+  const { isAuthenticated, sessionChecking, initialized } = useAppSelector(
     (s) => s.auth,
   );
   const location = useLocation();
   const { lang } = useParams<{ lang: string }>();
 
-  if (loading || !initialized) return null;
+  if (sessionChecking || !initialized) return null;
 
   if (!isAuthenticated) {
     setPostLoginRedirect(
