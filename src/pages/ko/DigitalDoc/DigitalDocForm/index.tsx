@@ -109,9 +109,14 @@ export default function DigitalDocForm() {
   );
 
   // 저장 시 사용할 최종 분류 메타를 찾는다.
+  const selectedSclsfDoc = React.useMemo(
+    () => sclsfDocs.find((item) => item.docClsfNo === values.docSclsfNo),
+    [sclsfDocs, values.docSclsfNo],
+  );
+
   const selectedDocClsf = React.useMemo(() => {
     if (values.docSclsfNo) {
-      return sclsfDocs.find((item) => item.docClsfNo === values.docSclsfNo);
+      return selectedSclsfDoc;
     }
 
     if (values.docMclsfNo) {
@@ -126,11 +131,14 @@ export default function DigitalDocForm() {
   }, [
     lclsfDocs,
     mclsfDocs,
-    sclsfDocs,
+    selectedSclsfDoc,
     values.docLclsfNo,
     values.docMclsfNo,
     values.docSclsfNo,
   ]);
+
+  const selectedSclsfHoldingPeriod = selectedSclsfDoc?.prvcFileHldPrst;
+  const isHoldingPeriodLocked = Boolean(values.docSclsfNo && selectedSclsfHoldingPeriod);
 
   const calculatedEndYmd = React.useMemo(
     () => calculateEndYmd(values.clctYmd, values.hldPrdDfyrs, values.hldPrdMmCnt),
@@ -144,6 +152,29 @@ export default function DigitalDocForm() {
       autoHideDuration: 3000,
     });
   }, [saveError, notifications]);
+
+  React.useEffect(() => {
+    if (!values.docSclsfNo || !selectedSclsfHoldingPeriod) return;
+
+    const nextYears = String(selectedSclsfHoldingPeriod.hldPrdDfyrs ?? "").trim();
+    const nextMonths = String(selectedSclsfHoldingPeriod.hldPrdMmCnt ?? "").trim();
+
+    setValues((prev) => {
+      if (
+        prev.hldPrdDfyrs === nextYears &&
+        prev.hldPrdMmCnt === (nextYears === "0" ? nextMonths : "")
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        hldPrdDfyrs: nextYears,
+        hldPrdMmCnt: nextYears === "0" ? nextMonths : "",
+      };
+    });
+    setErrors((prev) => ({ ...prev, hldPrdDfyrs: undefined, hldPrdMmCnt: undefined }));
+  }, [selectedSclsfHoldingPeriod, values.docSclsfNo]);
 
   React.useEffect(() => {
     return () => {
@@ -342,6 +373,7 @@ export default function DigitalDocForm() {
                       handleFieldChange("hldPrdMmCnt", "");
                     }
                   }}
+                  disabled={isHoldingPeriodLocked}
                   error={!!errors.hldPrdDfyrs}
                 >
                   <MenuItem value="1">1년</MenuItem>
@@ -367,11 +399,17 @@ export default function DigitalDocForm() {
                 }
                 placeholder="월"
                 type="text"
-                disabled={values.hldPrdDfyrs !== "0"}
+                disabled={isHoldingPeriodLocked || values.hldPrdDfyrs !== "0"}
                 error={!!errors.hldPrdMmCnt}
                 helperText={errors.hldPrdMmCnt || ""}
               />
-              &nbsp;개월
+              <Typography
+                component="span"
+                variant="body2"
+                sx={{ whiteSpace: "nowrap", flexShrink: 0, minWidth: 28 }}
+              >
+                개월
+              </Typography>
             </Stack>
           </TableCell>
         </TableRow>

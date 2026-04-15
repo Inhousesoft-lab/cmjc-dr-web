@@ -31,8 +31,6 @@ export default function SimpleHeader() {
               <span>{user?.userNm ?? user?.userId ?? "-"}</span>
             </p>
 
-            <p className="user-role">{(user?.roles ?? []).join(", ")}</p>
-
             <div
               className="notification"
               onMouseEnter={() => setIsNotifyOpen(true)}

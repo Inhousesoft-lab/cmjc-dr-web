@@ -5,16 +5,23 @@ import { fileURLToPath, URL } from "node:url";
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
 
 function resolveProxyTarget(env: Record<string, string>) {
-  const rawTarget =
-    env.VITE_PROXY_TARGET?.trim() ||
-    env.VITE_API_BASE_URL?.trim() ||
-    "http://localhost:8080";
-
-  if (/^https?:\/\//i.test(rawTarget)) {
-    return rawTarget;
+  const proxyTarget = env.VITE_PROXY_TARGET?.trim();
+  if (proxyTarget) {
+    if (/^https?:\/\//i.test(proxyTarget)) {
+      return proxyTarget;
+    }
+    if (proxyTarget.startsWith("/")) {
+      return "http://localhost:8080";
+    }
+    return `http://${proxyTarget.replace(/^\/+/, "")}`;
   }
 
-  return `http://${rawTarget.replace(/^\/+/, "")}`;
+  const apiBaseUrl = env.VITE_API_BASE_URL?.trim();
+  if (apiBaseUrl && /^https?:\/\//i.test(apiBaseUrl)) {
+    return apiBaseUrl;
+  }
+
+  return "http://localhost:8080";
 }
 
 export default defineConfig(({ mode }) => {
