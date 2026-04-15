@@ -17,11 +17,9 @@ import RotateRightIcon from "@mui/icons-material/RotateRight";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { Document, Page, pdfjs } from "react-pdf";
 import { FileApi } from "@/api/fileApi";
+import PdfJsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?worker";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url,
-).toString();
+pdfjs.GlobalWorkerOptions.workerPort = new PdfJsWorker();
 
 const PDF_WINDOW_SIZE = 7;
 const PDF_WINDOW_OVERSCAN = 2;
