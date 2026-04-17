@@ -164,7 +164,7 @@ export default function DigitalDocForm() {
         }
       >
         <TableRow>
-          <LabelCell>문서분류</LabelCell>
+          <LabelCell required>문서분류</LabelCell>
           <TableCell colSpan={3}>
             <Controller
               name="docClsfNo"
@@ -211,7 +211,7 @@ export default function DigitalDocForm() {
         </TableRow>
 
         <TableRow>
-          <LabelCell>문서제목</LabelCell>
+          <LabelCell required>문서제목</LabelCell>
           <TableCell colSpan={3}>
             <Controller
               name="docTtl"
@@ -231,7 +231,7 @@ export default function DigitalDocForm() {
         </TableRow>
 
         <TableRow>
-          <LabelCell>문서번호</LabelCell>
+          <LabelCell required>문서번호</LabelCell>
           <TableCell colSpan={3}>
             <Controller
               name="docNo"
@@ -251,7 +251,7 @@ export default function DigitalDocForm() {
         </TableRow>
 
         <TableRow>
-          <LabelCell>수집일자</LabelCell>
+          <LabelCell required>수집일자</LabelCell>
           <TableCell colSpan={3}>
             <Controller
               name="clctYmd"
@@ -269,7 +269,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>파일분류</LabelCell>
+          <LabelCell required>파일분류</LabelCell>
           <TableCell colSpan={3}>
             <Controller
               name="eldocYn"
@@ -298,7 +298,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>첨부파일</LabelCell>
+          <LabelCell required>첨부파일</LabelCell>
           <TableCell colSpan={3}>
             <Controller
               name="atchFileSn"

@@ -256,7 +256,7 @@ export default function DigitalDocForm() {
         }
       >
         <TableRow>
-          <LabelCell>문서분류</LabelCell>
+          <LabelCell required>문서분류</LabelCell>
           <TableCell colSpan={3}>
             <Stack direction="row" spacing={1}>
               <Stack spacing={0.5} width="100%">
@@ -314,7 +314,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>문서번호</LabelCell>
+          <LabelCell required>문서번호</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -330,7 +330,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>문서제목</LabelCell>
+          <LabelCell required>문서제목</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               hiddenLabel
@@ -347,7 +347,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>수집일자</LabelCell>
+          <LabelCell required>수집일자</LabelCell>
           <TableCell>
             <MuiDatePickerFt
               name="clctYmd"
@@ -357,7 +357,7 @@ export default function DigitalDocForm() {
               helperText={errors.clctYmd || ""}
             />
           </TableCell>
-          <LabelCell>보존연한</LabelCell>
+          <LabelCell required>보존연한</LabelCell>
           <TableCell>
             <Stack direction="row" spacing={1} alignItems="center">
               <FormControl fullWidth>
@@ -414,7 +414,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>종료일자</LabelCell>
+          <LabelCell required={values.hldPrdDfyrs === "0"}>종료일자</LabelCell>
           <TableCell colSpan={3}>
             <Stack direction="row" spacing={1} alignItems="center">
               <MuiDatePickerFt
@@ -449,7 +449,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>파일분류</LabelCell>
+          <LabelCell required>파일분류</LabelCell>
           <TableCell colSpan={3}>
             <FormControl>
               <RadioGroup
