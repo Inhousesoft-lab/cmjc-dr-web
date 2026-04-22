@@ -41,7 +41,11 @@ export default function DigitalDocDownDialog({
     const res = await https.post("/api/dr/auth/password/verify", {
       password: value,
     });
-    return Boolean((res as any)?.data?.verified ?? (res as any)?.data?.data?.verified ?? false);
+    return Boolean(
+      (res as any)?.data?.verified ??
+      (res as any)?.data?.data?.verified ??
+      false,
+    );
   }, []);
 
   const handleDownload = React.useCallback(async () => {
@@ -61,8 +65,6 @@ export default function DigitalDocDownDialog({
         return;
       }
 
-      // TODO: atchFileSn 기반 다운로드 API 연결
-      console.log("download atchFileSn:", atchFileSn);
       setChecking(false);
       handleClose();
     } catch (error) {

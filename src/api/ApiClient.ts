@@ -28,21 +28,11 @@ const toOriginUrl = (baseURL: string, path: string) => {
 
 export const resolveApiUrl = (path: string) => {
   const resolved = toOriginUrl(getApiBaseURL(), path);
-  console.log("[ApiClient] resolveApiUrl", {
-    baseURL: getApiBaseURL(),
-    path,
-    resolved: resolved || path,
-  });
   return resolved || path;
 };
 
 export const resolveFallbackApiUrl = (path: string) => {
   const resolved = toOriginUrl(getFileFallbackBaseURL(), path);
-  console.log("[ApiClient] resolveFallbackApiUrl", {
-    baseURL: getFileFallbackBaseURL(),
-    path,
-    resolved,
-  });
   return resolved;
 };
 
@@ -61,22 +51,29 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-apiClient.interceptors.response.use((response: AxiosResponse) => {
-  const res = response.data;
-  if (res?.code && res.code !== "200") {
-    return Promise.reject(new Error(res.msg || res.message || "API Error"));
-  }
+apiClient.interceptors.response.use(
+  (response: AxiosResponse) => {
+    const res = response.data;
+    if (res?.code && res.code !== "200") {
+      return Promise.reject(new Error(res.msg || res.message || "API Error"));
+    }
 
-  if (res && typeof res === "object" && Object.prototype.hasOwnProperty.call(res, "data")) {
-    response.data = res.data;
-  }
+    if (
+      res &&
+      typeof res === "object" &&
+      Object.prototype.hasOwnProperty.call(res, "data")
+    ) {
+      response.data = res.data;
+    }
 
-  return response;
-}, (error) => {
-  if (error?.response?.status === 401) {
-    notifyUnauthorized(error?.config?.url);
-  }
-  return Promise.reject(error);
-});
+    return response;
+  },
+  (error) => {
+    if (error?.response?.status === 401) {
+      notifyUnauthorized(error?.config?.url);
+    }
+    return Promise.reject(error);
+  },
+);
 
 export default apiClient;

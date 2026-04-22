@@ -36,9 +36,5 @@ export default function UseLangStylesReady() {
     });
   }, [i18n.language]);
 
-  console.log(
-    "UseLangStylesReady i18n.language=" + i18n.language + ", ready=" + ready,
-  );
-
   return ready;
 }

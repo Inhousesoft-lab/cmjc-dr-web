@@ -143,7 +143,10 @@ const FILE_URL_PROBE_TIMEOUT_MS = 2000;
 
 const probeDownloadUrl = async (url: string): Promise<string> => {
   const controller = new AbortController();
-  const timeoutId = window.setTimeout(() => controller.abort(), FILE_URL_PROBE_TIMEOUT_MS);
+  const timeoutId = window.setTimeout(
+    () => controller.abort(),
+    FILE_URL_PROBE_TIMEOUT_MS,
+  );
 
   try {
     const response = await fetch(url, {
@@ -162,20 +165,20 @@ const probeDownloadUrl = async (url: string): Promise<string> => {
   }
 };
 
-const resolvePreferredDownloadUrl = async (urls: string[]): Promise<string | null> => {
+const resolvePreferredDownloadUrl = async (
+  urls: string[],
+): Promise<string | null> => {
   if (urls.length <= 1) {
     return urls[0] ?? null;
   }
 
   try {
-    const preferredUrl = await Promise.any(urls.map((url) => probeDownloadUrl(url)));
-    console.log("[fileApi] resolvePreferredDownloadUrl:success", {
-      urls,
-      preferredUrl,
-    });
+    const preferredUrl = await Promise.any(
+      urls.map((url) => probeDownloadUrl(url)),
+    );
+
     return preferredUrl;
   } catch (error) {
-    console.warn("[fileApi] resolvePreferredDownloadUrl:failed", { urls, error });
     return null;
   }
 };
@@ -223,7 +226,8 @@ export const FileApi = {
       "/api/dr/file/deleteGroupFiles",
       request,
     );
-    return (unwrapApiClientPayload<FileDeleteResponse>(response) ?? {}) as FileDeleteResponse;
+    return (unwrapApiClientPayload<FileDeleteResponse>(response) ??
+      {}) as FileDeleteResponse;
   },
 
   selectDelete: async (
@@ -233,7 +237,8 @@ export const FileApi = {
       "/api/dr/file/deleteMultiFile",
       request,
     );
-    return (unwrapApiClientPayload<FileDeleteResponse>(response) ?? {}) as FileDeleteResponse;
+    return (unwrapApiClientPayload<FileDeleteResponse>(response) ??
+      {}) as FileDeleteResponse;
   },
 
   fileDelete: async (
@@ -243,7 +248,8 @@ export const FileApi = {
       "/api/dr/file/deleteFileOne",
       request,
     );
-    return (unwrapApiClientPayload<FileDeleteResponse>(response) ?? {}) as FileDeleteResponse;
+    return (unwrapApiClientPayload<FileDeleteResponse>(response) ??
+      {}) as FileDeleteResponse;
   },
 
   getFileGroupData: async (request: FileGroupDataRequest): Promise<string> => {
@@ -251,7 +257,9 @@ export const FileApi = {
       const response = await apiClient.post("/api/dr/file/groupData", request);
       const responseData = unwrapApiClientPayload<any>(response);
       const atchFileGroupId =
-        responseData?.atchFileGroupId || responseData?.data?.atchFileGroupId || "";
+        responseData?.atchFileGroupId ||
+        responseData?.data?.atchFileGroupId ||
+        "";
       return String(atchFileGroupId.toString());
     } catch (err) {
       console.error("[getFileGroupData] error:", err);
@@ -263,17 +271,25 @@ export const FileApi = {
     request: FileGroupInsertRequest,
   ): Promise<FileGroupInsertResponse> => {
     const response = await apiClient.post("/api/dr/file/groupInsert", request);
-    return (unwrapApiClientPayload<FileGroupInsertResponse>(response) ?? {}) as FileGroupInsertResponse;
+    return (unwrapApiClientPayload<FileGroupInsertResponse>(response) ??
+      {}) as FileGroupInsertResponse;
   },
 
-  downloadFileWithReason: async (filename: string, reason: string): Promise<void> => {
-    const response = await apiClient.post("/api/dr/file/download-reason", null, {
-      params: {
-        filename,
-        reason,
+  downloadFileWithReason: async (
+    filename: string,
+    reason: string,
+  ): Promise<void> => {
+    const response = await apiClient.post(
+      "/api/dr/file/download-reason",
+      null,
+      {
+        params: {
+          filename,
+          reason,
+        },
+        responseType: "blob",
       },
-      responseType: "blob",
-    });
+    );
 
     const blob = normalizeBlobResponse(response);
     const url = window.URL.createObjectURL(blob);
@@ -289,7 +305,10 @@ export const FileApi = {
   isFileGroup: async (request: FileGroupData): Promise<string> => {
     const response = await apiClient.post("/api/dr/file/isGroupData", request);
     const responseData = unwrapApiClientPayload<any>(response);
-    const atchFileGroupId = responseData?.atchFileGroupId || responseData?.data?.atchFileGroupId || "";
+    const atchFileGroupId =
+      responseData?.atchFileGroupId ||
+      responseData?.data?.atchFileGroupId ||
+      "";
 
     return String(atchFileGroupId.toString());
   },
@@ -305,34 +324,20 @@ export const FileApi = {
       (url, index, arr): url is string => !!url && arr.indexOf(url) === index,
     );
 
-    console.log("[fileApi] getDownloadStreamUrls", {
-      file,
-      options,
-      path,
-      apiUrl,
-      fallbackUrl,
-      urls,
-    });
-
     return urls.length > 0 ? urls : [path];
   },
 
-  fetchBlobWithMetaFromUrls: async (urls: string[]): Promise<BlobFetchResult> => {
+  fetchBlobWithMetaFromUrls: async (
+    urls: string[],
+  ): Promise<BlobFetchResult> => {
     let lastError: unknown = null;
     const preferredUrl = await resolvePreferredDownloadUrl(urls);
     const orderedUrls = preferredUrl
       ? [preferredUrl, ...urls.filter((url) => url !== preferredUrl)]
       : urls;
 
-    console.log("[fileApi] fetchBlobWithMetaFromUrls:start", {
-      urls,
-      preferredUrl,
-      orderedUrls,
-    });
-
     for (const url of orderedUrls) {
       try {
-        console.log("[fileApi] fetchBlobWithMetaFromUrls:trying", { url });
         const response = await https.get(url, {
           responseType: "blob",
         });
@@ -342,19 +347,15 @@ export const FileApi = {
           response?.headers?.["X-Viewer-Client-Ip"] ??
           "";
 
-        console.log("[fileApi] fetchBlobWithMetaFromUrls:blob", {
-          url,
-          size: blob.size,
-          type: blob.type,
-          clientIpHeader,
-        });
-
         return {
           blob,
           clientIp: String(clientIpHeader || "").trim() || undefined,
         };
       } catch (error) {
-        console.error("[fileApi] fetchBlobWithMetaFromUrls:failed", { url, error });
+        console.error("[fileApi] fetchBlobWithMetaFromUrls:failed", {
+          url,
+          error,
+        });
         lastError = error;
       }
     }

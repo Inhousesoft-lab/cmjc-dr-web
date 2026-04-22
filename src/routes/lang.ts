@@ -14,13 +14,14 @@ export function normalizeLang(input?: string | null): SupportedLang | null {
   // en-US, ko-KR 같은 케이스 처리: 앞 2글자만 사용
   const base = lower.split("-")[0];
 
-  return (SUPPORTED_LANGS as readonly string[]).includes(base) ? (base as SupportedLang) : null;
+  return (SUPPORTED_LANGS as readonly string[]).includes(base)
+    ? (base as SupportedLang)
+    : null;
 }
 
 export function detectBrowserLang(): SupportedLang {
   const saved = localStorage.getItem(LOCALE_KEY);
   const savedNorm = normalizeLang(saved);
-  console.log("lang.ts detectBrowserLang saved="+saved+", savedNorm="+savedNorm);
 
   if (savedNorm) return savedNorm;
 

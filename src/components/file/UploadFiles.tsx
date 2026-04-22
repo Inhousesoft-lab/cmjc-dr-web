@@ -49,6 +49,13 @@ interface ViewerState {
   fileKey: string;
 }
 
+const createFileUid = () => {
+  const randomValues = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(randomValues);
+
+  return `${Date.now()}-${randomValues[0].toString(16)}`;
+};
+
 export default function UploadFiles({
   taskSeCd = "dr",
   menuSn = 1,
@@ -85,9 +92,12 @@ export default function UploadFiles({
   const [downloadReasonOpen, setDownloadReasonOpen] = useState(false);
   const [downloadReason, setDownloadReason] = useState("");
   const [downloadReasonError, setDownloadReasonError] = useState("");
-  const [pendingDownloadFile, setPendingDownloadFile] = useState<FileItem | null>(null);
+  const [pendingDownloadFile, setPendingDownloadFile] =
+    useState<FileItem | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(
+    null,
+  );
   const [isViewing, setIsViewing] = useState(false);
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
   const [viewerState, setViewerState] = useState<ViewerState | null>(null);
@@ -269,7 +279,7 @@ export default function UploadFiles({
     // File 객체를 유지하면서 uid 속성만 추가
     const newFiles = Array.from(files).map((file) => {
       const fileWithId = file as FileWithId;
-      fileWithId.uid = `${Date.now()}-${Math.random()}`;
+      fileWithId.uid = createFileUid();
       return fileWithId;
     });
 
@@ -324,7 +334,6 @@ export default function UploadFiles({
   const handleUpload = async () => {
     if (readOnly) return;
     if (fileList.length === 0) {
-      console.log("업로드 안함");
       return;
     }
     setIsUploading(true);
@@ -563,7 +572,11 @@ export default function UploadFiles({
               <Button
                 variant="outlined"
                 color="error"
-                disabled={!savedFileList.some((f) => f.check) || loadingFiles || isUploading}
+                disabled={
+                  !savedFileList.some((f) => f.check) ||
+                  loadingFiles ||
+                  isUploading
+                }
                 onClick={handleDeleteSelected}
               >
                 선택삭제
@@ -574,10 +587,11 @@ export default function UploadFiles({
             {savedFileList.map((file) => {
               const fileKey = file.atchFileId ?? file.fileNm ?? "";
               const downloadUrl = FileApi.getDownloadStreamUrls(file)[0] ?? "";
-              const ext =
-                (file.fileExtnNm ??
-                  file.fileNm?.split(".").pop() ??
-                  "").toLowerCase();
+              const ext = (
+                file.fileExtnNm ??
+                file.fileNm?.split(".").pop() ??
+                ""
+              ).toLowerCase();
               const isPdf = ext === "pdf";
               const isImage = [
                 "png",
@@ -595,7 +609,12 @@ export default function UploadFiles({
                     readOnly ? undefined : (
                       <IconButton
                         edge="end"
-                        disabled={loadingFiles || isUploading || isDownloading || isViewing}
+                        disabled={
+                          loadingFiles ||
+                          isUploading ||
+                          isDownloading ||
+                          isViewing
+                        }
                         onClick={() => fileRemoveOnly(file.atchFileId ?? "")}
                       >
                         <DeleteIcon />
@@ -695,11 +714,15 @@ export default function UploadFiles({
                             variant="outlined"
                             size="small"
                             disabled={
-                              loadingFiles || isUploading || isDownloading || isViewing
+                              loadingFiles ||
+                              isUploading ||
+                              isDownloading ||
+                              isViewing
                             }
                             endIcon={
                               isDownloading &&
-                              downloadingFileId === (file.atchFileId ?? null) ? (
+                              downloadingFileId ===
+                                (file.atchFileId ?? null) ? (
                                 <CircularProgress size={14} color="inherit" />
                               ) : undefined
                             }
@@ -733,7 +756,12 @@ export default function UploadFiles({
         </Box>
       )}
 
-      <Dialog open={downloadReasonOpen} onClose={closeDownloadReasonDialog} maxWidth="sm" fullWidth>
+      <Dialog
+        open={downloadReasonOpen}
+        onClose={closeDownloadReasonDialog}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>다운로드 사유 입력</DialogTitle>
         <DialogContent>
           <TextField
@@ -751,7 +779,10 @@ export default function UploadFiles({
               }
             }}
             error={!!downloadReasonError}
-            helperText={downloadReasonError || "개인정보 포함 문서는 다운로드 사유가 필요합니다."}
+            helperText={
+              downloadReasonError ||
+              "개인정보 포함 문서는 다운로드 사유가 필요합니다."
+            }
           />
         </DialogContent>
         <DialogActions>
@@ -765,7 +796,9 @@ export default function UploadFiles({
             }}
             disabled={isDownloading}
             startIcon={
-              isDownloading ? <CircularProgress size={16} color="inherit" /> : undefined
+              isDownloading ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : undefined
             }
           >
             다운로드
@@ -797,7 +830,9 @@ export default function UploadFiles({
           fileType={viewerState.fileType}
           onLoadingChange={(loading) => {
             const activeFile = savedFileList.find(
-              (file) => (file.atchFileId ?? file.fileNm ?? "viewer-file") === viewerState.fileKey,
+              (file) =>
+                (file.atchFileId ?? file.fileNm ?? "viewer-file") ===
+                viewerState.fileKey,
             );
 
             if (activeFile) {

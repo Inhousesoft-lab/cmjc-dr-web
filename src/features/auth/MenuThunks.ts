@@ -1,21 +1,35 @@
-import { createAsyncThunk } from '@reduxjs/toolkit'
-import https from '@/api/axiosInstance'
-import { selectMenuListApiPath, getMenuApiPath, insertMenuApiPath, updateMenuApiPath, saveMenuApiPath, deleteMenuApiPath } from '@/api/auth/MenuApiPaths'
-import { mockMenuList, MenuPVO, MenuRVO, MenuListPVO, MenuListRVO, MenuDVO  } from './MenuTypes'
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import https from "@/api/axiosInstance";
+import {
+  selectMenuListApiPath,
+  getMenuApiPath,
+  insertMenuApiPath,
+  updateMenuApiPath,
+  saveMenuApiPath,
+  deleteMenuApiPath,
+} from "@/api/auth/MenuApiPaths";
+import {
+  mockMenuList,
+  MenuPVO,
+  MenuRVO,
+  MenuListPVO,
+  MenuListRVO,
+  MenuDVO,
+} from "./MenuTypes";
 
 // ✅ RootState 타입이 프로젝트에 있으면 그걸 쓰는 게 베스트.
 // 지금은 예시로 최소 형태만 잡아둠(컴파일 통과용).
 type RootStateLike = {
   menu: {
-    list: MenuRVO[]
-    loading: boolean
-    langSeCd: string | null
-    loaded: boolean
-  }
-}
+    list: MenuRVO[];
+    loading: boolean;
+    langSeCd: string | null;
+    loaded: boolean;
+  };
+};
 
 /**
- * 대국민포털_메뉴기본 정보 목록 조회 
+ * 대국민포털_메뉴기본 정보 목록 조회
  * Rest Api Result JSON
  * {
  *  "code": "0",
@@ -74,8 +88,12 @@ type RootStateLike = {
  *   }
  * }
  */
-export const selectMenuList = createAsyncThunk<MenuListRVO, MenuListPVO | undefined, {state: RootStateLike}>(
-  '/auth/selectMenuList',
+export const selectMenuList = createAsyncThunk<
+  MenuListRVO,
+  MenuListPVO | undefined,
+  { state: RootStateLike }
+>(
+  "/auth/selectMenuList",
   async (params: MenuListPVO = {}) => {
     try {
       const res = await https.post(selectMenuListApiPath(), params);
@@ -83,24 +101,26 @@ export const selectMenuList = createAsyncThunk<MenuListRVO, MenuListPVO | undefi
       // 여기서 “서버 응답”을 표준 형태로 맞춰서 return
       const payload = res.data.data?.list;
 
-      // 서버가 Menu[] 형식으로 주므로 MenuListRVO 형식으로 데이터 구조 재조정 
+      // 서버가 Menu[] 형식으로 주므로 MenuListRVO 형식으로 데이터 구조 재조정
       return {
         list: Array.isArray(payload) ? payload : [],
-        totalCount: Array.isArray(payload) ? payload.length : 0
+        totalCount: Array.isArray(payload) ? payload.length : 0,
       } as MenuListRVO;
-    }
-    // 서버가 없거나 에러 나면 강제로 mock 데이터 사용 
-    catch (e) {
+    } catch (e) {
+      // 서버가 없거나 에러 나면 강제로 mock 데이터 사용
       // 개발/데모 환경용 fallback (백엔드 연동 시 제거 가능)
-      console.log("MenuThunks selectMenuList mockMenuList=",mockMenuList);
+
       const filtered = mockMenuList.filter((n) => {
         //if (!params.searchWrd) return true;
         //const v = (params.searchCnd === 'content' ? n.content : n.title) || '';
         //return v.includes(params.searchWrd);
-        return true; // edit !! 
+        return true; // edit !!
       });
 
-      const result: MenuListRVO = { list: filtered as MenuRVO[], totalCount: filtered.length }
+      const result: MenuListRVO = {
+        list: filtered as MenuRVO[],
+        totalCount: filtered.length,
+      };
       return result;
     }
   },
@@ -116,120 +136,110 @@ export const selectMenuList = createAsyncThunk<MenuListRVO, MenuListPVO | undefi
       const hasMenu = state.menu.list?.length > 0;
       const sameLang = state.menu.langSeCd === desiredLang;
 
-      if(state.menu.loading)return false;             // 중복 호출 방지
+      if (state.menu.loading) return false; // 중복 호출 방지
 
       // 조회된 메뉴 목록이 없어서 빈 배열이어도 "해당 언어로 이미 로드됨"이면 재호출 막기
-      if(state.menu.loaded && sameLang)return false;  // hasMenu 제거, 조회된 메뉴 목록이 없으면 []이므로 state.menu.list?.length = 0 이고, hasMenu=false가 되어서 무한 조회되는 현상 발생!!
+      if (state.menu.loaded && sameLang) return false; // hasMenu 제거, 조회된 메뉴 목록이 없으면 []이므로 state.menu.list?.length = 0 이고, hasMenu=false가 되어서 무한 조회되는 현상 발생!!
 
       return true; // 호출 필요
-    }
-  }
-)
+    },
+  },
+);
 
 /**
- * 대국민포털_메뉴기본 정보 조회 
+ * 대국민포털_메뉴기본 정보 조회
  */
 export const getMenu = createAsyncThunk<MenuRVO, MenuPVO | undefined>(
-  '/auth/getMenu',
+  "/auth/getMenu",
   async (params: MenuPVO = {}) => {
     try {
       const res = await https.post(getMenuApiPath(), params);
 
       const payload = res.data;
 
-      // 서버가 MenuRVO 형식으로 단 건 데이터를 반환함. 
+      // 서버가 MenuRVO 형식으로 단 건 데이터를 반환함.
       return payload;
-    }
-    // 서버가 없거나 에러 나면 강제로 mock 데이터 사용 
-    catch (e) {
+    } catch (e) {
+      // 서버가 없거나 에러 나면 강제로 mock 데이터 사용
       // 개발/데모 환경용 fallback (백엔드 연동 시 제거 가능)
-      console.log("MenuThunks getMenu mockMenuList=",mockMenuList);
-      return (mockMenuList).find((n) => n) || null;
+
+      return mockMenuList.find((n) => n) || null;
     }
-  }
-)
+  },
+);
 
 /**
- * 대국민포털_메뉴기본 입력 
+ * 대국민포털_메뉴기본 입력
  */
 export const insertMenu = createAsyncThunk<number, MenuPVO>(
-  '/auth/insertMenu',
+  "/auth/insertMenu",
   async (params: MenuPVO) => {
     try {
       const res = await https.post(insertMenuApiPath(), params);
 
       const insertCnt = res.data;
 
-      // 입력된 건수 반환함. 
+      // 입력된 건수 반환함.
       return insertCnt;
-    }
-    catch (e) {
-      console.log("MenuThunks insertMenu");
+    } catch (e) {
       return -1;
     }
-  }
-)
+  },
+);
 
 /**
- * 대국민포털_메뉴기본 수정 
+ * 대국민포털_메뉴기본 수정
  */
 export const updateMenu = createAsyncThunk<number, MenuPVO>(
-  '/auth/updateMenu',
+  "/auth/updateMenu",
   async (params: MenuPVO) => {
     try {
       const res = await https.post(updateMenuApiPath(), params);
 
       const updateCnt = res.data;
 
-      // 수정된 건수 반환함. 
+      // 수정된 건수 반환함.
       return updateCnt;
-    }
-    catch (e) {
-      console.log("MenuThunks updateMenu");
+    } catch (e) {
       return -1;
     }
-  }
-)
+  },
+);
 
 /**
- * 대국민포털_메뉴기본 저장 
+ * 대국민포털_메뉴기본 저장
  */
 export const saveMenu = createAsyncThunk<number, MenuPVO>(
-  '/auth/saveMenu',
+  "/auth/saveMenu",
   async (params: MenuPVO) => {
     try {
       const res = await https.post(saveMenuApiPath(), params);
 
       const saveCnt = res.data;
 
-      // 저장된 건수 반환함. 
+      // 저장된 건수 반환함.
       return saveCnt;
-    }
-    catch (e) {
-      console.log("MenuThunks saveMenu error!!");
+    } catch (e) {
       return -1;
     }
-  }
-)
+  },
+);
 
 /**
- * 대국민포털_메뉴기본 삭제 
+ * 대국민포털_메뉴기본 삭제
  */
 export const deleteMenu = createAsyncThunk<number, MenuDVO>(
-  '/auth/deleteMenu',
+  "/auth/deleteMenu",
   async (params: MenuDVO) => {
     try {
       const res = await https.post(deleteMenuApiPath(), params);
 
       const deleteCnt = res.data;
 
-      // 삭제된 건수 반환함. 
+      // 삭제된 건수 반환함.
       return deleteCnt;
-    }
-    catch (e) {
-      console.log("MenuThunks deleteMenu error!!");
+    } catch (e) {
       return -1;
     }
-  }
-)
-
+  },
+);
