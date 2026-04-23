@@ -1,5 +1,6 @@
 import { InternalAxiosRequestConfig } from "axios";
 import { DR_ADMIN_AUTH_API } from "@/features/auth/authApi";
+import { applyDrMenuUrlHeader } from "@/utils/drMenuUrl";
 
 const WORK_ACCESS_LOG_EXCLUDE = [
   "/api/dr/auth/work-access-log/insert",
@@ -192,7 +193,7 @@ export const fireWorkAccessLog = (config: InternalAxiosRequestConfig | any) => {
   void fetch("/api/dr/auth/work-access-log/insert", {
     method: "POST",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: applyDrMenuUrlHeader({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       urlAddr: pagePath,
       taskSeCdNo: "DR",

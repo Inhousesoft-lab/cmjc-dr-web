@@ -1,6 +1,6 @@
 import { SafeError } from "@/features/com/Api";
-import { fireWorkAccessLog } from "@/api/workAccessLog";
 import { notifyUnauthorized } from "@/utils/authSession";
+import { setDrMenuUrlHeader } from "@/utils/drMenuUrl";
 import axios, { AxiosInstance } from "axios";
 
 /**
@@ -45,7 +45,7 @@ const https: AxiosInstance = axios.create({
 });
 
 https.interceptors.request.use((config) => {
-  fireWorkAccessLog(config);
+  setDrMenuUrlHeader(config.headers);
   return config;
 });
 
@@ -78,5 +78,5 @@ https.interceptors.response.use(
     return Promise.reject(error);
   },
 );
- 
+
 export { https };

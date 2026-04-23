@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
-import { fireWorkAccessLog } from "@/api/workAccessLog";
 import { notifyUnauthorized } from "@/utils/authSession";
+import { setDrMenuUrlHeader } from "@/utils/drMenuUrl";
 
 export const getApiBaseURL = () => {
   const envUrl = String(import.meta.env.VITE_API_BASE_URL ?? "").trim();
@@ -43,7 +43,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  fireWorkAccessLog(config);
+  setDrMenuUrlHeader(config.headers);
 
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
