@@ -34,7 +34,9 @@ export const isLoginPath = (value?: string | null) => {
   if (!pathname) return false;
 
   const segments = pathname.split("/").filter(Boolean);
-  return normalizeLang(segments[0]) !== null && segments[1] === "login";
+  if (normalizeLang(segments[0]) === null) return false;
+
+  return segments[1] === "login" || segments[1] === "portal-login";
 };
 
 export const canUsePostLoginRedirect = (value?: string | null) => {

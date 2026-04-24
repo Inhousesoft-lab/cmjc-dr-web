@@ -1,6 +1,7 @@
 import { AppDispatch } from "@/app/store";
 import {
   getDrAdminAuthConfig,
+  readInternalPortalToken,
   readStoredAdminAuthToken,
 } from "@/features/auth/adminAuth";
 import { normalizeDocDestructionRoles } from "@/features/docDestruction/docDestructionAccess";
@@ -125,6 +126,40 @@ export const login = createAsyncThunk<
   }
 });
 
+export const portalLogin = createAsyncThunk<
+  { user: User; accessToken: string | null },
+  void,
+  { dispatch: AppDispatch; rejectValue: AuthError }
+>("auth/portalLogin", async (_, thunkAPI) => {
+  try {
+    const { tokenLoginPath } = getDrAdminAuthConfig();
+    const accessToken = readInternalPortalToken();
+
+    if (!accessToken) {
+      return thunkAPI.rejectWithValue({
+        message: "포탈 accessToken 쿠키를 확인하지 못했습니다.",
+      });
+    }
+
+    await https.post(tokenLoginPath, { token: accessToken });
+
+    const user = await fetchCurrentUser();
+
+    if (!user) {
+      return thunkAPI.rejectWithValue({
+        message: "포탈 로그인 사용자 정보를 확인하지 못했습니다.",
+      });
+    }
+
+    return { user, accessToken };
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue({
+      status: err?.response?.status,
+      message: err?.response?.data?.message ?? "포탈 로그인 실패",
+    });
+  }
+});
+
 export const checkSession = createAsyncThunk<
   User | null,
   void,
@@ -194,6 +229,21 @@ const authSlice = createSlice({
         state.accessToken = action.payload.accessToken;
       })
       .addCase(login.rejected, (state) => {
+        state.loginSubmitting = false;
+        state.initialized = true;
+        clearAuthState(state);
+      })
+      .addCase(portalLogin.pending, (state) => {
+        state.loginSubmitting = true;
+      })
+      .addCase(portalLogin.fulfilled, (state, action) => {
+        state.loginSubmitting = false;
+        state.initialized = true;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.accessToken = action.payload.accessToken;
+      })
+      .addCase(portalLogin.rejected, (state) => {
         state.loginSubmitting = false;
         state.initialized = true;
         clearAuthState(state);

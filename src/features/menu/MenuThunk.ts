@@ -1,7 +1,7 @@
 import { AppDispatch, RootState } from "@/app/store";
+import staticMenuItems from "@/routes/menuItems";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { Menu } from "./MenuSlice";
-import https from "@/api/axiosInstance";
 
 export const getMenuList = createAsyncThunk<
   Menu[],
@@ -13,15 +13,5 @@ export const getMenuList = createAsyncThunk<
     return rejectWithValue("NOT_AUTHENTICATED");
   }
 
-  try {
-    const res = await https.get("/api/dr/menus/tree/authorized");
-    if (res.status !== 200) {
-      throw new Error("메뉴 조회 실패");
-    }
-    return res.data.list as Menu[];
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error ? error.message : "알 수 없는 오류",
-    );
-  }
+  return staticMenuItems as Menu[];
 });

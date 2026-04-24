@@ -20,6 +20,7 @@ import { getRuntimeMenuTree } from "@/features/menu/runtimeMenu";
 import { ComponentKey, componentMap } from "./ComponentMap";
 import { getDefaultLandingPath } from "./defaultLanding";
 import Layout from "@/components/layout/Layout";
+import PortalLoginEntry from "@/pages/portal/PortalLoginEntry";
 
 type LangElementProps = {
   byLang: Record<string, ComponentKey | null | undefined>;
@@ -122,9 +123,9 @@ const LangGuard = ({ children }: { children: JSX.Element }) => {
 };
 
 export default function Router() {
-  const { list, loaded, loading, error } = useAppSelector((s) => s.menuList);
+  const { list } = useAppSelector((s) => s.menuList);
   const runtimeMenuTree = useMemo(() => getRuntimeMenuTree(list), [list]);
-  const shouldHandleNotFound = !loading && (loaded || !!error || list.length > 0);
+  const shouldHandleNotFound = runtimeMenuTree.length > 0;
 
   const renderRoutes = (routes: Menu[]): ReactElement[] => {
     return routes.flatMap((route) => {
@@ -162,6 +163,7 @@ export default function Router() {
           path="/:lang/login"
           element={<LangElement byLang={{ ko: "Login", en: "Login" }} />}
         />
+        <Route path="/:lang/portal-login" element={<PortalLoginEntry />} />
         <Route
           element={
             <AuthGuard>

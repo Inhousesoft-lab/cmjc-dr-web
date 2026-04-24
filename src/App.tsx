@@ -2,7 +2,6 @@ import * as React from "react";
 import { persistor } from "@/app/store";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { checkSession, requestLogout } from "@/features/auth/AuthSlice";
-import { getMenuList } from "@/features/menu/MenuThunk";
 import Router from "@/routes/Router";
 import { getLangFromPathname } from "@/routes/lang";
 import {
@@ -28,23 +27,12 @@ dayjs.locale("ko");
 export default function App() {
   const dispatch = useAppDispatch();
   const ready = UseLangStylesReady();
-  const { isAuthenticated, initialized } = useAppSelector((s) => s.auth);
-  const { loaded: menuLoaded, loading: menuLoading } = useAppSelector(
-    (s) => s.menuList,
-  );
+  const { initialized } = useAppSelector((s) => s.auth);
 
   React.useEffect(() => {
     if (initialized) return;
     void dispatch(checkSession());
   }, [dispatch, initialized]);
-
-  React.useEffect(() => {
-    if (!ready || !initialized || !isAuthenticated || menuLoaded || menuLoading) {
-      return;
-    }
-
-    void dispatch(getMenuList());
-  }, [dispatch, initialized, isAuthenticated, menuLoaded, menuLoading, ready]);
 
   React.useEffect(() => {
     const handleUnauthorized = async () => {

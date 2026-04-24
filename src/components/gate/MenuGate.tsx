@@ -1,5 +1,4 @@
 import React from "react";
-import { useAppSelector } from "@/app/hooks";
 
 export default function MenuGate({
   children,
@@ -8,9 +7,5 @@ export default function MenuGate({
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }) {
-  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
-  const { loading, loaded } = useAppSelector((s) => s.menuList);
-
-  if (isAuthenticated && (loading || !loaded)) return <>{fallback}</>;
   return <>{children}</>;
 }
