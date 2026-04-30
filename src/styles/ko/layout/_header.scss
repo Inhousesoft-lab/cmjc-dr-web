@@ -133,7 +133,9 @@
       gap: 10px;
 
       .user_name {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
         position: relative;
         padding: 0 0 0 20px;
         font-size: 16px;
@@ -157,6 +159,10 @@
           margin: 0 5px 0 0;
           color: var(--color_02);
         }
+
+        .user_dept {
+          color: var(--color-text-2);
+        }
       }
 
       // 접속 시간
@@ -178,6 +184,22 @@
         color: var(--color_01);
         border: 1px solid var(--color_01);
         border-radius: 4px;
+      }
+
+      .btn_member_manage,
+      .btn_password_change {
+        display: inline-block;
+        font-size: 14px;
+        text-align: center;
+        padding: 4px 10px;
+        background: #fff7f0;
+        color: var(--color_01);
+        border: 1px solid var(--color_01);
+        border-radius: 4px;
+      }
+
+      .btn_password_change {
+        background: #eef7ff;
       }
     }
   }

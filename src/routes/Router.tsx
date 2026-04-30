@@ -20,7 +20,6 @@ import { getRuntimeMenuTree } from "@/features/menu/runtimeMenu";
 import { ComponentKey, componentMap } from "./ComponentMap";
 import { getDefaultLandingPath } from "./defaultLanding";
 import Layout from "@/components/layout/Layout";
-import PortalLoginEntry from "@/pages/portal/PortalLoginEntry";
 
 type LangElementProps = {
   byLang: Record<string, ComponentKey | null | undefined>;
@@ -163,7 +162,6 @@ export default function Router() {
           path="/:lang/login"
           element={<LangElement byLang={{ ko: "Login", en: "Login" }} />}
         />
-        <Route path="/:lang/portal-login" element={<PortalLoginEntry />} />
         <Route
           element={
             <AuthGuard>

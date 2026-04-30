@@ -35,17 +35,17 @@ const styleGroup = {
 };
 
 type InstitutionOption = {
-  brno: string;
-  instNm: string;
+  deptNo: string;
+  deptNm: string;
 };
 
 type ResearcherOption = {
-  mbrNo: string;
+  mbrId: string;
   mbrNm: string;
 };
 
 const ALL_INDIVIDUAL_OPTION: ResearcherOption = {
-  mbrNo: "ALL",
+  mbrId: "ALL",
   mbrNm: "전체",
 };
 
@@ -79,7 +79,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   React.useEffect(() => {
     const fetchInstitutions = async () => {
       try {
-        const res = await https.get("/api/dr/portal/institutions", {
+        const res = await https.get("/api/dr/departments", {
           params: { pageNum: 1, pageSize: 1000 },
         });
         const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
@@ -104,8 +104,8 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
 
     const fetchResearchers = async () => {
       try {
-        const res = await https.get("/api/dr/portal/researchers", {
-          params: { brno: deptId, pageNum: 1, pageSize: 1000 },
+        const res = await https.get("/api/dr/members", {
+          params: { deptNo: deptId, pageNum: 1, pageSize: 1000 },
         });
         const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
         setResearchers([
@@ -260,8 +260,8 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
                 <Typography>부서</Typography>
               </MenuItem>
               {institutions.map((institution) => (
-                <MenuItem key={institution.brno} value={institution.brno}>
-                  {institution.instNm}
+                <MenuItem key={institution.deptNo} value={institution.deptNo}>
+                  {institution.deptNm}
                 </MenuItem>
               ))}
             </Select>
@@ -280,7 +280,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
                 <Typography>이름</Typography>
               </MenuItem>
               {researchers.map((researcher) => (
-                <MenuItem key={researcher.mbrNo} value={researcher.mbrNo}>
+                <MenuItem key={researcher.mbrId} value={researcher.mbrId}>
                   {researcher.mbrNm}
                 </MenuItem>
               ))}

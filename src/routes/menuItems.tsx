@@ -161,6 +161,46 @@ const menuItems: Menu[] = [
     },
     menu: true,
   },
+  {
+    path: "members",
+    label: "회원관리",
+    menuType: "MENU",
+    element: {
+      ko: "MemberManagement",
+      en: "MemberManagement",
+    },
+    menu: false,
+  },
+  {
+    path: "members/create",
+    label: "회원 등록",
+    menuType: "MENU",
+    element: {
+      ko: "MemberForm",
+      en: "MemberForm",
+    },
+    menu: false,
+  },
+  {
+    path: "members/:mbrId",
+    label: "회원 수정",
+    menuType: "MENU",
+    element: {
+      ko: "MemberForm",
+      en: "MemberForm",
+    },
+    menu: false,
+  },
+  {
+    path: "password-change",
+    label: "비밀번호 변경",
+    menuType: "MENU",
+    element: {
+      ko: "PasswordChange",
+      en: "PasswordChange",
+    },
+    menu: false,
+  },
 ];
 
 export default menuItems;

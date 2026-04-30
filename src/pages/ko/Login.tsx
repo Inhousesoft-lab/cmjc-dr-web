@@ -1,13 +1,13 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { login } from "@/features/auth/AuthSlice";
+import { getDefaultLandingPath } from "@/routes/defaultLanding";
 import {
-  clearPostLoginRedirect,
   canUsePostLoginRedirect,
+  clearPostLoginRedirect,
   getPostLoginRedirect,
 } from "@/utils/authSession";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getDefaultLandingPath } from "@/routes/defaultLanding";
 
 export default function Login() {
   const dispatch = useAppDispatch();
@@ -29,10 +29,9 @@ export default function Login() {
     list.length > 0 ? getDefaultLandingPath(lang, list) : `/${lang ?? "ko"}`;
   const fromPath = (location.state as any)?.from?.pathname;
   const storedPath = getPostLoginRedirect();
-  const targetPath =
-    canUsePostLoginRedirect(fromPath)
-      ? fromPath
-      : storedPath || fallbackPath;
+  const targetPath = canUsePostLoginRedirect(fromPath)
+    ? fromPath
+    : storedPath || fallbackPath;
 
   useEffect(() => {
     if (!initialized || !isAuthenticated) {
@@ -62,7 +61,7 @@ export default function Login() {
     const trimmedPassword = password.trim();
 
     if (!trimmedId || !trimmedPassword) {
-      setErrorMsg("아이디와 비밀번호를 입력해주세요.");
+      setErrorMsg("아이디와 비밀번호를 입력해 주세요.");
       return;
     }
 
@@ -73,15 +72,16 @@ export default function Login() {
     if (login.fulfilled.match(result)) {
       clearPostLoginRedirect();
       navigate(targetPath, { replace: true });
-    } else {
-      setErrorMsg("아이디 또는 비밀번호가 올바르지 않습니다.");
+      return;
     }
+
+    setErrorMsg("아이디 또는 비밀번호가 올바르지 않습니다.");
   };
 
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit} style={styles.form}>
-        <h2>로그인</h2>
+        <h2 style={styles.title}>로그인</h2>
 
         <label style={styles.label}>아이디</label>
         <input
@@ -90,6 +90,7 @@ export default function Login() {
           onChange={(e) => setId(e.target.value)}
           style={styles.input}
           placeholder="아이디를 입력하세요"
+          autoComplete="username"
         />
 
         <label style={styles.label}>비밀번호</label>
@@ -99,6 +100,7 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
           placeholder="비밀번호를 입력하세요"
+          autoComplete="current-password"
         />
 
         {errorMsg && <p style={styles.error}>{errorMsg}</p>}
@@ -126,6 +128,11 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 8,
     boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
   },
+  title: {
+    margin: 0,
+    marginBottom: 16,
+    fontSize: 22,
+  },
   label: {
     display: "block",
     marginTop: 12,
@@ -133,6 +140,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
   },
   input: {
+    boxSizing: "border-box",
     width: "100%",
     padding: "8px 10px",
     fontSize: 14,

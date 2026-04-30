@@ -1,9 +1,6 @@
 const DOC_DESTRUCTION_ROLE_ORDER = [
-  "DR_A00",
-  "DR_A01",
-  "DR_A02",
-  "DR_A03",
-  "DR_A04",
+  "ADMIN",
+  "CANCEL_ADMIN",
 ] as const;
 
 export const DOC_DESTRUCTION_ROLES = new Set<string>(DOC_DESTRUCTION_ROLE_ORDER);
@@ -14,11 +11,6 @@ export const normalizeDocDestructionRoles = (roles: string[] = []) => {
       .map((role) => String(role ?? "").trim())
       .filter(Boolean),
   );
-
-  // 전체 권한은 하위 파기 권한까지 함께 본다.
-  if (normalized.has("DR_A00")) {
-    DOC_DESTRUCTION_ROLE_ORDER.forEach((role) => normalized.add(role));
-  }
 
   return Array.from(normalized);
 };

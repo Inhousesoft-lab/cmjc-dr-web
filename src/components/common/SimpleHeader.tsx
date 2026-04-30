@@ -4,7 +4,8 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { requestLogout } from "@/features/auth/AuthSlice";
 import { clearPostLoginRedirect } from "@/utils/authSession";
 import { useTranslation } from "react-i18next";
-import { getLangFromPathname } from "@/routes/lang";
+import { getLangFromPathname, langPath } from "@/routes/lang";
+import { isDrAdminUser } from "@/features/auth/authAccess";
 
 export default function SimpleHeader() {
   const { t } = useTranslation();
@@ -12,8 +13,10 @@ export default function SimpleHeader() {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAppSelector((s) => s.auth.user);
-  const [isNotifyOpen, setIsNotifyOpen] = React.useState(false);
   const lang = getLangFromPathname(location.pathname);
+  const isAdmin = isDrAdminUser(user);
+  const deptName = user?.deptNm ?? user?.instNm ?? "";
+  const userName = user?.userNm ?? user?.userId ?? "-";
 
   const onLogout = React.useCallback(() => {
     clearPostLoginRedirect();
@@ -22,34 +25,40 @@ export default function SimpleHeader() {
     });
   }, [dispatch, lang, navigate]);
 
+  const onMemberManagement = React.useCallback(() => {
+    navigate(langPath("members", lang));
+  }, [lang, navigate]);
+
+  const onPasswordChange = React.useCallback(() => {
+    navigate(langPath("password-change", lang));
+  }, [lang, navigate]);
+
   return (
     <div id="header">
       <div className="inner">
         <div className="util_group">
           <div className="user_info">
             <p className="user_name">
-              <span>{user?.userNm ?? user?.userId ?? "-"}</span>
+              {deptName ? <span className="user_dept">({deptName})</span> : null}
+              <span>{userName}</span>
             </p>
-
-            <div
-              className="notification"
-              onMouseEnter={() => setIsNotifyOpen(true)}
-              onMouseLeave={() => setIsNotifyOpen(false)}
-            >
-              <button className="btn_notify">
-                <span className="ico_bell">
-                  <span className="blind">알림</span>
-                </span>
-                <span className="notify_count">3</span>
-              </button>
-              <div
-                className={`notify_box ${isNotifyOpen ? "is-open" : ""}`.trim()}
+            {isAdmin ? (
+              <button
+                type="button"
+                className="btn_member_manage"
+                onClick={onMemberManagement}
               >
-                <p>새 알림 1</p>
-                <p>새 알림 2</p>
-                <p>새 알림 3</p>
-              </div>
-            </div>
+                회원관리
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn_password_change"
+                onClick={onPasswordChange}
+              >
+                비밀번호 변경
+              </button>
+            )}
             <button type="button" className="btn_logout" onClick={onLogout}>
               {t("logout")}
             </button>

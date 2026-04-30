@@ -7,6 +7,7 @@ import docDestructionListReducer from "@/features/docDestruction/DocDestructionS
 import externalViewReducer from "@/features/ExternalViewSlice";
 import holdingInstitutionListReducer from "@/features/holdingInstitution/HoldingInstitutionSlice";
 import menuReducer from "@/features/menu/MenuSlice";
+import memberReducer from "@/features/member/MemberSlice";
 import uiReducer from "@/features/ui/uiSlice";
 
 const appReducer = combineReducers({
@@ -18,6 +19,7 @@ const appReducer = combineReducers({
   externalView: externalViewReducer,
   holdingInstitutionList: holdingInstitutionListReducer,
   menuList: menuReducer,
+  memberList: memberReducer,
   ui: uiReducer,
 });
 

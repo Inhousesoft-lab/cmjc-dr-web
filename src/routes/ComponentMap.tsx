@@ -10,6 +10,9 @@ import DigitalDocDetail from "@/pages/ko/DigitalDoc/DigitalDocDetail";
 import DigitalDocForm from "@/pages/ko/DigitalDoc/DigitalDocForm";
 import DigitalDocFormTemp from "@/pages/ko/DigitalDoc/DigitalDocFormTemp";
 import ExternalView from "@/pages/ko/ExternalView";
+import MemberManagement from "@/pages/ko/MemberManagement";
+import MemberForm from "@/pages/ko/MemberManagement/MemberForm";
+import PasswordChange from "@/pages/ko/PasswordChange";
 
 import DocDestructionReqList from "@/pages/ko/DocDestruction/DocDestructionReqList";
 import DocDestructionAppvList from "@/pages/ko/DocDestruction/DocDestructionAppvList";
@@ -28,6 +31,9 @@ export const componentMap = {
   DigitalDocForm,
   DigitalDocFormTemp,
   ExternalView,
+  MemberManagement,
+  MemberForm,
+  PasswordChange,
   DocDestructionEntry,
   DocDestructionReqList,
   DocDestructionAppvList,

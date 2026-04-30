@@ -1,0 +1,150 @@
+.department-dialog {
+  .MuiDialog-paper {
+    border: 1px solid #303336;
+    border-radius: 0;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 18px;
+    font-weight: 700;
+    background: #f2f4f6;
+    border-bottom: 1px solid #303336;
+  }
+
+  &__content {
+    padding: 8px 10px 0 !important;
+  }
+
+  &__search {
+    margin-bottom: 8px;
+  }
+
+  &__actions {
+    padding: 10px !important;
+  }
+}
+
+.department-tree {
+  min-height: 220px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 6px 0;
+  border-top: 1px solid #e7e7e7;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 28px;
+    border: 0;
+    background: transparent;
+    color: #111;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(0, 51, 38, 0.06);
+    }
+
+    &--selected {
+      background: rgba(25, 118, 210, 0.12);
+      font-weight: 700;
+    }
+  }
+
+  &__toggle,
+  &__toggle-spacer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__empty {
+    padding: 28px 0;
+    text-align: center;
+    color: var(--color-text-1);
+  }
+}
+
+.department-manage-dialog {
+  .MuiDialog-paper {
+    border-radius: var(--border-radius01);
+  }
+
+  &__title {
+    padding: 14px 20px;
+    font-size: 20px;
+    font-weight: 700;
+    border-bottom: 1px solid #303336;
+  }
+
+  &__content {
+    padding: 16px 20px !important;
+  }
+
+  &__actions {
+    padding: 0 20px 16px !important;
+  }
+}
+
+.department-manage {
+  display: grid;
+  grid-template-columns: minmax(260px, 34%) minmax(0, 1fr);
+  gap: 18px;
+  min-height: 430px;
+
+  &__tree-panel,
+  &__form-panel {
+    min-width: 0;
+  }
+
+  &__tree-panel {
+    border: 1px solid #d7dde2;
+    background: #fff;
+  }
+
+  &__toolbar {
+    min-height: 48px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e7e7e7;
+    background: #f7f9fa;
+  }
+
+  &__search {
+    margin-left: auto !important;
+    width: 150px;
+  }
+
+  &__tree {
+    min-height: 360px;
+    max-height: 420px;
+    padding: 8px 6px;
+    border-top: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .department-manage {
+    grid-template-columns: 1fr;
+  }
+}

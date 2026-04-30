@@ -1,9 +1,5 @@
 import { AppDispatch } from "@/app/store";
-import {
-  getDrAdminAuthConfig,
-  readInternalPortalToken,
-  readStoredAdminAuthToken,
-} from "@/features/auth/adminAuth";
+import { getDrAdminAuthConfig } from "@/features/auth/adminAuth";
 import { normalizeDocDestructionRoles } from "@/features/docDestruction/docDestructionAccess";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { https } from "@shared/utils/https";
@@ -14,13 +10,15 @@ interface User {
   userNm: string;
   instId?: string;
   instNm?: string;
+  deptNo?: string;
+  deptNm?: string;
+  authrtCd?: string;
   roles: string[];
 }
 
 interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
-  accessToken: string | null;
   sessionChecking: boolean;
   loginSubmitting: boolean;
   initialized: boolean;
@@ -31,16 +29,13 @@ interface AuthError {
   message: string;
 }
 
-type LoginArgs =
-  | { userId: string; password: string; token?: never }
-  | { token: string; userId?: never; password?: never };
+type LoginArgs = { userId: string; password: string };
 
 const normalizeUser = (payload: Partial<User>): User | null => {
   if (!payload.authenticated || !payload.userId) {
     return null;
   }
 
-  // 세션 복구 시에도 파기문서 권한 해석을 동일하게 맞춘다.
   const roles = normalizeDocDestructionRoles(
     Array.isArray(payload.roles)
       ? payload.roles.map((role) => String(role ?? "")).filter(Boolean)
@@ -53,6 +48,9 @@ const normalizeUser = (payload: Partial<User>): User | null => {
     userNm: String(payload.userNm ?? ""),
     instId: payload.instId ? String(payload.instId) : undefined,
     instNm: payload.instNm ? String(payload.instNm) : undefined,
+    deptNo: payload.deptNo ? String(payload.deptNo) : undefined,
+    deptNm: payload.deptNm ? String(payload.deptNm) : undefined,
+    authrtCd: payload.authrtCd ? String(payload.authrtCd) : undefined,
     roles,
   };
 };
@@ -68,7 +66,6 @@ const fetchCurrentUser = async () => {
 const initialState: AuthState = {
   isAuthenticated: false,
   user: null,
-  accessToken: null,
   sessionChecking: false,
   loginSubmitting: false,
   initialized: false,
@@ -77,37 +74,22 @@ const initialState: AuthState = {
 const clearAuthState = (state: AuthState) => {
   state.isAuthenticated = false;
   state.user = null;
-  state.accessToken = null;
 };
 
 export const login = createAsyncThunk<
-  { user: User; accessToken: string | null },
+  User,
   LoginArgs,
   { dispatch: AppDispatch; rejectValue: AuthError }
 >("auth/login", async (args, thunkAPI) => {
   try {
     const { loginPath } = getDrAdminAuthConfig();
-    let accessToken: string | null = null;
+    const normalizedUserId = String(args.userId ?? "").trim();
+    const normalizedPassword = String(args.password ?? "").trim();
 
-    if ("token" in args) {
-      accessToken = String(args.token ?? "").trim() || readStoredAdminAuthToken();
-
-      if (!accessToken) {
-        return thunkAPI.rejectWithValue({
-          message: "관리자 인증 토큰을 확인하지 못했습니다.",
-        });
-      }
-
-      await https.post(loginPath, { token: accessToken });
-    } else {
-      const normalizedUserId = String(args.userId ?? "").trim();
-      const normalizedPassword = String(args.password ?? "").trim();
-
-      await https.post(loginPath, {
-        userId: normalizedUserId,
-        password: normalizedPassword,
-      });
-    }
+    await https.post(loginPath, {
+      userId: normalizedUserId,
+      password: normalizedPassword,
+    });
 
     const user = await fetchCurrentUser();
 
@@ -117,45 +99,11 @@ export const login = createAsyncThunk<
       });
     }
 
-    return { user, accessToken };
+    return user;
   } catch (err: any) {
     return thunkAPI.rejectWithValue({
       status: err?.response?.status,
-      message: err?.response?.data?.message ?? "로그인 실패",
-    });
-  }
-});
-
-export const portalLogin = createAsyncThunk<
-  { user: User; accessToken: string | null },
-  void,
-  { dispatch: AppDispatch; rejectValue: AuthError }
->("auth/portalLogin", async (_, thunkAPI) => {
-  try {
-    const { tokenLoginPath } = getDrAdminAuthConfig();
-    const accessToken = readInternalPortalToken();
-
-    if (!accessToken) {
-      return thunkAPI.rejectWithValue({
-        message: "포탈 accessToken 쿠키를 확인하지 못했습니다.",
-      });
-    }
-
-    await https.post(tokenLoginPath, { token: accessToken });
-
-    const user = await fetchCurrentUser();
-
-    if (!user) {
-      return thunkAPI.rejectWithValue({
-        message: "포탈 로그인 사용자 정보를 확인하지 못했습니다.",
-      });
-    }
-
-    return { user, accessToken };
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue({
-      status: err?.response?.status,
-      message: err?.response?.data?.message ?? "포탈 로그인 실패",
+      message: err?.response?.data?.message ?? "로그인에 실패했습니다.",
     });
   }
 });
@@ -176,7 +124,7 @@ export const checkSession = createAsyncThunk<
 
     return thunkAPI.rejectWithValue({
       status,
-      message: err?.response?.data?.message ?? "세션 확인 실패",
+      message: err?.response?.data?.message ?? "세션 확인에 실패했습니다.",
     });
   }
 });
@@ -200,7 +148,7 @@ export const extendSession = createAsyncThunk<
 
     return thunkAPI.rejectWithValue({
       status,
-      message: err?.response?.data?.message ?? "세션 연장 실패",
+      message: err?.response?.data?.message ?? "세션 연장에 실패했습니다.",
     });
   }
 });
@@ -225,25 +173,9 @@ const authSlice = createSlice({
         state.loginSubmitting = false;
         state.initialized = true;
         state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.accessToken = action.payload.accessToken;
+        state.user = action.payload;
       })
       .addCase(login.rejected, (state) => {
-        state.loginSubmitting = false;
-        state.initialized = true;
-        clearAuthState(state);
-      })
-      .addCase(portalLogin.pending, (state) => {
-        state.loginSubmitting = true;
-      })
-      .addCase(portalLogin.fulfilled, (state, action) => {
-        state.loginSubmitting = false;
-        state.initialized = true;
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.accessToken = action.payload.accessToken;
-      })
-      .addCase(portalLogin.rejected, (state) => {
         state.loginSubmitting = false;
         state.initialized = true;
         clearAuthState(state);
