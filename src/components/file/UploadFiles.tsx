@@ -102,6 +102,7 @@ export default function UploadFiles({
   const [viewerState, setViewerState] = useState<ViewerState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
+  const dragDepthRef = useRef(0);
 
   const showSnackbar = (
     message: string,
@@ -270,13 +271,22 @@ export default function UploadFiles({
     }
   };
 
-  const handleFileSelect = (files: FileList | null) => {
+  const handleFileSelect = (files: FileList | File[] | null) => {
     if (readOnly) return;
-    if (isUploading) return;
+    if (isUploading || loadingFiles) {
+      showSnackbar("파일 처리 중에는 새 파일을 추가할 수 없습니다.", "warning");
+      return;
+    }
     if (!files) return;
 
     // File 객체를 유지하면서 uid 속성만 추가
-    const newFiles = Array.from(files).map((file) => {
+    const selectedFiles = Array.from(files).filter((file) => file instanceof File);
+    if (selectedFiles.length === 0) {
+      showSnackbar("업로드할 파일이 없습니다.", "warning");
+      return;
+    }
+
+    const newFiles = selectedFiles.map((file) => {
       const fileWithId = file as FileWithId;
       fileWithId.uid = createFileUid();
       return fileWithId;
@@ -296,36 +306,68 @@ export default function UploadFiles({
     }
   };
 
+  const getDroppedFiles = (dataTransfer: DataTransfer) => {
+    const itemFiles = Array.from(dataTransfer.items ?? [])
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => !!file);
+
+    if (itemFiles.length > 0) {
+      return itemFiles;
+    }
+
+    return Array.from(dataTransfer.files ?? []);
+  };
+
   // 파일 전체 삭제
   const handleRemoveFile = (uid: string) => {
     setFileList((prev) => prev.filter((file) => file.uid !== uid));
   };
 
-  const handleDragEnter = (e: React.DragEvent) => {
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
-  };
 
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
     if (readOnly) return;
-    if (isUploading) return;
+
+    dragDepthRef.current += 1;
+    e.dataTransfer.dropEffect = isUploading || loadingFiles ? "none" : "copy";
+
+    if (!isUploading && !loadingFiles) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+
+    dragDepthRef.current = Math.max(dragDepthRef.current - 1, 0);
+    if (dragDepthRef.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect =
+      readOnly || isUploading || loadingFiles ? "none" : "copy";
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepthRef.current = 0;
     setIsDragging(false);
 
-    const files = e.dataTransfer.files;
+    if (readOnly) return;
+    if (isUploading || loadingFiles) {
+      showSnackbar("파일 처리 중에는 새 파일을 추가할 수 없습니다.", "warning");
+      return;
+    }
+
+    const files = getDroppedFiles(e.dataTransfer);
     handleFileSelect(files);
   };
 
@@ -501,12 +543,28 @@ export default function UploadFiles({
       {!readOnly && (
         <Box
           ref={dropZoneRef}
-          className="upload-container"
+          className={[
+            "upload-container",
+            isDragging ? "is-dragging" : "",
+            isUploading || loadingFiles ? "is-disabled" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          role="button"
+          tabIndex={isUploading || loadingFiles ? -1 : 0}
+          aria-label="파일 드래그 앤 드롭 또는 클릭하여 업로드"
+          aria-disabled={isUploading || loadingFiles}
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => {
+            if (isUploading || loadingFiles) return;
+            fileInputRef.current?.click();
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
             if (isUploading || loadingFiles) return;
             fileInputRef.current?.click();
           }}
@@ -525,7 +583,9 @@ export default function UploadFiles({
             sx={{ fontSize: 64, color: "primary.main", mb: 2 }}
           />
           <Typography variant="h6" gutterBottom>
-            클릭하거나 파일을 드래그하여 업로드
+            {isDragging
+              ? "여기에 파일을 놓아 업로드"
+              : "클릭하거나 파일을 드래그하여 업로드"}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             여러 파일을 선택할 수 있습니다

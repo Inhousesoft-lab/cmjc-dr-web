@@ -15,6 +15,7 @@ import {
 import React from "react";
 import {
   AttachFile as AttachFileIcon,
+  CloudUpload as CloudUploadIcon,
   DeleteOutline as DeleteOutlineIcon,
 } from "@mui/icons-material";
 import { useLocation, useNavigate, useParams } from "react-router";
@@ -111,6 +112,9 @@ export default function DigitalDocForm() {
   const [values, setValues] = React.useState<FormValues>(INITIAL_FORM_VALUES);
   const [errors, setErrors] = React.useState<FieldErrors>({});
   const [uploadFiles, setUploadFiles] = React.useState<File[]>([]);
+  const [isFileDragging, setIsFileDragging] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const fileDragDepthRef = React.useRef(0);
 
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     values.docLclsfNo,
@@ -191,12 +195,69 @@ export default function DigitalDocForm() {
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files ?? []);
+  const appendUploadFiles = (files: FileList | File[] | null) => {
+    const selectedFiles = Array.from(files ?? []).filter(
+      (file) => file instanceof File,
+    );
+
     if (selectedFiles.length > 0) {
       setUploadFiles((prev) => [...prev, ...selectedFiles]);
     }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    appendUploadFiles(e.target.files);
     e.target.value = "";
+  };
+
+  const getDroppedFiles = (dataTransfer: DataTransfer) => {
+    const itemFiles = Array.from(dataTransfer.items ?? [])
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => !!file);
+
+    return itemFiles.length > 0
+      ? itemFiles
+      : Array.from(dataTransfer.files ?? []);
+  };
+
+  const handleFileDragEnter = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    fileDragDepthRef.current += 1;
+    event.dataTransfer.dropEffect = saving ? "none" : "copy";
+
+    if (!saving) {
+      setIsFileDragging(true);
+    }
+  };
+
+  const handleFileDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    fileDragDepthRef.current = Math.max(fileDragDepthRef.current - 1, 0);
+    if (fileDragDepthRef.current === 0) {
+      setIsFileDragging(false);
+    }
+  };
+
+  const handleFileDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = saving ? "none" : "copy";
+  };
+
+  const handleFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    fileDragDepthRef.current = 0;
+    setIsFileDragging(false);
+
+    if (saving) return;
+
+    appendUploadFiles(getDroppedFiles(event.dataTransfer));
   };
 
   const handleRemoveUploadFile = (index: number) => {
@@ -509,25 +570,69 @@ export default function DigitalDocForm() {
                   />
                 </Box>
               )}
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Button
-                  component="label"
-                  variant="outlined"
-                  startIcon={<AttachFileIcon />}
-                  disabled={saving}
-                >
-                  파일 선택
-                  <input
-                    hidden
-                    type="file"
-                    multiple
-                    onChange={handleFileInputChange}
-                  />
-                </Button>
-                <Typography variant="body2" color="text.secondary">
-                  {uploadFiles.length}개 파일
+              <Box
+                role="button"
+                tabIndex={saving ? -1 : 0}
+                aria-label="파일 드래그 앤 드롭 또는 클릭하여 업로드"
+                aria-disabled={saving}
+                className={[
+                  "upload-container",
+                  isFileDragging ? "is-dragging" : "",
+                  saving ? "is-disabled" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                onDragEnter={handleFileDragEnter}
+                onDragOver={handleFileDragOver}
+                onDragLeave={handleFileDragLeave}
+                onDrop={handleFileDrop}
+                onClick={() => {
+                  if (saving) return;
+                  fileInputRef.current?.click();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  if (saving) return;
+                  fileInputRef.current?.click();
+                }}
+                sx={(theme) => ({
+                  minHeight: 164,
+                  "--upload-border-color": isFileDragging
+                    ? theme.palette.primary.main
+                    : theme.palette.grey[300],
+                  "--upload-background-color": isFileDragging
+                    ? theme.palette.action.hover
+                    : theme.palette.background.paper,
+                  "--upload-hover-border-color": theme.palette.primary.main,
+                  "--upload-hover-background-color": theme.palette.action.hover,
+                })}
+              >
+                <CloudUploadIcon
+                  sx={{ fontSize: 64, color: "primary.main", mb: 2 }}
+                />
+                <Typography variant="h6" gutterBottom>
+                  {isFileDragging
+                    ? "여기에 파일을 놓아 업로드"
+                    : "클릭하거나 파일을 드래그하여 업로드"}
                 </Typography>
-              </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  여러 파일을 선택할 수 있습니다
+                </Typography>
+                {uploadFiles.length > 0 && (
+                  <Typography variant="caption" color="text.secondary" mt={0.75}>
+                    {uploadFiles.length}개 파일
+                  </Typography>
+                )}
+                <input
+                  ref={fileInputRef}
+                  hidden
+                  type="file"
+                  multiple
+                  onChange={handleFileInputChange}
+                  disabled={saving}
+                />
+              </Box>
               {uploadFiles.length > 0 && (
                 <Stack spacing={0.5}>
                   {uploadFiles.map((file, index) => (

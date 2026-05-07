@@ -1,4 +1,5 @@
 ﻿// DatePickerFt.tsx
+import * as React from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -29,6 +30,7 @@ export function MuiDatePickerFt({
   error,
   helperText,
 }: Props) {
+  const [open, setOpen] = React.useState(false);
   const parsedValue = value ? dayjs(value, "YYYYMMDD", true) : null;
   const parsedMinDate = minDate ? dayjs(minDate, "YYYYMMDD", true) : null;
   const parsedMaxDate = maxDate ? dayjs(maxDate, "YYYYMMDD", true) : dayjs("99991231", "YYYYMMDD", true);
@@ -36,9 +38,17 @@ export function MuiDatePickerFt({
   const dayjsValue = parsedValue?.isValid() ? parsedValue : null;
   const dayjsMinDate = parsedMinDate?.isValid() ? parsedMinDate : undefined;
   const dayjsMaxDate = parsedMaxDate?.isValid() ? parsedMaxDate : undefined;
+  const openCalendar = () => {
+    if (!disabled) {
+      setOpen(true);
+    }
+  };
 
   return (
     <DatePicker
+      open={open}
+      onOpen={openCalendar}
+      onClose={() => setOpen(false)}
       label={label}
       name={name}
       format="YYYY-MM-DD"
@@ -54,6 +64,13 @@ export function MuiDatePickerFt({
           size: "small",
           error,
           helperText,
+          onClick: openCalendar,
+          onKeyDown: (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openCalendar();
+            }
+          },
           ...(helperText === "" && { helperText: "" }),
         },
       }}
