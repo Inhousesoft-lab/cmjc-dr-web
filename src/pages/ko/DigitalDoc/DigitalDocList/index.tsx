@@ -34,7 +34,6 @@ const INITIAL_SEARCH_PARAMS: SearchValues = {
   docSclsfNo: "",
   docNo: "",
   docTtl: "",
-  hldPrdChangedOnly: false,
   pageNum: 1,
   pageSize: 10,
 };

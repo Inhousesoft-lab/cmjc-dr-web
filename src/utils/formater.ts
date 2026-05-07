@@ -27,9 +27,6 @@ export const ynLabel = (
 export const gvbkLabel = (value: string | undefined) =>
   ynLabel(value, "반환", "미반환");
 
-export const prvcLabel = (value: string | undefined) =>
-  ynLabel(value, "포함", "미포함");
-
 export const formatPeriod = (years: unknown, months: unknown) => {
   const y = String(years ?? "").trim();
   const m = String(months ?? "").trim();

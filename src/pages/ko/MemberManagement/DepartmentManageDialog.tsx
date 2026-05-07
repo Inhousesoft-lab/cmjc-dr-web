@@ -25,6 +25,7 @@ import {
 import LabelCell from "@/components/table/LabelCell";
 import TableWrapper from "@/components/table/TableWrapper";
 import useNotifications from "@/hooks/useNotifications";
+import useDraggableDialog from "@/hooks/useDraggableDialog";
 import type { DepartmentRow } from "@/types/member";
 import { getErrorMessage } from "@/utils/globalFunc";
 
@@ -261,6 +262,7 @@ export default function DepartmentManageDialog({
     React.useState<DepartmentFormValues>(EMPTY_FORM);
   const [saving, setSaving] = React.useState(false);
   const initializedRef = React.useRef(false);
+  const { paperSx, handleDragStart } = useDraggableDialog();
 
   const tree = React.useMemo(
     () => buildDepartmentTree(departments),
@@ -397,8 +399,13 @@ export default function DepartmentManageDialog({
       maxWidth="md"
       fullWidth
       className="department-manage-dialog"
+      slotProps={{
+        paper: {
+          sx: paperSx,
+        },
+      }}
     >
-      <DialogTitle className="department-manage-dialog__title">
+      <DialogTitle className="department-manage-dialog__title" onMouseDown={handleDragStart}>
         부서관리
       </DialogTitle>
       <DialogContent className="department-manage-dialog__content">

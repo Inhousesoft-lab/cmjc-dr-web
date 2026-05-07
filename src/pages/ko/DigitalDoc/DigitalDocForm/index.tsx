@@ -1,11 +1,10 @@
 import {
+  Box,
   Button,
   FormControl,
-  FormControlLabel,
   FormLabel,
+  IconButton,
   MenuItem,
-  Radio,
-  RadioGroup,
   Select,
   Stack,
   TableCell,
@@ -15,6 +14,10 @@ import {
 } from "@mui/material";
 import React from "react";
 import dayjs from "dayjs";
+import {
+  AttachFile as AttachFileIcon,
+  DeleteOutline as DeleteOutlineIcon,
+} from "@mui/icons-material";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import MuiSelect from "@/components/elements/MuiSelect";
 import LabelCell from "@/components/table/LabelCell";
@@ -34,10 +37,8 @@ import useNotifications from "@/hooks/useNotifications";
 import { useNavigate } from "react-router";
 import URL from "@/constants/url";
 import { resetDigitalDocSaveState } from "@/features/digitalDoc/DigitalDocSlice";
-import UploadFiles from "@/components/file/UploadFiles";
-import { selectDocClsfByParent } from "@/features/clsf/DocClsfSelectors";
 
-type FormValues = DigitalDocCreatePayload;
+type FormValues = Omit<DigitalDocCreatePayload, "uploadFiles">;
 type FieldErrors = Partial<Record<keyof FormValues, string>>;
 
 const INITIAL_FORM_VALUES: FormValues = {
@@ -45,7 +46,6 @@ const INITIAL_FORM_VALUES: FormValues = {
   docMclsfNo: "",
   docSclsfNo: "",
   docClsfNo: "",
-  prvcInclYn: "N",
   docNo: "",
   docTtl: "",
   clctYmd: "",
@@ -53,11 +53,15 @@ const INITIAL_FORM_VALUES: FormValues = {
   hldPrdMmCnt: "",
   endYmd: "",
   addExpln: "",
-  eldocYn: "Y",
-  atchFileSn: "",
 };
 
 const PERMANENT_END_YMD = "9999-12-31";
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
 
 function calculateEndYmd(
   clctYmd: string,
@@ -95,50 +99,16 @@ export default function DigitalDocForm() {
 
   const [values, setValues] = React.useState<FormValues>(INITIAL_FORM_VALUES);
   const [errors, setErrors] = React.useState<FieldErrors>({});
+  const [uploadFiles, setUploadFiles] = React.useState<File[]>([]);
 
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     values.docLclsfNo,
     values.docMclsfNo,
   );
-  const lclsfDocs = useAppSelector((state) => selectDocClsfByParent(state));
-  const mclsfDocs = useAppSelector((state) =>
-    values.docLclsfNo ? selectDocClsfByParent(state, values.docLclsfNo) : [],
-  );
-  const sclsfDocs = useAppSelector((state) =>
-    values.docMclsfNo ? selectDocClsfByParent(state, values.docMclsfNo) : [],
-  );
 
   // 저장 시 사용할 최종 분류 메타를 찾는다.
-  const selectedSclsfDoc = React.useMemo(
-    () => sclsfDocs.find((item) => item.docClsfNo === values.docSclsfNo),
-    [sclsfDocs, values.docSclsfNo],
-  );
 
-  const selectedDocClsf = React.useMemo(() => {
-    if (values.docSclsfNo) {
-      return selectedSclsfDoc;
-    }
-
-    if (values.docMclsfNo) {
-      return mclsfDocs.find((item) => item.docClsfNo === values.docMclsfNo);
-    }
-
-    if (values.docLclsfNo) {
-      return lclsfDocs.find((item) => item.docClsfNo === values.docLclsfNo);
-    }
-
-    return undefined;
-  }, [
-    lclsfDocs,
-    mclsfDocs,
-    selectedSclsfDoc,
-    values.docLclsfNo,
-    values.docMclsfNo,
-    values.docSclsfNo,
-  ]);
-
-  const selectedSclsfHoldingPeriod = selectedSclsfDoc?.prvcFileHldPrst;
-  const isHoldingPeriodLocked = Boolean(values.docSclsfNo && selectedSclsfHoldingPeriod);
+  const isHoldingPeriodLocked = false;
 
   const calculatedEndYmd = React.useMemo(
     () => calculateEndYmd(values.clctYmd, values.hldPrdDfyrs, values.hldPrdMmCnt),
@@ -152,29 +122,6 @@ export default function DigitalDocForm() {
       autoHideDuration: 3000,
     });
   }, [saveError, notifications]);
-
-  React.useEffect(() => {
-    if (!values.docSclsfNo || !selectedSclsfHoldingPeriod) return;
-
-    const nextYears = String(selectedSclsfHoldingPeriod.hldPrdDfyrs ?? "").trim();
-    const nextMonths = String(selectedSclsfHoldingPeriod.hldPrdMmCnt ?? "").trim();
-
-    setValues((prev) => {
-      if (
-        prev.hldPrdDfyrs === nextYears &&
-        prev.hldPrdMmCnt === (nextYears === "0" ? nextMonths : "")
-      ) {
-        return prev;
-      }
-
-      return {
-        ...prev,
-        hldPrdDfyrs: nextYears,
-        hldPrdMmCnt: nextYears === "0" ? nextMonths : "",
-      };
-    });
-    setErrors((prev) => ({ ...prev, hldPrdDfyrs: undefined, hldPrdMmCnt: undefined }));
-  }, [selectedSclsfHoldingPeriod, values.docSclsfNo]);
 
   React.useEffect(() => {
     return () => {
@@ -199,20 +146,30 @@ export default function DigitalDocForm() {
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files ?? []);
+    if (selectedFiles.length > 0) {
+      setUploadFiles((prev) => [...prev, ...selectedFiles]);
+    }
+    e.target.value = "";
+  };
+
+  const handleRemoveUploadFile = (index: number) => {
+    setUploadFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
+  };
+
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const resolvedEndYmd =
       values.hldPrdDfyrs === "0" ? values.endYmd : calculatedEndYmd;
 
-    const payload: FormValues = {
+    const formPayload: FormValues = {
       ...values,
       docClsfNo: values.docSclsfNo || values.docMclsfNo || values.docLclsfNo,
       endYmd: resolvedEndYmd,
-      // 개인정보 포함 여부는 선택한 문서분류 값을 그대로 따른다.
-      prvcInclYn: selectedDocClsf?.prvcInclYn === "Y" ? "Y" : "N",
     };
 
-    const validated = digitalDocFormValidator(payload);
+    const validated = digitalDocFormValidator(formPayload);
     if (!validated.success) {
       const nextErrors: FieldErrors = {};
       for (const issue of validated.issues) {
@@ -228,6 +185,10 @@ export default function DigitalDocForm() {
     }
 
     try {
+      const payload: DigitalDocCreatePayload = {
+        ...formPayload,
+        uploadFiles,
+      };
       await dispatch(createDigitalDoc(payload)).unwrap();
       navigate(URL.DIGITAL_DOC_LIST);
     } catch (error) {
@@ -449,42 +410,73 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell required>파일분류</LabelCell>
-          <TableCell colSpan={3}>
-            <FormControl>
-              <RadioGroup
-                row
-                name="eldocYn"
-                value={values.eldocYn}
-                onChange={(e) =>
-                  handleFieldChange("eldocYn", e.target.value as "Y" | "N")
-                }
-              >
-                <FormControlLabel
-                  value="Y"
-                  control={<Radio size="small" />}
-                  label="문서"
-                />
-                <FormControlLabel
-                  value="N"
-                  control={<Radio size="small" />}
-                  label="파일"
-                />
-              </RadioGroup>
-            </FormControl>
-          </TableCell>
-        </TableRow>
-        <TableRow>
           <LabelCell>첨부파일</LabelCell>
           <TableCell colSpan={3}>
-            <UploadFiles
-              setGroupId={(id) => handleFieldChange("atchFileSn", id)}
-            />
-            {!!errors.atchFileSn && (
-              <Typography variant="caption" color="error">
-                {errors.atchFileSn}
-              </Typography>
-            )}
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<AttachFileIcon />}
+                  disabled={saving}
+                >
+                  파일 선택
+                  <input
+                    hidden
+                    type="file"
+                    multiple
+                    onChange={handleFileInputChange}
+                  />
+                </Button>
+                <Typography variant="body2" color="text.secondary">
+                  {uploadFiles.length}개 파일
+                </Typography>
+              </Stack>
+              {uploadFiles.length > 0 && (
+                <Stack spacing={0.5}>
+                  {uploadFiles.map((file, index) => (
+                    <Box
+                      key={`${file.name}-${file.size}-${index}`}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        px: 1,
+                        py: 0.75,
+                        border: 1,
+                        borderColor: "divider",
+                        borderRadius: 1,
+                      }}
+                    >
+                      <AttachFileIcon fontSize="small" color="action" />
+                      <Typography
+                        variant="body2"
+                        title={file.name}
+                        sx={{ flex: 1, minWidth: 0 }}
+                        noWrap
+                      >
+                        {file.name}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ width: 90, textAlign: "right", flexShrink: 0 }}
+                      >
+                        {formatFileSize(file.size)}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        aria-label="첨부파일 삭제"
+                        onClick={() => handleRemoveUploadFile(index)}
+                        disabled={saving}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
           </TableCell>
         </TableRow>
       </TableWrapper>

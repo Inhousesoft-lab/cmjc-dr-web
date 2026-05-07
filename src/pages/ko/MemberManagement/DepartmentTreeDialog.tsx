@@ -15,6 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import useDraggableDialog from "@/hooks/useDraggableDialog";
 import type { DepartmentRow } from "@/types/member";
 
 type DepartmentTreeNode = DepartmentRow & {
@@ -184,6 +185,11 @@ export default function DepartmentTreeDialog({
   const [pendingDept, setPendingDept] = React.useState<DepartmentRow | null>(
     null,
   );
+  const {
+    paperSx,
+    handleDragStart,
+    handleDragControlMouseDown,
+  } = useDraggableDialog();
 
   const tree = React.useMemo(
     () => buildDepartmentTree(departments),
@@ -233,10 +239,20 @@ export default function DepartmentTreeDialog({
       maxWidth="xs"
       fullWidth
       className="department-dialog"
+      slotProps={{
+        paper: {
+          sx: paperSx,
+        },
+      }}
     >
-      <DialogTitle className="department-dialog__title">
+      <DialogTitle className="department-dialog__title" onMouseDown={handleDragStart}>
         <span>▶ 부서조회</span>
-        <IconButton aria-label="닫기" onClick={onClose} size="small">
+        <IconButton
+          aria-label="닫기"
+          onClick={onClose}
+          onMouseDown={handleDragControlMouseDown}
+          size="small"
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>

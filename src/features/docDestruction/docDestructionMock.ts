@@ -14,9 +14,7 @@ type MockDocDestructionRecord = DocDestruction & {
   docSclsfNo?: string;
   docClsfNm?: string;
   docTtl?: string;
-  docType?: string;
   deptId?: string;
-  prvcInclYn?: string;
   endYmd?: string;
 };
 
@@ -27,7 +25,6 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     docCategory: "민원 서류",
     docNo: "DOC-2026-0001",
     docTitle: "파기 승인 테스트 문서 A",
-    hasPersonalInfo: "미포함",
     clctYmd: "20260301",
     hldPrdDfyrs: "1",
     hldPrdMmCnt: "0",
@@ -38,13 +35,10 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     dstrcAplcntId: "tester.req",
     dstrcAplyDt: "20260307",
     dstrcAutzrId: "",
-    prvcDstrcAutzrId: "",
     endDate: "20260308",
-    docType: "전자문서",
     registrantDept: "개발팀",
     rgtrNm: "tester.req",
     regDate: "20260301",
-    fileName: "파기 승인 테스트 문서 A",
     dataTypeLabel: "전자문서",
     docLclsfNo: "L01",
     docMclsfNo: "M01",
@@ -52,7 +46,6 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     docClsfNm: "민원 서류",
     docTtl: "파기 승인 테스트 문서 A",
     deptId: "DEV",
-    prvcInclYn: "N",
     endYmd: "20260308",
   },
   {
@@ -61,7 +54,6 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     docCategory: "개인정보 파일",
     docNo: "DOC-2026-0002",
     docTitle: "파기 승인 테스트 문서 B",
-    hasPersonalInfo: "포함",
     clctYmd: "20260302",
     hldPrdDfyrs: "3",
     hldPrdMmCnt: "0",
@@ -72,13 +64,10 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     dstrcAplcntId: "tester.req",
     dstrcAplyDt: "20260307",
     dstrcAutzrId: "dept.manager",
-    prvcDstrcAutzrId: "",
     endDate: "20260308",
-    docType: "전자문서",
     registrantDept: "보안팀",
     rgtrNm: "dept.manager",
     regDate: "20260302",
-    fileName: "파기 승인 테스트 문서 B",
     dataTypeLabel: "전자문서",
     docLclsfNo: "L02",
     docMclsfNo: "M01",
@@ -86,7 +75,6 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     docClsfNm: "개인정보 파일",
     docTtl: "파기 승인 테스트 문서 B",
     deptId: "SEC",
-    prvcInclYn: "Y",
     endYmd: "20260308",
   },
 ];
@@ -175,13 +163,6 @@ const filterRows = (
     if (params?.docSclsfNo && row.docSclsfNo !== params.docSclsfNo) {
       return false;
     }
-    if (
-      params?.prvcInclYn &&
-      reqCd !== "APRV" &&
-      params.prvcInclYn !== row.prvcInclYn
-    ) {
-      return false;
-    }
     if (params?.fromEndYmd && row.endDate < params.fromEndYmd) {
       return false;
     }
@@ -219,8 +200,6 @@ export const getMockDocDestructionDetail = (eldocNo: string) => {
     docTtl: row.docTtl || row.docTitle,
     dstrcAprvDt: row.dstrcAprvDt,
     endYmd: row.endYmd || row.endDate,
-    prvcInclYn: row.prvcInclYn || (row.hasPersonalInfo === "포함" ? "Y" : "N"),
-    eldocYn: row.docType,
     collectDateLabel: row.collectDateLabel,
   };
 };
@@ -240,15 +219,6 @@ export const updateMockDocDestruction = (payload: DocDestructionUpdate) => {
         dstrcPrcsPrstCd: "02",
         dstrcAprvDt: "20260309",
         dstrcAutzrId: "mock.approver",
-      };
-    }
-
-    if (payload.reqCd === "APRV02" && row.dstrcPrcsPrstCd === "03") {
-      return {
-        ...row,
-        dstrcPrcsPrstCd: "04",
-        dstrcAprvDt: "20260309",
-        prvcDstrcAutzrId: "mock.privacy.approver",
       };
     }
 

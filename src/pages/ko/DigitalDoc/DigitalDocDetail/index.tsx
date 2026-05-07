@@ -2,11 +2,7 @@ import * as React from "react";
 import {
   Box,
   Button,
-  FormControl,
-  FormControlLabel,
   Grid,
-  Radio,
-  RadioGroup,
   Stack,
   TableCell,
   TableRow,
@@ -52,7 +48,6 @@ export default function DigitalDocDetail() {
   const [selectedDocLclsfNo, setSelectedDocLclsfNo] = React.useState("");
   const [selectedDocMclsfNo, setSelectedDocMclsfNo] = React.useState("");
   const [selectedDocSclsfNo, setSelectedDocSclsfNo] = React.useState("");
-  const [selectedGvbkYn, setSelectedGvbkYn] = React.useState<"Y" | "N">("N");
   const [docNo, setDocNo] = React.useState("");
   const [docTtl, setDocTtl] = React.useState("");
   const [isTempEditEnabled, setIsTempEditEnabled] = React.useState(false);
@@ -82,7 +77,6 @@ export default function DigitalDocDetail() {
     setSelectedDocLclsfNo(detail.docLclsfNo ?? "");
     setSelectedDocMclsfNo(detail.docMclsfNo ?? "");
     setSelectedDocSclsfNo(detail.docSclsfNo ?? "");
-    setSelectedGvbkYn(detail.gvbkYn === "Y" ? "Y" : "N");
     setDocNo(detail.docNo ?? "");
     setDocTtl(detail.docTtl ?? "");
   }, [detail]);
@@ -125,7 +119,6 @@ export default function DigitalDocDetail() {
         selectedDocSclsfNo || selectedDocMclsfNo || selectedDocLclsfNo || "",
       docNo,
       docTtl,
-      gvbkYn: selectedGvbkYn,
     };
 
     try {
@@ -151,7 +144,6 @@ export default function DigitalDocDetail() {
     selectedDocLclsfNo,
     selectedDocMclsfNo,
     selectedDocSclsfNo,
-    selectedGvbkYn,
   ]);
 
   if (isLoading) {
@@ -197,7 +189,7 @@ export default function DigitalDocDetail() {
 
         <Grid size={{ xs: 12, sm: 6 }}>
           <TableWrapper
-            aria-label="문서분류/반환여부 수정"
+            aria-label="문서분류 수정"
             colgroup={
               <colgroup>
                 <col className="tbl-col-w-100" />
@@ -235,31 +227,6 @@ export default function DigitalDocDetail() {
                     onChange={(e) => setSelectedDocSclsfNo(e.target.value)}
                   />
                 </Stack>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <LabelCell>반환여부</LabelCell>
-              <TableCell colSpan={3}>
-                <FormControl component="fieldset">
-                  <RadioGroup
-                    row
-                    value={selectedGvbkYn}
-                    onChange={(e) =>
-                      setSelectedGvbkYn((e.target.value as "Y" | "N") ?? "N")
-                    }
-                  >
-                    <FormControlLabel
-                      value="Y"
-                      control={<Radio size="small" />}
-                      label="반환"
-                    />
-                    <FormControlLabel
-                      value="N"
-                      control={<Radio size="small" />}
-                      label="미반환"
-                    />
-                  </RadioGroup>
-                </FormControl>
               </TableCell>
             </TableRow>
           </TableWrapper>

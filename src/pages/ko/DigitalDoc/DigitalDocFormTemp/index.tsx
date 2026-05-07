@@ -15,14 +15,13 @@ import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import URL from "@/constants/url";
 import LabelCell from "@/components/table/LabelCell";
 import TableWrapper from "@/components/table/TableWrapper";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { DigitalDoc } from "@/types/digitalDoc";
 import { useNavigate } from "react-router-dom";
 import useNotifications from "@/hooks/useNotifications";
 import PageStatus from "@/components/common/PageStatus";
 import { insertEDocTempApiPath } from "@/api/digitalDoc/DigitalDocApiPaths";
 import { https } from "@shared/utils/https";
-import UploadFiles from "@/components/file/UploadFiles";
 
 const TEMP_DOC_CLASSIFICATION_BINDING: Record<
   string,
@@ -73,16 +72,11 @@ export default function DigitalDocForm() {
       docTtl: "", // 문서제목
       clctYmd: "", // 수집일자
       addExpln: "", // 비고
-      eldocYn: "", // 전자문서여부
-      atchFileSn: "", // 첨부파일경로
       hldPrdDfyrs: "1",
       hldPrdMmCnt: "",
       endYmd: "",
-      prvcInclYn: "Y",
     },
   });
-
-  const eldocNo = useWatch({ control, name: "eldocNo" });
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -104,7 +98,6 @@ export default function DigitalDocForm() {
         setValue("docLclsfNm", "");
         setValue("docMclsfNm", "");
         setValue("docSclsfNm", "");
-        setValue("prvcInclYn", "Y");
         return;
       }
 
@@ -115,7 +108,6 @@ export default function DigitalDocForm() {
       setValue("docLclsfNm", "");
       setValue("docMclsfNm", "");
       setValue("docSclsfNm", "");
-      setValue("prvcInclYn", "Y");
     },
     [setValue],
   );
@@ -128,7 +120,6 @@ export default function DigitalDocForm() {
         const payload: DigitalDoc = {
           ...data,
           docClsfNo: data.docSclsfNo || data.docMclsfNo || data.docLclsfNo || data.docClsfNo,
-          prvcInclYn: "Y",
         };
 
         await https.post(insertEDocTempApiPath(), payload);
@@ -263,53 +254,6 @@ export default function DigitalDocForm() {
                   error={!!errors.clctYmd}
                   helperText={errors.clctYmd?.message}
                   onChange={field.onChange}
-                />
-              )}
-            />
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell required>파일분류</LabelCell>
-          <TableCell colSpan={3}>
-            <Controller
-              name="eldocYn"
-              control={control}
-              rules={{ required: "선택해주세요" }}
-              render={({ field, fieldState }) => (
-                <FormControl error={!!fieldState.error} size="small">
-                  <RadioGroup row value={field.value} onChange={field.onChange}>
-                    <FormControlLabel
-                      value="Y"
-                      control={<Radio size="small" />}
-                      label="문서"
-                    />
-                    <FormControlLabel
-                      value="N"
-                      control={<Radio size="small" />}
-                      label="파일"
-                    />
-                  </RadioGroup>
-                  <FormHelperText>
-                    {fieldState.error?.message || ""}
-                  </FormHelperText>
-                </FormControl>
-              )}
-            />
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell required>첨부파일</LabelCell>
-          <TableCell colSpan={3}>
-            <Controller
-              name="atchFileSn"
-              control={control}
-              rules={{
-                required: "파일 선택은 필수입니다.",
-              }}
-              render={({ field }) => (
-                <UploadFiles
-                  taskSeTrgtId={eldocNo}
-                  setGroupId={field.onChange}
                 />
               )}
             />

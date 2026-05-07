@@ -14,27 +14,20 @@ export interface SearchValues extends Paging {
   docSclsfNo: string;
   docNo: string;
   docTtl: string;
-  infoMnbdAgreYn: string;
   hldPrdDfyrs: string;
-  hldPrdChangedOnly: boolean;
 }
 
 export interface HoldingInstitution {
-  rowNo: number; // 번호
-  eldocNo: string; // 문서분류
-  docClsfNo: string; // 문서번호
+  rowNo: number;
+  eldocNo: string;
+  docClsfNo: string;
   docNo: string;
-  unqNo: string;
   docTtl: string;
   clctYmd: string;
   hldPrdDfyrs: string;
   hldPrdMmCnt: string;
   endYmd: string;
-  prvcInclYn: string;
-  gvbkYn: string;
   addExpln: string;
-  eldocYn: string;
-  atchFileSn: string;
   deptId: string;
   deptNm: string;
   dstrcPrcsPrstCd: string;
@@ -43,8 +36,6 @@ export interface HoldingInstitution {
   rsn: string;
   dstrcAprvDt: string;
   dstrcAutzrId: string;
-  prvcDstrcAprvDt: string;
-  prvcDstrcAutzrId: string;
   regDt: string;
   rgtrId: string;
   rgtrNm: string;
@@ -56,67 +47,4 @@ export interface HoldingInstitution {
   docLclsfNo: string;
   docLclsfNm: string;
   docMclsfNm: string;
-  endYmdAfterChanged: string;
-  docClsf: DocClsf;
-}
-
-export interface DocClsf {
-  rowNo: number; // 번호
-  docClsfNo: string;
-  docClsfSeCd: string;
-  docClsfNm: string;
-  upDocClsfNo: string;
-  docLclsfNo: string;
-  docMclsfNo: string;
-  docSclsfNo: string;
-  docLclsfNm: string;
-  docMclsfNm: string;
-  docSclsfNm: string;
-  prvcInclYn: string;
-  useEn: string;
-  regDt: string;
-  rgtrId: string;
-  rgtrNm: string;
-  mdfcnDt: string;
-  mdfrId: string;
-  prvcFileHldPrst: PrvcFileHldPrst;
-}
-
-export interface PrvcFileHldPrst {
-  docClsfNo: string;
-  prvcFileHldPrstNo: string;
-  deptNm: string;
-  fileNm: string;
-  hldPrpsExpln: string;
-  clctSttBssExpln: string;
-  useDeptNm: string;
-  prvcPrcsMthdExpln: string;
-  hldPrdDfyrs: string;
-  hldPrdMmCnt: string;
-  infoMnbdPrvcMttr: string;
-  sttyAgtPrvcMttr: string;
-  rrnoClctYn: string;
-  rrnoClctSttBssExpln: string;
-  infoMnbdAgreYn: string;
-  infoMnbdDsagClctSttBssExpln: string;
-  spiHldYn: string;
-  spiIndivAgrnYn: string;
-  spiHldSttBssExpln: string;
-  uiiHldYn: string;
-  uiiIndivAgreYn: string;
-  uiiHldSttBssExpln: string;
-  prvcEvlTrgtYn: string;
-  hndlPicNm: string;
-  tdptySplrcpNmCn: string;
-  tdptyPvsnBssExpln: string;
-  tdptyPvsnMttr: string;
-  prvcPrcsCnsgnBzentyNmCn: string;
-  prvcCnsgnCtrtYn: string;
-  prvcCnsgnFactIndctYn: string;
-  prpsExclUtztnPvsnYn: string;
-  prpsExclUtztnPvsnBssExpln: string;
-  regDt: string;
-  rgtrId: string;
-  mdfcnDt: string;
-  mdfrId: string;
 }

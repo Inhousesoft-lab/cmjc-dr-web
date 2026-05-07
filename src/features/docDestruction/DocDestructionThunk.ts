@@ -50,27 +50,10 @@ const extractErrorMessage = (error: unknown) => {
   );
 };
 
-const getPersonalInfoLabel = (value: string) => {
-  if (value === "Y") return "포함";
-  if (value === "N") return "미포함";
-  return value;
-};
-
 const getHoldingPeriodLabel = (years: string, months: string) => {
   const yearText = years ? `${years}년` : "";
   const monthText = months ? `${months}개월` : "";
   return `${yearText}${monthText}`.trim();
-};
-
-const getDocTypeLabel = (value: unknown) => {
-  const raw = String(value ?? "").trim();
-  const normalized = raw.toUpperCase();
-
-  if (!raw) return "";
-  if (normalized === "Y") return "문서";
-  if (normalized === "N") return "파일";
-  if (raw === "문서" || raw === "파일") return raw;
-  return raw;
 };
 
 const getRegistrantLabel = (
@@ -110,12 +93,10 @@ export const normalizeDocDestructionRow = (
   index: number,
 ): DocDestruction => {
   const docTitle = String(raw.docTitle || raw.docTtl || "").trim();
-  const personalInfo = raw.hasPersonalInfo || getPersonalInfoLabel(raw.prvcInclYn);
   const holdingPeriod = getHoldingPeriodLabel(raw.hldPrdDfyrs, raw.hldPrdMmCnt);
   const collectDateLabel =
     raw.collectDateLabel || (raw.clctYmd ? `${raw.clctYmd}${holdingPeriod ? `(${holdingPeriod})` : ""}` : "");
   const nestedDocClsf = (raw as any)?.docClsf;
-  const nestedPrvcFile = nestedDocClsf?.prvcFileHldPrst;
   const docLclsfNm = String((raw as any).docLclsfNm || nestedDocClsf?.docLclsfNm || "").trim();
   const docMclsfNm = String((raw as any).docMclsfNm || nestedDocClsf?.docMclsfNm || "").trim();
   const docSclsfNm = String((raw as any).docSclsfNm || nestedDocClsf?.docSclsfNm || "").trim();
@@ -125,11 +106,8 @@ export const normalizeDocDestructionRow = (
     docSclsfNm,
     raw.docCategory || raw.docClsfNm,
   );
-  const fileNm = String((raw as any).fileNm || nestedPrvcFile?.fileNm || "").trim();
-  const fileName = docTitle;
-  const rawDocType = String(raw.docType || raw.eldocYn || "").trim();
-  const docType = getDocTypeLabel(raw.eldocYn || raw.docType);
-  const dataTypeLabel = fileNm || String(raw.dataTypeLabel || docType || rawDocType).trim();
+  const fileNm = String((raw as any).fileNm || "").trim();
+  const dataTypeLabel = String((raw as any).dataTypeLabel || fileNm).trim();
 
   return {
     rowNo: raw.rowNo || index + 1,
@@ -140,8 +118,6 @@ export const normalizeDocDestructionRow = (
     docSclsfNm,
     docNo: raw.docNo,
     docTitle,
-    hasPersonalInfo: personalInfo,
-    prvcInclYn: raw.prvcInclYn,
     clctYmd: raw.clctYmd,
     hldPrdDfyrs: raw.hldPrdDfyrs,
     hldPrdMmCnt: raw.hldPrdMmCnt,
@@ -152,13 +128,10 @@ export const normalizeDocDestructionRow = (
     dstrcAplcntId: raw.dstrcAplcntId || raw.rgtrNm || raw.rgtrId,
     dstrcAplyDt: raw.dstrcAplyDt,
     dstrcAutzrId: raw.dstrcAutzrId,
-    prvcDstrcAutzrId: raw.prvcDstrcAutzrId,
     endDate: raw.endDate || raw.endYmd,
-    docType,
     registrantDept: getRegistrantLabel(raw.registrantDept, raw.deptNm, raw.rgtrId, raw.rgtrNm),
     rgtrNm: raw.rgtrNm,
     regDate: raw.regDate || raw.regDt,
-    fileName,
     fileNm,
     dataTypeLabel,
   } as DocDestruction;
@@ -225,14 +198,10 @@ export const fetchDocDestructionList = createAsyncThunk<
 const normalizeDocDestructionDetail = (
   raw: DocDestructionDetailRaw,
 ): DocDestructionDetailPayload => {
-  const personalInfo = raw.hasPersonalInfo || getPersonalInfoLabel(raw.prvcInclYn);
   const holdingPeriod = getHoldingPeriodLabel(raw.hldPrdDfyrs, raw.hldPrdMmCnt);
   const collectDateLabel =
     raw.collectDateLabel || (raw.clctYmd ? `${raw.clctYmd}${holdingPeriod ? `(${holdingPeriod})` : ""}` : "");
-  const docType = getDocTypeLabel(raw.eldocYn || raw.docType);
-  const nestedDocClsf = (raw as any)?.docClsf;
-  const nestedPrvcFile = nestedDocClsf?.prvcFileHldPrst;
-  const fileNm = String(raw.fileNm || nestedPrvcFile?.fileNm || "").trim();
+  const fileNm = String(raw.fileNm || "").trim();
 
   return {
     ...raw,
@@ -240,8 +209,6 @@ const normalizeDocDestructionDetail = (
     docTtl: raw.docTtl || raw.docTitle,
     dstrcAprvDt: raw.dstrcAprvDt || raw.dstrcAprvYmd,
     endYmd: raw.endYmd || raw.endDate,
-    prvcInclYn: personalInfo,
-    eldocYn: docType,
     fileNm,
     dataTypeLabel: fileNm,
     collectDateLabel,

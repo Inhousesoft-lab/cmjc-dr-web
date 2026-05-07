@@ -640,7 +640,7 @@ export default function DigitalDocViewerDialog({
               {loadError ? (
                 <Typography color="error">{loadError}</Typography>
               ) : isPreparing || !resolvedFileUrl ? (
-                loadingContent
+                loadingIndicator
               ) : (
                 <img
                   src={resolvedFileUrl}

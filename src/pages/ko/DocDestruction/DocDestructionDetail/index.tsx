@@ -98,7 +98,7 @@ export default function DocDestructionDetail() {
 
   const formatDestructionDate = (status: unknown, date: unknown) => {
     const prstCd = String(status ?? "").trim();
-    if (prstCd !== "02" && prstCd !== "04") return "-";
+    if (prstCd !== "02") return "-";
     return formatDateOnly(date);
   };
 
@@ -189,18 +189,6 @@ export default function DocDestructionDetail() {
           <TableCell>
             {formatActorAndDate(detail?.dstrcAutzrId, detail?.dstrcAprvDt)}
           </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>개인정보</LabelCell>
-          <TableCell>{showValue(detail?.prvcInclYn)}</TableCell>
-          <LabelCell>개인정보처리담당자</LabelCell>
-          <TableCell>
-            {formatActorAndDate(detail?.prvcDstrcAutzrId, detail?.prvcDstrcAprvDt)}
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>자료의 종류</LabelCell>
-          <TableCell colSpan={3}>{showValue(detail?.fileNm ?? detail?.dataTypeLabel)}</TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>비고</LabelCell>

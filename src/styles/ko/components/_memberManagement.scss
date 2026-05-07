@@ -14,6 +14,8 @@
     font-weight: 700;
     background: #f2f4f6;
     border-bottom: 1px solid #303336;
+    cursor: move;
+    user-select: none;
   }
 
   &__content {
@@ -96,6 +98,8 @@
     font-size: 20px;
     font-weight: 700;
     border-bottom: 1px solid #303336;
+    cursor: move;
+    user-select: none;
   }
 
   &__content {

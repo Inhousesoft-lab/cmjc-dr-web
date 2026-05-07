@@ -22,7 +22,7 @@
 
 ## 검증 규칙 (zod)
 
-- 필수: `docLclsfNo`, `docMclsfNo`, `docSclsfNo`, `docNo`, `docTtl`, `clctYmd`, `hldPrdDfyrs`, `eldocYn`
+- 필수: `docLclsfNo`, `docMclsfNo`, `docSclsfNo`, `docNo`, `docTtl`, `clctYmd`, `hldPrdDfyrs`
 - 날짜 형식: `YYYY-MM-DD`
 - 보존연한 직접입력(`hldPrdDfyrs === "0"`)인 경우:
   - `hldPrdMmCnt`는 0보다 큰 숫자
@@ -31,7 +31,6 @@
 ## 폼 상태와 파생값
 
 - `docClsfNo`는 저장 시점에 `docSclsfNo || docMclsfNo || docLclsfNo`로 계산
-- 첨부파일은 현재 파일 업로드 API 연동이 아닌 파일명(`atchFileSn`) 반영 방식
 - 저장 중에는 `saving === true`로 `등록` 버튼 비활성화
 
 ## Redux 상태
@@ -55,6 +54,5 @@
 
 ## 향후 확장 포인트
 
-- 실제 첨부파일 업로드 API 연동 (`atchFileSn`를 파일 ID로 저장)
 - 서버 응답 스키마(zod) 추가 검증
 - 수정/상세 화면과 폼 상태 모델 통합

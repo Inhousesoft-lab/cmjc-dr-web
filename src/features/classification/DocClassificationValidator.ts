@@ -1,4 +1,4 @@
-import { DocClassDetail, DocClassSubDetail } from "@/types/docClassification";
+import { DocClassDetail } from "@/types/docClassification";
 import { z } from "zod";
 
 type ValidationResult = {
@@ -22,8 +22,6 @@ const docClassificationSchema = z
     docLclsfNm: z.string().optional(),
     docMclsfNm: z.string().optional(),
     docSclsfNm: z.string().optional(),
-    prvcInclYn: z.string().optional(),
-    prvcFileHldPrst: z.looseObject({}).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.docClsfSeCd === "L" && isBlank(data.docLclsfNm)) {
@@ -72,60 +70,6 @@ const docClassificationSchema = z
         message: REQUIRED_MESSAGE,
         path: ["docSclsfNm"],
       });
-    }
-
-    if (data.prvcInclYn === "Y" && data.prvcFileHldPrst) {
-      const sub = data.prvcFileHldPrst as Partial<DocClassSubDetail>;
-      const requiredFields: (keyof DocClassSubDetail)[] = [
-        "deptNm",
-        "fileNm",
-        "hldPrpsExpln",
-        "clctSttBssExpln",
-        "useDeptNm",
-        "prvcPrcsMthdExpln",
-        "hldPrdDfyrs",
-        "infoMnbdPrvcMttr",
-        "sttyAgtPrvcMttr",
-        "rrnoClctSttBssExpln",
-        "spiHldSttBssExpln",
-        "uiiHldSttBssExpln",
-        "hndlPicNm",
-        "tdptySplrcpNmCn",
-        "tdptyPvsnBssExpln",
-        "tdptyPvsnMttr",
-      ];
-
-      requiredFields.forEach((field) => {
-        if (isBlank(sub[field])) {
-          ctx.addIssue({
-            code: "custom",
-            message: REQUIRED_MESSAGE,
-            path: [String(field)],
-          });
-        }
-      });
-
-      if (
-        sub.infoMnbdAgreYn !== "Y" &&
-        isBlank(sub.infoMnbdDsagClctSttBssExpln)
-      ) {
-        ctx.addIssue({
-          code: "custom",
-          message: REQUIRED_MESSAGE,
-          path: ["infoMnbdDsagClctSttBssExpln"],
-        });
-      }
-
-      if (
-        String(sub.hldPrdDfyrs) === "0" &&
-        isBlank(String(sub.hldPrdMmCnt ?? ""))
-      ) {
-        ctx.addIssue({
-          code: "custom",
-          message: REQUIRED_MESSAGE,
-          path: ["hldPrdMmCnt"],
-        });
-      }
     }
   });
 

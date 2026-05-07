@@ -32,22 +32,6 @@ export const listDefs: ColDef<DocDestruction>[] = [
     cellStyle: { textAlign: "center" },
   },
   {
-    headerName: "개인정보",
-    field: "hasPersonalInfo",
-    width: 88,
-    minWidth: 88,
-    maxWidth: 88,
-    flex: 0,
-    cellStyle: (params: any) => {
-      const isIncluded = params.value === "포함";
-      return {
-        textAlign: "center",
-        color: isIncluded ? "red" : "",
-        fontWeight: isIncluded ? "600" : "400",
-      };
-    },
-  },
-  {
     headerName: "수집일자\n(보존연한)",
     field: "collectDateLabel",
     cellStyle: { textAlign: "center" },
@@ -77,15 +61,6 @@ export const listDefs: ColDef<DocDestruction>[] = [
         params?.data?.hldPrdDfyrs,
         params?.data?.hldPrdMmCnt,
       ),
-  },
-  {
-    headerName: "종류",
-    field: "docType",
-    width: 72,
-    minWidth: 72,
-    maxWidth: 72,
-    flex: 0,
-    cellStyle: { textAlign: "center" },
   },
   {
     headerName: "등록자(부서)",

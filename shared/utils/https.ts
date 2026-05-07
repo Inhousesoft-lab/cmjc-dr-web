@@ -46,6 +46,9 @@ const https: AxiosInstance = axios.create({
 
 https.interceptors.request.use((config) => {
   setDrMenuUrlHeader(config.headers);
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
   return config;
 });
 

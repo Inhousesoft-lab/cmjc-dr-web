@@ -37,28 +37,6 @@ export const listDefs: ColDef<DigitalDoc>[] = [
     cellStyle: { textAlign: "center" },
   },
   {
-    headerName: "개인정보",
-    field: "prvcInclYn",
-    width: 88,
-    minWidth: 88,
-    maxWidth: 88,
-    flex: 0,
-    valueFormatter: (params: any) => {
-      const v = params.value;
-      if (v === "Y") return "포함";
-      if (v === "N") return "미포함";
-      return ""; // null/undefined 대비
-    },
-    cellStyle: (params: any) => {
-      const isIncluded = params.value === "Y";
-      return {
-        textAlign: "center",
-        color: isIncluded ? "red" : "",
-        fontWeight: isIncluded ? "600" : "400",
-      };
-    },
-  },
-  {
     headerName: "수집일자\n(보존연한)",
     field: "clctYmd",
     cellStyle: { textAlign: "center" },
@@ -95,18 +73,6 @@ export const listDefs: ColDef<DigitalDoc>[] = [
         params?.data?.hldPrdDfyrs,
         params?.data?.hldPrdMmCnt,
       );
-    },
-  },
-  {
-    headerName: "종류",
-    field: "eldocYn",
-    width: 72,
-    minWidth: 72,
-    maxWidth: 72,
-    flex: 0,
-    cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => {
-      return params.value === "Y" ? "문서" : "파일";
     },
   },
   {

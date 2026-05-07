@@ -3,8 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
-  Checkbox,
-  FormControlLabel,
   Grid,
   IconButton,
   Stack,
@@ -36,7 +34,6 @@ const INITIAL_SEARCH_PARAMS: DocClassificationSearch = {
   docLclsfNo: "",
   docMclsfNo: "",
   docSclsfNo: "",
-  prvcInclYn: "",
   useEn: "",
   docClsfNm: "",
   pageNum: 1,
@@ -186,28 +183,6 @@ export default function DocClassificationList() {
             />
             <GridField
               item={3}
-              label="개인정보 포함"
-              value={
-                <FormControlLabel
-                  className="doc-clsf-prvc-checkbox"
-                  control={
-                    <Checkbox
-                      size="small"
-                      checked={searchParams.prvcInclYn === "Y"}
-                      onChange={(e) =>
-                        setSearchParams((prev) => ({
-                          ...prev,
-                          prvcInclYn: e.target.checked ? "Y" : "",
-                        }))
-                      }
-                    />
-                  }
-                  label="포함"
-                />
-              }
-            />
-            <GridField
-              item={3}
               label="사용유무"
               value={
                 <MuiSelect
@@ -224,7 +199,7 @@ export default function DocClassificationList() {
               }
             />
             <GridField
-              item={9}
+              item={12}
               label="검색어"
               value={
                 <TextField

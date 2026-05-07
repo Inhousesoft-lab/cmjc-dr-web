@@ -1,8 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
-  FormControlLabel,
   Grid,
   IconButton,
   Stack,
@@ -41,10 +39,8 @@ const buildSearchValues = (): SearchValues => ({
   docLclsfNo: "",
   docMclsfNo: "",
   docSclsfNo: "",
-  prvcInclYn: "N",
   docNo: "",
   docTtl: "",
-  hldPrdChangedOnly: false,
   docClsfNm: "",
   fromEndYmd: "",
   toEndYmd: "",
@@ -80,9 +76,6 @@ export default function DocDestructionList() {
   const [docSclsfNo, setDocSclsfNo] = useState(
     restoredState?.docSclsfNo ?? initialSearchValues.docSclsfNo,
   );
-  const [prvcInclYn, setPrvcInclYn] = useState(
-    restoredState?.prvcInclYn ?? initialSearchValues.prvcInclYn,
-  );
   const [fromDstrcAprvYmd, setFromDstrcAprvYmd] = useState(
     restoredState?.fromDstrcAprvYmd ?? initialSearchValues.fromDstrcAprvYmd,
   );
@@ -114,7 +107,6 @@ export default function DocDestructionList() {
       docLclsfNo,
       docMclsfNo,
       docSclsfNo,
-      prvcInclYn,
       fromDstrcAprvYmd,
       toDstrcAprvYmd,
       pageNum,
@@ -124,7 +116,6 @@ export default function DocDestructionList() {
       docLclsfNo,
       docMclsfNo,
       docSclsfNo,
-      prvcInclYn,
       fromDstrcAprvYmd,
       initialSearchValues,
       pageNum,
@@ -152,7 +143,6 @@ export default function DocDestructionList() {
     setDocLclsfNo(initialSearchValues.docLclsfNo);
     setDocMclsfNo(initialSearchValues.docMclsfNo);
     setDocSclsfNo(initialSearchValues.docSclsfNo);
-    setPrvcInclYn(initialSearchValues.prvcInclYn);
     setFromDstrcAprvYmd(initialSearchValues.fromDstrcAprvYmd);
     setToDstrcAprvYmd(initialSearchValues.toDstrcAprvYmd);
     setDateRangeError("");
@@ -272,24 +262,7 @@ export default function DocDestructionList() {
               />
             }
           />
-          <GridField
-            item={3}
-            label="개인정보 포함"
-            value={
-              <FormControlLabel
-                className="doc-clsf-prvc-checkbox"
-                control={
-                  <Checkbox
-                    id="prvcInclYn"
-                    size="small"
-                    checked={prvcInclYn === "Y"}
-                    onChange={(e) => setPrvcInclYn(e.target.checked ? "Y" : "N")}
-                  />
-                }
-                label="포함"
-              />
-            }
-          />
+          <GridField item={3} label="" value={null} blank />
           {/* 2행 */}
           <GridField
             item={12}

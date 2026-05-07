@@ -60,7 +60,6 @@ const docClassificationRowSchema = z.looseObject({
     docLclsfNm: stringField,
     docMclsfNm: stringField,
     docSclsfNm: stringField,
-    prvcInclYn: stringField,
     useEn: stringField,
     regDt: stringField,
     rgtrId: stringField,
@@ -97,48 +96,6 @@ const nullableStringField = z.preprocess(
   z.string(),
 );
 
-const numberLikeField = z.preprocess((v) => {
-  if (v == null || v === "") return null;
-  const n = Number(v);
-  return Number.isFinite(n) ? n : null;
-}, z.number().nullable());
-
-const prvcFileHldPrstSchema = z
-  .looseObject({
-    deptNm: stringField,
-    fileNm: stringField,
-    hldPrpsExpln: stringField,
-    clctSttBssExpln: stringField,
-    useDeptNm: stringField,
-    prvcPrcsMthdExpln: stringField,
-    hldPrdDfyrs: numberLikeField,
-    hldPrdMmCnt: numberLikeField,
-    infoMnbdPrvcMttr: stringField,
-    sttyAgtPrvcMttr: stringField,
-    rrnoClctYn: stringField,
-    rrnoClctSttBssExpln: stringField,
-    infoMnbdAgreYn: stringField,
-    infoMnbdDsagClctSttBssExpln: stringField,
-    spiHldYn: stringField,
-    spiIndivAgreYn: stringField,
-    spiIndivAgrnYn: stringField.optional(),
-    spiHldSttBssExpln: stringField,
-    uiiHldYn: stringField,
-    uiiIndivAgreYn: stringField,
-    uiiHldSttBssExpln: stringField,
-    prvcEvlTrgtYn: stringField,
-    hndlPicNm: stringField,
-    tdptySplrcpNmCn: stringField,
-    tdptyPvsnBssExpln: stringField,
-    tdptyPvsnMttr: stringField,
-    prvcPrcsCnsgnBzentyNmCn: stringField,
-    prvcCnsgnCtrtYn: stringField,
-    prvcCnsgnFactIndctYn: stringField,
-    prpsExclUtztnPvsnYn: stringField,
-    prpsExclUtztnPvsnBssExpln: stringField,
-  })
-  .partial();
-
 const docClassificationDetailSchema = z.looseObject({
   docClsfNo: stringField,
   docClsfSeCd: stringField,
@@ -150,17 +107,12 @@ const docClassificationDetailSchema = z.looseObject({
   docLclsfNm: stringField,
   docMclsfNm: stringField,
   docSclsfNm: stringField,
-  prvcInclYn: stringField,
   useEn: stringField,
   regDt: stringField,
   rgtrId: stringField,
   rgtrNm: stringField,
   mdfcnDt: stringField,
   mdfrId: stringField,
-  prvcFileHldPrst: z
-    .preprocess((v) => (v == null ? {} : v), prvcFileHldPrstSchema)
-    .optional()
-    .default({}),
 });
 
 const docClassificationDeleteCheckSchema = z.looseObject({

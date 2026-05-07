@@ -33,8 +33,6 @@ type ExternalViewRow = {
   title: string;
   date: string;
   term: string;
-  type: string;
-  prvcInclYn: string;
   canView: boolean;
   canDownload: boolean;
   downloadReasonRequired: boolean;
@@ -177,9 +175,7 @@ export default function ExternalView() {
     let cancelled = false;
 
     const loadFiles = async () => {
-      const targets = sourceRows.filter(
-        (row) => !!row.eldocNo && !!row.atchFileSn && row.atchFileSn !== "0",
-      );
+      const targets = sourceRows.filter((row) => !!row.eldocNo);
 
       if (targets.length === 0) {
         if (!cancelled) {
@@ -199,7 +195,7 @@ export default function ExternalView() {
             const files = await FileApi.getFileList({
               taskSeCd: "dr",
               menuSn: 1,
-              atchFileGroupId: row.atchFileSn,
+              atchFileGroupId: "",
               taskSeTrgtId: row.eldocNo,
             });
             return [row.eldocNo, files] as const;
@@ -267,8 +263,12 @@ export default function ExternalView() {
         setDownloadingFileKey(row.fileKey);
         await runDownload(row);
       } catch (error) {
+        const message =
+          error instanceof Error
+            ? (error as Error).message
+            : "다운로드에 실패했습니다.";
         notifications.show(
-          error instanceof Error ? error.message : "다운로드에 실패했습니다.",
+          message,
           {
             severity: "error",
             autoHideDuration: 3000,
@@ -319,8 +319,6 @@ export default function ExternalView() {
         title: row.docTtl || "-",
         date: formatCompactDate(row.clctYmd),
         term: formatRetentionTerm(row),
-        type: row.eldocYn === "Y" ? "문서" : "파일",
-        prvcInclYn: row.prvcInclYn || "N",
         canView: row.canView,
         canDownload: row.canDownload,
         downloadReasonRequired: row.downloadReasonRequired,
@@ -646,7 +644,7 @@ export default function ExternalView() {
               }
             }}
             error={!!downloadReasonError}
-            helperText={downloadReasonError || "개인정보 포함 문서는 다운로드 사유가 필요합니다."}
+            helperText={downloadReasonError || "다운로드 사유가 필요합니다."}
           />
         </DialogContent>
         <DialogActions>

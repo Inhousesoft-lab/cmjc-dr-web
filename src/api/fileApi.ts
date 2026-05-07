@@ -28,7 +28,8 @@ export interface FileItem {
 export interface UploadFileRequest {
   savePath: string;
   atchFileGroupId: string;
-  prvcInclYn: string;
+  taskSeTrgtId?: string;
+  eldocNo?: string;
   isExcel: string;
   uploadFiles: File[];
 }
@@ -213,7 +214,12 @@ export const FileApi = {
     const formData = new FormData();
     formData.append("savePath", request.savePath);
     formData.append("atchFileGroupId", request.atchFileGroupId);
-    formData.append("prvcInclYn", request.prvcInclYn);
+    if (request.taskSeTrgtId) {
+      formData.append("taskSeTrgtId", request.taskSeTrgtId);
+    }
+    if (request.eldocNo) {
+      formData.append("eldocNo", request.eldocNo);
+    }
     formData.append("isExcel", request.isExcel);
     request.uploadFiles.forEach((file) => {
       formData.append("uploadFiles", file);

@@ -26,25 +26,6 @@ export const listDefs = [
     cellStyle: { textAlign: "center" },
   },
   {
-    headerName: "개인정보 포함유무",
-    field: "prvcInclYn",
-    width: 152,
-    minWidth: 152,
-    maxWidth: 152,
-    flex: 0,
-    valueFormatter: (params: { value: string }) => {
-      const value = params.value;
-      if (value === "Y") return "포함";
-      if (value === "N") return "미포함";
-      return "";
-    },
-    cellStyle: (params: { value: string }) => ({
-      textAlign: "center",
-      color: params.value === "Y" ? "red" : "",
-      fontWeight: params.value === "Y" ? "600" : "400",
-    }),
-  },
-  {
     headerName: "사용유무",
     field: "useEn",
     width: 94,

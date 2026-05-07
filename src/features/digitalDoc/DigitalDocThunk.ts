@@ -275,7 +275,6 @@ export type DigitalDocCreatePayload = {
   docMclsfNo: string;
   docSclsfNo: string;
   docClsfNo: string;
-  prvcInclYn: string;
   docNo: string;
   docTtl: string;
   clctYmd: string;
@@ -283,8 +282,7 @@ export type DigitalDocCreatePayload = {
   hldPrdMmCnt: string;
   endYmd: string;
   addExpln: string;
-  eldocYn: "Y" | "N";
-  atchFileSn: string;
+  uploadFiles?: File[];
 };
 
 export const createDigitalDoc = createAsyncThunk<
@@ -292,7 +290,8 @@ export const createDigitalDoc = createAsyncThunk<
   DigitalDocCreatePayload,
   { rejectValue: string }
 >("digitalDoc/create", async (payload, { rejectWithValue }) => {
-  const validated = digitalDocFormValidator(payload);
+  const { uploadFiles = [], ...formPayload } = payload;
+  const validated = digitalDocFormValidator(formPayload);
   if (!validated.success) {
     const firstIssue = validated.issues[0];
     return rejectWithValue(
@@ -307,7 +306,16 @@ export const createDigitalDoc = createAsyncThunk<
       endYmd: toChar8Date(validated.data.endYmd),
     };
 
-    const res = await https.post(insertEDocApiPath(), requestBody);
+    const formData = new FormData();
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(requestBody)], { type: "application/json" }),
+    );
+    uploadFiles.forEach((file) => {
+      formData.append("uploadFiles", file);
+    });
+
+    const res = await https.post(insertEDocApiPath(), formData);
     const eldocNo = (res as any)?.data?.data?.eldocNo ?? "";
     return String(eldocNo);
   } catch (error) {
@@ -320,7 +328,6 @@ export type DigitalDocUpdatePayload = {
   docClsfNo: string;
   docNo: string;
   docTtl: string;
-  gvbkYn: string;
 };
 
 export const updateDigitalDoc = createAsyncThunk<

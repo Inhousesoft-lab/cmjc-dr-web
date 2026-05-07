@@ -16,7 +16,7 @@ import { normalizeDocDestructionRow } from "@/features/docDestruction/DocDestruc
 import { listDefs } from "@/pages/ko/DocDestruction/DocDestructionList/col-def-print";
 import type { SearchValues, DocDestruction } from "@/types/docDestruction";
 
-const COMPLETED_PRIVACY_DESTRUCTION_STATUS = "04";
+const COMPLETED_DESTRUCTION_STATUS = "02";
 
 type DestructionRowState = {
   rows: DocDestruction[];
@@ -45,8 +45,7 @@ const normalizePrintRows = (payload: unknown): DocDestruction[] => {
 };
 
 const isCompletedPrivacyRow = (row: DocDestruction) => {
-  const personalInfoIncluded = String(row.prvcInclYn ?? row.hasPersonalInfo ?? "").trim();
-  return personalInfoIncluded === "Y" && row.dstrcPrcsPrstCd === COMPLETED_PRIVACY_DESTRUCTION_STATUS;
+  return row.dstrcPrcsPrstCd === COMPLETED_DESTRUCTION_STATUS;
 };
 
 const formatPrintDate = (value: unknown) => {
@@ -111,8 +110,7 @@ export default function DocDestructionManagementPrintDialog({
     const requestParams = {
       ...searchValues,
       reqCd: "CMPLT",
-      prvcInclYn: "Y",
-      dstrcPrcsPrstCd: COMPLETED_PRIVACY_DESTRUCTION_STATUS,
+      dstrcPrcsPrstCd: COMPLETED_DESTRUCTION_STATUS,
       pageNum: 1,
       pageSize: 9999,
     };
@@ -158,9 +156,9 @@ export default function DocDestructionManagementPrintDialog({
 
     const printRows = rowData.rows.map((row) => ({
       ...row,
-      fileName: row.fileName || row.docTitle || "-",
+      docTitle: row.docTitle || "-",
       dataTypeLabel: row.fileNm || "-",
-      dstrcAutzrId: row.prvcDstrcAutzrId || row.dstrcAutzrId || "-",
+      dstrcAutzrId: row.dstrcAutzrId || "-",
     }));
 
     printElement(root, {

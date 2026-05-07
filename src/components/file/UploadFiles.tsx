@@ -73,8 +73,7 @@ export default function UploadFiles({
 
   const [fileGroupId, setFileGroupId] = useState("");
 
-  const [prvcInclYn, setPrvcInclYn] = useState("0");
-  const [isExcel, setIsExcel] = useState("0");
+  const isExcel = "0";
 
   // 방법 1: useRef 사용
   const hasFetched = useRef(false);
@@ -350,7 +349,7 @@ export default function UploadFiles({
       await FileApi.uploadFile({
         savePath: taskSeCd, //
         atchFileGroupId: fileGroupId ?? "",
-        prvcInclYn: prvcInclYn, // 개인정보 포함 여부 (1: 포함, 0: 미포함)
+        taskSeTrgtId,
         isExcel: isExcel, // 엑셀 파일 여부 (1: 엑셀, 0: 일반)
         uploadFiles: fileList,
       });
@@ -781,7 +780,7 @@ export default function UploadFiles({
             error={!!downloadReasonError}
             helperText={
               downloadReasonError ||
-              "개인정보 포함 문서는 다운로드 사유가 필요합니다."
+              "다운로드 사유가 필요합니다."
             }
           />
         </DialogContent>

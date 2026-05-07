@@ -12,8 +12,6 @@ export interface SearchValues extends Paging {
   docSclsfNo: string;           // 문서소분류번호
   docNo: string;                // 문서번호
   docTtl: string;               // 문서제목
-  hldPrdChangedOnly: boolean;  // 보유기간변경여부
-  prvcInclYn: string;           // 개인정보포함여부
   docClsfNm: string;            // 문서분류명
   fromEndYmd: string;          // 종료일자(시작)
   toEndYmd: string;            // 종료일자(종료)
@@ -35,8 +33,6 @@ export interface DocDestruction {
   docCategory: string; // 문서분류
   docNo: string; // 문서번호
   docTitle: string; // 문서제목
-  hasPersonalInfo: string; // 개인정보 ("포함" / "미포함")
-  prvcInclYn: string; // 개인정보 포함 여부 원본값
   clctYmd: string; // 수집일자
   hldPrdDfyrs: string; // 보존연한(년)
   hldPrdMmCnt: string; // 보존연한(월)
@@ -47,13 +43,10 @@ export interface DocDestruction {
   dstrcAplcntId: string; // 처리담당자
   dstrcAplyDt: string; // 파기신청일자
   dstrcAutzrId: string; // 처리부서장
-  prvcDstrcAutzrId: string; // 개인정보 담당자
   endDate: string; // 종료일자
-  docType: string; // 종류 (문서 / 파일 등)
   registrantDept: string; // 등록자(부서)
   rgtrNm: string;
   regDate: string; // 등록일자
-  fileName: string; // 개인정보 파일명
   fileNm?: string; // 자료의 종류 원본(file_nm)
   dataTypeLabel: string; // 자료의 종류
 }
@@ -82,17 +75,12 @@ export interface DocDestructionHistory {
   eldocHstryNo: string; // 전자문서이력번호
   docClsfNo: string; // 문서분류번호
   docNo: string; // 문서번호
-  unqNo: string; // 고유번호
   docTtl: string; // 문서제목
   clctYmd: string; // 수집일자
   hldPrdDfyrs: string; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
   hldPrdMmCnt: string; // 보유기간 월
   endYmd: string; // 종료일자
-  prvcInclYn: string; // 개인정보포함여부
-  gvbkYn: string; // 반환여부
   addExpln: string; // 비고
-  eldocYn: string; // 전자문서여부
-  atchFileSn: string; // 첨부파일일련번호(공통)
   deptId: string; // 기본권한(등록자 부서아이디)
   dstrcPrcsPrstCd: string; // 파기처리현황코드(00:전자문서,01:파기신청,02:부서장승인파기,03:부서장승인,04:개인정보처리담당자승인 파기)
   dstrcAplyDt: string; // 파기신청일자
@@ -100,8 +88,6 @@ export interface DocDestructionHistory {
   rsn: string; // 사유
   dstrcAprvDt: string; // 파기승인일자
   dstrcAutzrId: string; // 파기승인자
-  prvcDstrcAprvDt: string; // 개인정보파기승인일자
-  prvcDstrcAutzrId: string; // 개인벙보파기승일자
   actCn: string; // 행위내용
   acsrIpAddr: string; // 접속자IP주소
   eqpmntNm: string; // 장비명

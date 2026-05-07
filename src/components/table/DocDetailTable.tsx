@@ -4,9 +4,7 @@ import UploadFiles from "../file/UploadFiles";
 import {
   formatCalculatedEndYmd,
   formatDateDash,
-  gvbkLabel,
   holdPeriodLabel,
-  prvcLabel,
 } from "@/utils/formater";
 import type { DigitalDoc, DigitalDocHistory } from "@/types/digitalDoc";
 
@@ -52,8 +50,6 @@ export default function DocDetailTable({
   const clctLabel = endDateLabel !== "-"
     ? `${endDateLabel}${holdLabel !== "-" ? ` (${holdLabel})` : ""}`
     : "-";
-  const mappedGvbkLabel = gvbkLabel(detail?.gvbkYn);
-  const mappedPrvcLabel = prvcLabel(detail?.prvcInclYn);
   const showDownloadReason = String((detail as any)?.actCn ?? "").includes(
     "다운로드",
   );
@@ -99,8 +95,6 @@ export default function DocDetailTable({
       />
       <GridField label="수집일자" value={formatDateDash(detail?.clctYmd ?? "")} />
       <GridField label="종료일자" value={clctLabel} />
-      <GridField label="개인정보" value={mappedPrvcLabel} />
-      <GridField label="반환여부" value={mappedGvbkLabel} />
       <GridField item={6} label="비고" value={detail?.addExpln || "-"} />
       <GridField
         item={6}
@@ -117,7 +111,6 @@ export default function DocDetailTable({
               (eldocNo ? (
                 <UploadFiles
                   taskSeTrgtId={eldocNo}
-                  initialGroupId={String((detail as any)?.atchFileSn ?? "")}
                   readOnly
                   requireDownloadReason
                 />

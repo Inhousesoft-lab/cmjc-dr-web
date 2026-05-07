@@ -1,19 +1,9 @@
 import React from "react";
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Stack,
-  TextField,
-} from "@mui/material";
+import { Box, Button, Grid, IconButton, Stack, TextField } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { ColDef } from "ag-grid-community";
 import { useLocation, useNavigate } from "react-router-dom";
 import { listDefs } from "./col-def";
-import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import useNotifications from "@/hooks/useNotifications";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import AgGridContainer from "@/components/grid/AgGridContainer";
@@ -21,18 +11,14 @@ import MuiSelect from "@/components/elements/MuiSelect";
 import GridField from "@/components/common/GridField";
 import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import {
-  fetchHoldingInstitutionList,
-  updateHoldingInstitutionHldprd,
-  updateHoldingInstitutionHldprdAll,
-} from "@/features/holdingInstitution/HoldingInstitutionThunk";
+import { fetchHoldingInstitutionList } from "@/features/holdingInstitution/HoldingInstitutionThunk";
 import {
   selectHoldingInstitutionError,
   selectHoldingInstitutionLoading,
   selectHoldingInstitutionRowCount,
   selectHoldingInstitutionRows,
 } from "@/features/holdingInstitution/HoldingInstitutionSelectors";
-import type { HoldingInstitution, SearchValues } from "@/types/holdingInstitution";
+import type { SearchValues } from "@/types/holdingInstitution";
 import { langPath, getLangFromPathname } from "@/routes/lang";
 import { isDateRangeInvalid } from "@/utils/globalFunc";
 
@@ -46,9 +32,7 @@ const INITIAL_SEARCH_PARAMS: SearchValues = {
   docSclsfNo: "",
   docNo: "",
   docTtl: "",
-  infoMnbdAgreYn: "",
   hldPrdDfyrs: "",
-  hldPrdChangedOnly: true,
   pageNum: 1,
   pageSize: 10,
 };
@@ -66,11 +50,10 @@ const HOLD_PERIOD_ITEMS = [
 ];
 
 export default function HoldingInstitutionList() {
-  const collectDateRangeErrorMessage = "수집일 종료일은 시작일보다 빠를 수 없습니다.";
-  const endDateRangeErrorMessage = "보유기간 종료일은 시작일보다 빠를 수 없습니다.";
+  const collectDateRangeErrorMessage = "수집일자 종료일은 시작일보다 빠를 수 없습니다.";
+  const endDateRangeErrorMessage = "종료일자 종료일은 시작일보다 빠를 수 없습니다.";
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
-  const dialogs = useDialogs();
   const location = useLocation();
   const navigate = useNavigate();
   const initialSearchParams = React.useMemo(() => {
@@ -86,8 +69,6 @@ export default function HoldingInstitutionList() {
         docLclsfNo: queryParams.get("docLclsfNo") ?? "",
         docMclsfNo: queryParams.get("docMclsfNo") ?? "",
         docSclsfNo: queryParams.get("docSclsfNo") ?? "",
-        infoMnbdAgreYn: queryParams.get("infoMnbdAgreYn") ?? "",
-        hldPrdChangedOnly: queryParams.get("hldPrdChangedOnly") === "true",
         pageNum: Number(queryParams.get("pageNum") || "1"),
       };
     }
@@ -145,130 +126,9 @@ export default function HoldingInstitutionList() {
     });
   }, [lclsfError, notifications]);
 
-  const [selectedRows, setSelectedRows] = React.useState<HoldingInstitution[]>([]);
-
   const syncSearchParams = React.useCallback((nextParams: SearchValues) => {
     setSearchParams(nextParams);
   }, []);
-
-  const handleSelectionChange = React.useCallback((nextRows: HoldingInstitution[]) => {
-    setSelectedRows(nextRows);
-  }, []);
-
-  const handleApplySelectedRows = React.useCallback(async () => {
-    if (selectedRows.length === 0) {
-      notifications.show("선택된 문서가 없습니다.", {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
-      return;
-    }
-
-    const confirmed = await dialogs.confirm(
-      "선택된 파일에 대한 문서분류의 현재 보유기간으로 변경됩니다. 변경하시겠습니까? (※ 정보주체 동의를 받아 수집한 경우, 반드시 변경된 보유기간으로 재동의를 받으셔야 합니다. )",
-      {
-        title: "보유기간 변경",
-        severity: "info",
-        okText: "확인",
-        cancelText: "취소",
-      },
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await dispatch(
-        updateHoldingInstitutionHldprd({
-          eldocNos: selectedRows.map((row) => row.eldocNo).filter(Boolean),
-        }),
-      ).unwrap();
-
-      notifications.show("변경되었습니다", {
-        severity: "success",
-        autoHideDuration: 3000,
-      });
-      const nextParams = {
-        ...searchParams,
-        hldPrdChangedOnly: true,
-        pageNum: 1,
-      };
-      syncSearchParams(nextParams);
-      dispatch(fetchHoldingInstitutionList(nextParams));
-      setSelectedRows([]);
-    } catch (error) {
-      notifications.show(getErrorMessage(error), {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
-    }
-  }, [dialogs, dispatch, notifications, searchParams, selectedRows, syncSearchParams]);
-
-  const handleApplyAllRows = React.useCallback(async () => {
-    if (isDateRangeInvalid(searchParams.fromClctYmd, searchParams.toClctYmd)) {
-      setCollectDateRangeError(collectDateRangeErrorMessage);
-      return;
-    }
-    if (isDateRangeInvalid(searchParams.fromEndYmd, searchParams.toEndYmd)) {
-      setEndDateRangeError(endDateRangeErrorMessage);
-      return;
-    }
-    const confirmed = await dialogs.confirm(
-      "전체 파일에 대한 문서분류의 현재 보유기간으로 변경됩니다. 변경하시겠습니까? (※ 정보주체 동의를 받아 수집한 경우, 반드시 변경된 보유기간으로 재동의를 받으셔야 합니다. )",
-      {
-        title: "보유기간 변경",
-        severity: "info",
-        okText: "확인",
-        cancelText: "취소",
-      },
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await dispatch(
-        updateHoldingInstitutionHldprdAll({
-          docLclsfNo: searchParams.docLclsfNo,
-          docMclsfNo: searchParams.docMclsfNo,
-          docSclsfNo: searchParams.docSclsfNo,
-          docNo: searchParams.docNo,
-          docTtl: searchParams.docTtl,
-          infoMnbdAgreYn: searchParams.infoMnbdAgreYn,
-          hldPrdDfyrs: searchParams.hldPrdDfyrs,
-          hldPrdChangedOnly: searchParams.hldPrdChangedOnly,
-          fromClctYmd: searchParams.fromClctYmd,
-          toClctYmd: searchParams.toClctYmd,
-          fromEndYmd: searchParams.fromEndYmd,
-          toEndYmd: searchParams.toEndYmd,
-        }),
-      ).unwrap();
-
-      notifications.show("변경되었습니다", {
-        severity: "success",
-        autoHideDuration: 3000,
-      });
-      const nextParams = {
-        ...searchParams,
-        hldPrdChangedOnly: true,
-        pageNum: 1,
-      };
-      syncSearchParams(nextParams);
-      dispatch(fetchHoldingInstitutionList(nextParams));
-      setSelectedRows([]);
-    } catch (error) {
-      notifications.show(getErrorMessage(error), {
-        severity: "error",
-        autoHideDuration: 3000,
-      });
-    }
-  }, [
-    collectDateRangeErrorMessage,
-    dialogs,
-    dispatch,
-    endDateRangeErrorMessage,
-    notifications,
-    searchParams,
-    syncSearchParams,
-  ]);
 
   const handleSearch = React.useCallback(() => {
     if (isDateRangeInvalid(searchParams.fromClctYmd, searchParams.toClctYmd)) {
@@ -495,29 +355,7 @@ export default function HoldingInstitutionList() {
               />
             }
           />
-          <GridField
-            item={3}
-            label="정보주체 동의여부"
-            value={
-              <FormControlLabel
-                className="filter-checkbox"
-                control={
-                  <Checkbox
-                    size="small"
-                    checked={searchParams.infoMnbdAgreYn === "Y"}
-                    onChange={(_, checked) =>
-                      setSearchParams((prev) => ({
-                        ...prev,
-                        infoMnbdAgreYn: checked ? "Y" : "",
-                      }))
-                    }
-                  />
-                }
-                label="동의"
-              />
-            }
-          />
-          <GridField item={3} label="" value={null} blank />
+          <GridField item={6} label="" value={null} blank />
         </Grid>
         <Box className="table-view-actions">
           <Stack spacing={1} alignItems="center">
@@ -536,18 +374,13 @@ export default function HoldingInstitutionList() {
       </Stack>
 
       <AgGridContainer<any>
-        actionButtons={[
-          { label: "선택 반영", onClick: handleApplySelectedRows },
-          { label: "일괄 반영", onClick: handleApplyAllRows },
-        ]}
         isLoading={isLoading}
-        enableRowSelection={true}
+        enableRowSelection={false}
         colDefs={columnDefs}
         rowData={rows}
         pageNum={searchParams.pageNum}
         pageSize={searchParams.pageSize}
         count={rowCount}
-        onSelectionChange={handleSelectionChange}
         onPageChange={({ pageNum: nextPage, pageSize: nextSize }) => {
           const nextParams = {
             ...searchParams,

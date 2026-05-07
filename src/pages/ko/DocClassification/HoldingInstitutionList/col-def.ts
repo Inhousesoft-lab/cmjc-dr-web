@@ -1,4 +1,3 @@
-import React from "react";
 import { formatDateDash, formatPeriod } from "@/utils/formater";
 
 export const listDefs = [
@@ -37,29 +36,6 @@ export const listDefs = [
     flex: 1.6,
   },
   {
-    headerName: "정보주체 동의여부",
-    field: "docClsf.prvcFileHldPrst.infoMnbdAgreYn",
-    width: 112,
-    minWidth: 112,
-    maxWidth: 112,
-    flex: 0,
-    headerComponent: () =>
-      React.createElement(
-        "span",
-        null,
-        "정보주체",
-        React.createElement("br"),
-        "동의여부",
-      ),
-    cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => {
-      const yn = params?.data?.docClsf?.prvcFileHldPrst?.infoMnbdAgreYn;
-      if (yn === "Y") return "동의";
-      if (yn === "N") return "비동의";
-      return "-";
-    },
-  },
-  {
     headerName: "수집일자",
     field: "clctYmd",
     width: 118,
@@ -70,64 +46,28 @@ export const listDefs = [
     valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
-    headerName: "변경 전",
+    headerName: "보유기간",
+    field: "hldPrdDfyrs",
+    width: 104,
+    minWidth: 104,
+    maxWidth: 104,
+    flex: 0,
     cellStyle: { textAlign: "center" },
-    children: [
-      {
-        headerName: "보유기간",
-        field: "hldPrdDfyrs",
-        width: 104,
-        minWidth: 104,
-        maxWidth: 104,
-        flex: 0,
-        cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) =>
-          formatPeriod(params?.data?.hldPrdDfyrs, params?.data?.hldPrdMmCnt),
-      },
-      {
-        headerName: "종료일자",
-        field: "endYmd",
-        width: 118,
-        minWidth: 118,
-        maxWidth: 118,
-        flex: 0,
-        cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => formatDateDash(params?.value),
-      },
-    ],
+    valueFormatter: (params: any) =>
+      formatPeriod(params?.data?.hldPrdDfyrs, params?.data?.hldPrdMmCnt),
   },
   {
-    headerName: "변경 후",
+    headerName: "종료일자",
+    field: "endYmd",
+    width: 118,
+    minWidth: 118,
+    maxWidth: 118,
+    flex: 0,
     cellStyle: { textAlign: "center" },
-    children: [
-      {
-        headerName: "보유기간",
-        field: "docClsf.prvcFileHldPrst.hldPrdDfyrs",
-        width: 104,
-        minWidth: 104,
-        maxWidth: 104,
-        flex: 0,
-        cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) =>
-          formatPeriod(
-            params?.data?.docClsf?.prvcFileHldPrst?.hldPrdDfyrs,
-            params?.data?.docClsf?.prvcFileHldPrst?.hldPrdMmCnt,
-          ),
-      },
-      {
-        headerName: "종료일자",
-        field: "endYmdAfterChanged",
-        width: 118,
-        minWidth: 118,
-        maxWidth: 118,
-        flex: 0,
-        cellStyle: { textAlign: "center" },
-        valueFormatter: (params: any) => formatDateDash(params?.value),
-      },
-    ],
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
-    headerName: "등록자(부서)",
+    headerName: "등록자 부서",
     field: "rgtrId",
     minWidth: 160,
     flex: 1.3,

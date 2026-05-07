@@ -45,7 +45,7 @@ const formatDate = (value: unknown) => {
 export const listDefs: ColDef<DocDestruction>[] = [
   {
     headerName: "개인정보 파일명",
-    field: "fileName",
+    field: "docTitle",
     minWidth: 180,
     flex: 1.4,
     cellStyle: { textAlign: "center" },
@@ -98,6 +98,6 @@ export const listDefs: ColDef<DocDestruction>[] = [
     flex: 0.9,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params) =>
-      formatText(params?.data?.prvcDstrcAutzrId ?? params?.data?.dstrcAutzrId ?? params?.value),
+      formatText(params?.data?.dstrcAutzrId ?? params?.value),
   },
 ];

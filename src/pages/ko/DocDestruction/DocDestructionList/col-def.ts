@@ -64,7 +64,7 @@ export const listDefs: ColDef<DocDestruction>[] = [
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => {
       const prstCd = String(params?.data?.dstrcPrcsPrstCd ?? "");
-      if (prstCd !== "02" && prstCd !== "04") return "-";
+      if (prstCd !== "02") return "-";
       return formatCalculatedEndYmd(
         params?.data?.clctYmd,
         params?.data?.hldPrdDfyrs,
@@ -91,11 +91,5 @@ export const listDefs: ColDef<DocDestruction>[] = [
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) =>
       formatActorWithDate(params?.value, params?.data?.dstrcAprvDt),
-  },
-  {
-    headerName: "개인정보 담당자",
-    field: "prvcDstrcAutzrId",
-    cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => params?.value || "-",
   },
 ];

@@ -26,9 +26,6 @@ export interface ExternalViewDocument {
   endYmd: string;
   hldPrdDfyrs: string;
   hldPrdMmCnt: string;
-  eldocYn: string;
-  prvcInclYn: string;
-  atchFileSn: string;
   deptId: string;
   addExpln: string;
   canView: boolean;

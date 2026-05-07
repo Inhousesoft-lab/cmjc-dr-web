@@ -48,7 +48,6 @@ const WORK_ACCESS_LOG_SAFE_QUERY_KEYS = new Set([
   "docsclsfno",
   "infomnbdagreyn",
   "hldprdchangedonly",
-  "prvcinclyn",
   "useen",
 ]);
 const WORK_ACCESS_LOG_SENSITIVE_QUERY_KEY_PATTERNS = [
@@ -202,7 +201,6 @@ export const fireWorkAccessLog = (config: InternalAxiosRequestConfig | any) => {
       rqstrId: userId,
       flfmtTaskCd: method,
       etcMemoCn: apiPath,
-      prvcInclYn: "N",
       regDt: now,
       mdfcnDt: now,
       rgtrId: userId,
