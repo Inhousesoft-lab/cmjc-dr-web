@@ -1,4 +1,4 @@
-type AuthUserLike = {
+export type AuthUserLike = {
   authrtCd?: string | null;
   roles?: string[] | null;
 };
@@ -13,6 +13,7 @@ const splitAuthorityCodes = (value?: string | null) =>
   String(value ?? "")
     .split(/[,\s|/]+/)
     .map((code) => code.trim())
+    .map((code) => (code.startsWith("ROLE_") ? code.slice("ROLE_".length) : code))
     .filter(Boolean);
 
 const getAuthorityCodeSet = (user?: AuthUserLike | null) => {
@@ -27,4 +28,8 @@ const getAuthorityCodeSet = (user?: AuthUserLike | null) => {
 
 export const isDrAdminUser = (user?: AuthUserLike | null) => {
   return getAuthorityCodeSet(user).has(DR_AUTHORITY_CODES.ADMIN);
+};
+
+export const isDrCancelAdminUser = (user?: AuthUserLike | null) => {
+  return getAuthorityCodeSet(user).has(DR_AUTHORITY_CODES.CANCEL_ADMIN);
 };

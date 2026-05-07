@@ -6,8 +6,9 @@ import { getDefaultLandingPath } from "@/routes/defaultLanding";
 export default function NotFound() {
   const location = useLocation();
   const { list } = useAppSelector((s) => s.menuList);
+  const user = useAppSelector((s) => s.auth.user);
   const lang = getLangFromPathname(location.pathname);
-  const homePath = getDefaultLandingPath(lang, list);
+  const homePath = getDefaultLandingPath(lang, list, user);
 
   return (
     <div className="page notfound">

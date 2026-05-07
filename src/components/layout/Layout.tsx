@@ -41,7 +41,11 @@ const convertToMenuItems = (
 
 export default function Layout() {
   const { list } = useAppSelector((s) => s.menuList);
-  const runtimeMenuTree = React.useMemo(() => getRuntimeMenuTree(list), [list]);
+  const user = useAppSelector((s) => s.auth.user);
+  const runtimeMenuTree = React.useMemo(
+    () => getRuntimeMenuTree(list, user),
+    [list, user],
+  );
   const [isNavigationExpanded, setIsNavigationExpanded] = React.useState(true);
 
   React.useEffect(() => {

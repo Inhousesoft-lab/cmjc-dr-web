@@ -82,6 +82,16 @@ const menuItems: Menu[] = [
     menu: false,
   },
   {
+    path: "digitalDoc/:eldocNo/modify",
+    label: "문서 수정",
+    menuType: "MENU",
+    element: {
+      ko: "DigitalDocForm",
+      en: "DigitalDocForm",
+    },
+    menu: false,
+  },
+  {
     path: "docClassification/:docClsfNo",
     label: "문서분류 상세",
     menuType: "MENU",
@@ -108,6 +118,46 @@ const menuItems: Menu[] = [
     element: {
       ko: "DocClassificationForm",
       en: "DocClassificationForm",
+    },
+    menu: false,
+  },
+  {
+    path: "members",
+    label: "회원관리",
+    menuType: "MENU",
+    element: {
+      ko: "MemberManagement",
+      en: "MemberManagement",
+    },
+    menu: false,
+  },
+  {
+    path: "members/create",
+    label: "회원 등록",
+    menuType: "MENU",
+    element: {
+      ko: "MemberForm",
+      en: "MemberForm",
+    },
+    menu: false,
+  },
+  {
+    path: "members/:mbrId",
+    label: "회원 수정",
+    menuType: "MENU",
+    element: {
+      ko: "MemberForm",
+      en: "MemberForm",
+    },
+    menu: false,
+  },
+  {
+    path: "password-change",
+    label: "비밀번호 변경",
+    menuType: "MENU",
+    element: {
+      ko: "PasswordChange",
+      en: "PasswordChange",
     },
     menu: false,
   },

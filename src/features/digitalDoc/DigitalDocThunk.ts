@@ -223,7 +223,6 @@ export const fetchDigitalDocAuthrtHistoryList = createAsyncThunk<
 export type DigitalDocAuthrtCreatePayload = {
   eldocNo: string;
   deptId: string;
-  indvId: string;
 };
 
 export type DigitalDocAuthrtDeletePayload = {
@@ -236,8 +235,8 @@ export const createDigitalDocAuthrt = createAsyncThunk<
   DigitalDocAuthrtCreatePayload,
   { rejectValue: string }
 >("digitalDoc/authrtCreate", async (payload, { rejectWithValue }) => {
-  const { eldocNo, deptId, indvId } = payload;
-  const validated = digitalAuthrtCreateValidator({ deptId, indvId });
+  const { eldocNo, deptId } = payload;
+  const validated = digitalAuthrtCreateValidator({ deptId });
   if (!validated.success) {
     const firstIssue = validated.issues[0];
     return rejectWithValue(firstIssue?.message ?? "공람자 입력값이 올바르지 않습니다.");
@@ -328,6 +327,12 @@ export type DigitalDocUpdatePayload = {
   docClsfNo: string;
   docNo: string;
   docTtl: string;
+  clctYmd: string;
+  hldPrdDfyrs: string | number;
+  hldPrdMmCnt: string;
+  endYmd: string;
+  addExpln: string;
+  uploadFiles?: File[];
 };
 
 export const updateDigitalDoc = createAsyncThunk<
@@ -335,7 +340,8 @@ export const updateDigitalDoc = createAsyncThunk<
   DigitalDocUpdatePayload,
   { rejectValue: string }
 >("digitalDoc/update", async (payload, { rejectWithValue }) => {
-  const validated = digitalDocUpdateValidator(payload);
+  const { uploadFiles = [], ...formPayload } = payload;
+  const validated = digitalDocUpdateValidator(formPayload);
   if (!validated.success) {
     const firstIssue = validated.issues[0];
     return rejectWithValue(
@@ -344,7 +350,27 @@ export const updateDigitalDoc = createAsyncThunk<
   }
 
   try {
-    await https.post(updateEDocApiPath(), validated.data);
+    const requestBody = {
+      ...validated.data,
+      clctYmd: toChar8Date(validated.data.clctYmd),
+      endYmd: toChar8Date(validated.data.endYmd),
+    };
+
+    if (uploadFiles.length > 0) {
+      const formData = new FormData();
+      formData.append(
+        "data",
+        new Blob([JSON.stringify(requestBody)], { type: "application/json" }),
+      );
+      uploadFiles.forEach((file) => {
+        formData.append("uploadFiles", file);
+      });
+
+      await https.post(updateEDocApiPath(), formData);
+      return 1;
+    }
+
+    await https.post(updateEDocApiPath(), requestBody);
     return 1;
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));

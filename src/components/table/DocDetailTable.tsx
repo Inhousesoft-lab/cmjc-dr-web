@@ -1,11 +1,8 @@
+import type React from "react";
 import { Grid, TextField } from "@mui/material";
 import GridField from "../common/GridField";
 import UploadFiles from "../file/UploadFiles";
-import {
-  formatCalculatedEndYmd,
-  formatDateDash,
-  holdPeriodLabel,
-} from "@/utils/formater";
+import { formatDateDash, holdPeriodLabel } from "@/utils/formater";
 import type { DigitalDoc, DigitalDocHistory } from "@/types/digitalDoc";
 
 interface DocDetailTableProps {
@@ -16,6 +13,10 @@ interface DocDetailTableProps {
   editable?: boolean;
   showAttachments?: boolean;
   attachmentsContent?: React.ReactNode;
+  clctYmdContent?: React.ReactNode;
+  holdPeriodContent?: React.ReactNode;
+  endYmdContent?: React.ReactNode;
+  addExplnContent?: React.ReactNode;
   onDocNoChange?: (value: string) => void;
   onDocTtlChange?: (value: string) => void;
 }
@@ -28,6 +29,10 @@ export default function DocDetailTable({
   editable = false,
   showAttachments = true,
   attachmentsContent,
+  clctYmdContent,
+  holdPeriodContent,
+  endYmdContent,
+  addExplnContent,
   onDocNoChange,
   onDocTtlChange,
 }: DocDetailTableProps) {
@@ -42,14 +47,7 @@ export default function DocDetailTable({
     detail?.hldPrdDfyrs ?? "",
     detail?.hldPrdMmCnt ?? "",
   );
-  const endDateLabel = formatCalculatedEndYmd(
-    detail?.clctYmd ?? "",
-    detail?.hldPrdDfyrs ?? "",
-    detail?.hldPrdMmCnt ?? "",
-  );
-  const clctLabel = endDateLabel !== "-"
-    ? `${endDateLabel}${holdLabel !== "-" ? ` (${holdLabel})` : ""}`
-    : "-";
+  const endDateLabel = formatDateDash(detail?.endYmd ?? "");
   const showDownloadReason = String((detail as any)?.actCn ?? "").includes(
     "다운로드",
   );
@@ -93,33 +91,56 @@ export default function DocDetailTable({
           )
         }
       />
-      <GridField label="수집일자" value={formatDateDash(detail?.clctYmd ?? "")} />
-      <GridField label="종료일자" value={clctLabel} />
-      <GridField item={6} label="비고" value={detail?.addExpln || "-"} />
+      <GridField
+        label="수집일자"
+        value={
+          editable && clctYmdContent
+            ? clctYmdContent
+            : formatDateDash(detail?.clctYmd ?? "")
+        }
+      />
+      <GridField
+        label="보존연한"
+        value={editable && holdPeriodContent ? holdPeriodContent : holdLabel}
+      />
+      <GridField
+        label="종료일자"
+        value={editable && endYmdContent ? endYmdContent : endDateLabel}
+      />
       <GridField
         item={6}
         label={downloadReasonLabel}
         value={downloadReasonValue}
         blankLabel={!showDownloadReason}
+        blank={!showDownloadReason}
+      />
+      <GridField
+        item={12}
+        label="비고"
+        value={
+          editable && addExplnContent
+            ? addExplnContent
+            : detail?.addExpln || "-"
+        }
       />
       {showAttachments && (
         <>
           <GridField
+            item={12}
             label="첨부파일"
             value={
               attachmentsContent ??
               (eldocNo ? (
                 <UploadFiles
                   taskSeTrgtId={eldocNo}
-                  readOnly
-                  requireDownloadReason
+                  readOnly={!editable}
+                  requireDownloadReason={!editable}
                 />
               ) : (
                 "-"
               ))
             }
           />
-          <GridField item={6} label="" value="" blankLabel blank />
         </>
       )}
     </Grid>

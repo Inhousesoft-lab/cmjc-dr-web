@@ -72,13 +72,14 @@ export default function AdminSidebar({
     [location.pathname],
   );
   const { list } = useAppSelector((s) => s.menuList);
+  const user = useAppSelector((s) => s.auth.user);
 
   const normalizedPathname = React.useMemo(
     () => stripAppBase(location.pathname),
     [location.pathname],
   );
   const logoSrc = withAppBase("/img/logo.png");
-  const homeHref = withAppBase(getDefaultLandingHref(curLang, list));
+  const homeHref = withAppBase(getDefaultLandingHref(curLang, list, user));
 
   const matchPathPrefix = (pathname: string, target: string) => {
     return pathname === target || pathname?.startsWith(target + "/");

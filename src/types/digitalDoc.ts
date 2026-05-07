@@ -51,13 +51,18 @@ export interface DigitalDocUpdate {
   docClsfNo: string; // 문서분류번호
   docNo: string; // 문서번호
   docTtl: string; // 문서제목
+  clctYmd: string; // 수집일자
+  hldPrdDfyrs: string | number; // 보유기간 거치연수
+  hldPrdMmCnt: string; // 보유기간 월수
+  endYmd: string; // 종료일자
+  addExpln: string; // 비고
 }
 
 export interface DigitalAuthrt {
   eldocNo: string; // 전자문서번호
   inqAuthrtNo: string; // 공람번호
   deptId: string; // 부서코드
-  indvId: string; // 개인코드
+  deptNm?: string; // 부서명
   delYn: string; // 삭제여부(Y:삭제, N:유지)
   regDt: string; // 등록일자
   rgtrId: string; // 등록자
@@ -104,7 +109,7 @@ export interface DigitalAuthrtHistory {
   inqAuthrtNo: string; // 공람번호
   inqAuthrtHstryNo: string; // 공람이력번호
   deptId: string; // 부서코드
-  indvId: string; // 개인코드
+  deptNm?: string; // 부서명
   actCn: string; // 행위내용
   delYn: string; // 삭제여부(Y:삭제, N:유지)
   regDt: string; // 등록일자

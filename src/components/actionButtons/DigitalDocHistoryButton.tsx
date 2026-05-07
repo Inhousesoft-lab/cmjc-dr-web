@@ -183,7 +183,7 @@ export default function DigitalDocHistoryButton({
                     <TableHead>
                       <TableRow>
                         <TableCell
-                          colSpan={5}
+                          colSpan={4}
                           align="center"
                           sx={{ fontWeight: 700 }}
                         >
@@ -193,9 +193,6 @@ export default function DigitalDocHistoryButton({
                       <TableRow>
                         <TableCell align="center" sx={{ width: 120 }}>
                           부서
-                        </TableCell>
-                        <TableCell align="center" sx={{ width: 110 }}>
-                          이름
                         </TableCell>
                         <TableCell align="center" sx={{ minWidth: 160 }}>
                           행위내용
@@ -217,11 +214,6 @@ export default function DigitalDocHistoryButton({
                       <TableCell align="center">
                         {(row as any).deptNm || row.deptId || "-"}
                       </TableCell>
-                      <TableCell align="center">
-                        {(row as any).indvNm ||
-                          (row.indvId === "ALL" ? "전체" : row.indvId) ||
-                          "-"}
-                      </TableCell>
                       <TableCell align="center">{row.actCn || "-"}</TableCell>
                       <TableCell align="center">
                         {(row as any).rgtrNm || row.rgtrId || "-"}
@@ -233,7 +225,7 @@ export default function DigitalDocHistoryButton({
                   ))}
                   {authrtHistoryRows.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} align="center">
+                      <TableCell colSpan={4} align="center">
                         {authrtHistoryLoading
                           ? "권한 이력 조회 중..."
                           : "권한 이력이 없습니다."}

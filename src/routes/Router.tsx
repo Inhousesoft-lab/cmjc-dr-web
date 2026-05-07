@@ -28,17 +28,19 @@ type LangElementProps = {
 function NotFoundRedirect() {
   const { lang } = useParams<{ lang?: string }>();
   const { list } = useAppSelector((s) => s.menuList);
+  const user = useAppSelector((s) => s.auth.user);
   const normalized = normalizeLang(lang) ?? detectBrowserLang();
 
-  return <Navigate to={getDefaultLandingPath(normalized, list)} replace />;
+  return <Navigate to={getDefaultLandingPath(normalized, list, user)} replace />;
 }
 
 function DefaultLandingRedirect() {
   const { lang } = useParams<{ lang?: string }>();
   const { list } = useAppSelector((s) => s.menuList);
+  const user = useAppSelector((s) => s.auth.user);
   const normalized = normalizeLang(lang) ?? detectBrowserLang();
 
-  return <Navigate to={getDefaultLandingPath(normalized, list)} replace />;
+  return <Navigate to={getDefaultLandingPath(normalized, list, user)} replace />;
 }
 
 function LangElement({ byLang }: LangElementProps) {
@@ -123,7 +125,11 @@ const LangGuard = ({ children }: { children: JSX.Element }) => {
 
 export default function Router() {
   const { list } = useAppSelector((s) => s.menuList);
-  const runtimeMenuTree = useMemo(() => getRuntimeMenuTree(list), [list]);
+  const user = useAppSelector((s) => s.auth.user);
+  const runtimeMenuTree = useMemo(
+    () => getRuntimeMenuTree(list, user),
+    [list, user],
+  );
   const shouldHandleNotFound = runtimeMenuTree.length > 0;
 
   const renderRoutes = (routes: Menu[]): ReactElement[] => {

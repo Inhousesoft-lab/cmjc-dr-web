@@ -1,6 +1,11 @@
 import type { Menu } from "./MenuSlice";
 import type { ComponentKey } from "@/routes/ComponentMap";
 import staticMenuItems from "@/routes/menuItems";
+import {
+  isDrAdminUser,
+  isDrCancelAdminUser,
+  type AuthUserLike,
+} from "@/features/auth/authAccess";
 
 const normalizePath = (value?: string) =>
   String(value ?? "")
@@ -152,12 +157,89 @@ const appendHiddenStaticRoutes = (menus: Menu[]): Menu[] => {
   return [...menus, ...forcedVisibleRoutes, ...missingHiddenRoutes];
 };
 
-export const getRuntimeMenuTree = (menus?: Menu[]): Menu[] => {
-  if (!menus?.length) {
-    return staticMenuItems;
+const DOC_CLASSIFICATION_PATH_PREFIX = normalizePath("docClassification");
+const DOC_DESTRUCTION_APPROVAL_PATH = normalizePath("destruction/appvList");
+const MEMBER_MANAGEMENT_PATH_PREFIX = normalizePath("members");
+
+type ExcludedMenuRule = {
+  path: string;
+  includeChildren?: boolean;
+};
+
+const getExcludedMenuRules = (user?: AuthUserLike | null) => {
+  if (isDrAdminUser(user)) {
+    return [];
   }
 
-  return appendHiddenStaticRoutes(enrichMenuTree(menus));
+  if (isDrCancelAdminUser(user)) {
+    return [
+      {
+        path: DOC_CLASSIFICATION_PATH_PREFIX,
+        includeChildren: true,
+      },
+      {
+        path: MEMBER_MANAGEMENT_PATH_PREFIX,
+        includeChildren: true,
+      },
+    ];
+  }
+
+  return [
+    {
+      path: DOC_CLASSIFICATION_PATH_PREFIX,
+      includeChildren: true,
+    },
+    {
+      path: DOC_DESTRUCTION_APPROVAL_PATH,
+    },
+    {
+      path: MEMBER_MANAGEMENT_PATH_PREFIX,
+      includeChildren: true,
+    },
+  ];
+};
+
+const isExcludedByAuthority = (path: string, rules: ExcludedMenuRule[]) =>
+  rules.some((rule) => {
+    if (path === rule.path) return true;
+    return rule.includeChildren && path.startsWith(`${rule.path}/`);
+  });
+
+const filterMenusByAuthority = (
+  menus: Menu[],
+  user?: AuthUserLike | null,
+): Menu[] => {
+  const excludedRules = getExcludedMenuRules(user);
+
+  return menus.flatMap((menu) => {
+    const path = normalizePath(menu.path);
+
+    if (path && isExcludedByAuthority(path, excludedRules)) {
+      return [];
+    }
+
+    const children = menu.children?.length
+      ? filterMenusByAuthority(menu.children, user)
+      : undefined;
+
+    return [
+      {
+        ...menu,
+        children,
+      },
+    ];
+  });
+};
+
+export const getRuntimeMenuTree = (
+  menus?: Menu[],
+  user?: AuthUserLike | null,
+): Menu[] => {
+  const runtimeMenus = !menus?.length
+    ? staticMenuItems
+    : appendHiddenStaticRoutes(enrichMenuTree(menus));
+
+  return filterMenusByAuthority(runtimeMenus, user);
 };
 
 export { joinPath, normalizePath };

@@ -92,7 +92,7 @@ export const digitalAuthrtRowSchema = z.looseObject({
   eldocNo: stringField,
   inqAuthrtNo: stringField,
   deptId: stringField,
-  indvId: stringField,
+  deptNm: stringField,
   delYn: stringField,
   regDt: stringField,
   rgtrId: stringField,
@@ -110,7 +110,7 @@ export const digitalAuthrtHistoryRowSchema = z.looseObject({
   inqAuthrtNo: stringField,
   inqAuthrtHstryNo: stringField,
   deptId: stringField,
-  indvId: stringField,
+  deptNm: stringField,
   actCn: stringField,
   delYn: stringField,
   regDt: stringField,
@@ -124,7 +124,6 @@ export const digitalAuthrtHistoryListSchema = z.looseObject({
 
 export const digitalAuthrtCreateSchema = z.object({
   deptId: z.string().trim().min(1, "부서를 선택해 주세요."),
-  indvId: z.string().trim().min(1, "이름을 선택해 주세요."),
 });
 
 export function digitalAuthrtCreateValidator(data: unknown) {
@@ -200,12 +199,49 @@ export function digitalDocFormValidator(data: unknown) {
     : { success: false as const, data: null, issues: result.error.issues };
 }
 
-export const digitalDocUpdateSchema = z.object({
-  eldocNo: z.string().trim().min(1, "전자문서 번호가 없습니다."),
-  docClsfNo: z.string().trim().min(1, "문서분류를 선택해 주세요."),
-  docNo: z.string().trim().min(1, "문서번호를 입력해 주세요."),
-  docTtl: z.string().trim().min(1, "문서제목을 입력해 주세요."),
-});
+export const digitalDocUpdateSchema = z
+  .object({
+    eldocNo: z.string().trim().min(1, "전자문서 번호가 없습니다."),
+    docClsfNo: z.string().trim().min(1, "문서분류 정보가 없습니다."),
+    docNo: z.string().trim().min(1, "문서번호를 입력해 주세요."),
+    docTtl: z.string().trim().min(1, "문서제목을 입력해 주세요."),
+    clctYmd: dateField,
+    hldPrdDfyrs: z.preprocess(
+      (v) => (v == null ? "" : String(v)),
+      z.string().trim().min(1, "보존연한을 선택해 주세요."),
+    ),
+    hldPrdMmCnt: optionalString,
+    endYmd: optionalString,
+    addExpln: optionalString,
+  })
+  .superRefine((data, ctx) => {
+    if (data.hldPrdDfyrs !== "0") return;
+
+    if (!/^\d+$/.test(data.hldPrdMmCnt) || Number(data.hldPrdMmCnt) <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["hldPrdMmCnt"],
+        message: "직접입력 시 보존 개월 수를 입력해 주세요.",
+      });
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$|^\d{8}$/.test(data.endYmd)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["endYmd"],
+        message: "직접입력 시 종료일자를 선택해 주세요.",
+      });
+      return;
+    }
+
+    if (isDateRangeInvalid(data.clctYmd, data.endYmd)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["endYmd"],
+        message: "종료일자는 수집일보다 빠를 수 없습니다.",
+      });
+    }
+  });
 
 export function digitalDocUpdateValidator(data: unknown) {
   const result = digitalDocUpdateSchema.safeParse(data);

@@ -1,5 +1,4 @@
 import https from "@/api/axiosInstance";
-import { applyDrMenuUrlHeader } from "@/utils/drMenuUrl";
 import apiClient, { resolveApiUrl, resolveFallbackApiUrl } from "./ApiClient";
 
 export interface ApiResponse<T> {
@@ -154,7 +153,6 @@ const probeDownloadUrl = async (url: string): Promise<string> => {
     const response = await fetch(url, {
       method: "HEAD",
       credentials: "include",
-      headers: applyDrMenuUrlHeader(),
       signal: controller.signal,
     });
 

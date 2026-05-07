@@ -13,30 +13,39 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-import dayjs from "dayjs";
 import {
   AttachFile as AttachFileIcon,
   DeleteOutline as DeleteOutlineIcon,
 } from "@mui/icons-material";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import MuiSelect from "@/components/elements/MuiSelect";
+import PageStatus from "@/components/common/PageStatus";
+import UploadFiles from "@/components/file/UploadFiles";
 import LabelCell from "@/components/table/LabelCell";
 import TableWrapper from "@/components/table/TableWrapper";
 import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
   createDigitalDoc,
+  fetchDigitalDocDetail,
+  updateDigitalDoc,
   type DigitalDocCreatePayload,
 } from "@/features/digitalDoc/DigitalDocThunk";
 import {
+  selectDigitalDocDetail,
+  selectDigitalDocDetailError,
+  selectDigitalDocDetailLoading,
   selectDigitalDocSaveError,
   selectDigitalDocSaving,
 } from "@/features/digitalDoc/DigitalDocSelectors";
 import { digitalDocFormValidator } from "@/features/digitalDoc/DigitalDocValidator";
 import useNotifications from "@/hooks/useNotifications";
-import { useNavigate } from "react-router";
 import URL from "@/constants/url";
 import { resetDigitalDocSaveState } from "@/features/digitalDoc/DigitalDocSlice";
+import { calculateEndYmdByPeriod } from "@/utils/formater";
+import { getLangFromPathname, langPath } from "@/routes/lang";
+import type { SearchValues } from "@/types/digitalDoc";
 
 type FormValues = Omit<DigitalDocCreatePayload, "uploadFiles">;
 type FieldErrors = Partial<Record<keyof FormValues, string>>;
@@ -55,7 +64,21 @@ const INITIAL_FORM_VALUES: FormValues = {
   addExpln: "",
 };
 
-const PERMANENT_END_YMD = "9999-12-31";
+const RETENTION_YEAR_OPTIONS = [
+  { value: "1", label: "1년" },
+  { value: "3", label: "3년" },
+  { value: "5", label: "5년" },
+  { value: "10", label: "10년" },
+  { value: "30", label: "30년" },
+  { value: "90", label: "준영구" },
+  { value: "99", label: "영구" },
+  { value: "0", label: "직접입력" },
+];
+
+const toDatePickerValue = (value: unknown) => {
+  const digits = String(value ?? "").replace(/[^0-9]/g, "");
+  return digits.length >= 8 ? digits.slice(0, 8) : "";
+};
 
 function formatFileSize(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -63,39 +86,27 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function calculateEndYmd(
-  clctYmd: string,
-  hldPrdDfyrs: string | number,
-  _hldPrdMmCnt: string,
-) {
-  const normalizedClctYmd = String(clctYmd ?? "").trim();
-  const normalizedYears = String(hldPrdDfyrs ?? "").trim();
-
-  if (!normalizedClctYmd || !normalizedYears) return "";
-
-  if (normalizedYears === "90" || normalizedYears === "99") {
-    return PERMANENT_END_YMD;
-  }
-
-  if (normalizedYears === "0") {
-    return "";
-  }
-
-  const start = dayjs(normalizedClctYmd);
-  if (!start.isValid()) return "";
-
-  const totalMonths = Number.parseInt(normalizedYears, 10) * 12;
-  if (Number.isNaN(totalMonths)) return "";
-
-  return start.add(totalMonths, "month").format("YYYY-MM-DD");
-}
-
 export default function DigitalDocForm() {
-  const dispatch = useAppDispatch();
+  const { eldocNo = "" } = useParams<{ eldocNo?: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const notifications = useNotifications();
+
   const saveError = useAppSelector(selectDigitalDocSaveError);
   const saving = useAppSelector(selectDigitalDocSaving);
+  const detail = useAppSelector(selectDigitalDocDetail);
+  const detailLoading = useAppSelector(selectDigitalDocDetailLoading);
+  const detailError = useAppSelector(selectDigitalDocDetailError);
+
+  const isModify = !!eldocNo;
+  const curLang = getLangFromPathname(location.pathname);
+  const navState = location.state as
+    | {
+        sourceListPath?: string;
+        listState?: SearchValues;
+      }
+    | null;
 
   const [values, setValues] = React.useState<FormValues>(INITIAL_FORM_VALUES);
   const [errors, setErrors] = React.useState<FieldErrors>({});
@@ -106,14 +117,20 @@ export default function DigitalDocForm() {
     values.docMclsfNo,
   );
 
-  // 저장 시 사용할 최종 분류 메타를 찾는다.
-
-  const isHoldingPeriodLocked = false;
-
   const calculatedEndYmd = React.useMemo(
-    () => calculateEndYmd(values.clctYmd, values.hldPrdDfyrs, values.hldPrdMmCnt),
+    () =>
+      calculateEndYmdByPeriod(
+        values.clctYmd,
+        values.hldPrdDfyrs,
+        values.hldPrdMmCnt,
+      ),
     [values.clctYmd, values.hldPrdDfyrs, values.hldPrdMmCnt],
   );
+
+  React.useEffect(() => {
+    if (!isModify || !eldocNo) return;
+    dispatch(fetchDigitalDocDetail(eldocNo));
+  }, [dispatch, eldocNo, isModify]);
 
   React.useEffect(() => {
     if (!saveError) return;
@@ -124,10 +141,38 @@ export default function DigitalDocForm() {
   }, [saveError, notifications]);
 
   React.useEffect(() => {
+    if (!detailError) return;
+    notifications.show(detailError, {
+      severity: "error",
+      autoHideDuration: 3000,
+    });
+  }, [detailError, notifications]);
+
+  React.useEffect(() => {
     return () => {
       dispatch(resetDigitalDocSaveState());
     };
   }, [dispatch]);
+
+  React.useEffect(() => {
+    if (!isModify || !detail || detail.eldocNo !== eldocNo) return;
+
+    setValues({
+      docLclsfNo: detail.docLclsfNo ?? "",
+      docMclsfNo: detail.docMclsfNo ?? "",
+      docSclsfNo: detail.docSclsfNo ?? "",
+      docClsfNo: detail.docClsfNo ?? "",
+      docNo: detail.docNo ?? "",
+      docTtl: detail.docTtl ?? "",
+      clctYmd: toDatePickerValue(detail.clctYmd),
+      hldPrdDfyrs: String(detail.hldPrdDfyrs ?? "1"),
+      hldPrdMmCnt: String(detail.hldPrdMmCnt ?? ""),
+      endYmd: toDatePickerValue(detail.endYmd),
+      addExpln: detail.addExpln ?? "",
+    });
+    setUploadFiles([]);
+    setErrors({});
+  }, [detail, eldocNo, isModify]);
 
   React.useEffect(() => {
     if (values.hldPrdDfyrs === "0") return;
@@ -158,6 +203,11 @@ export default function DigitalDocForm() {
     setUploadFiles((prev) => prev.filter((_, fileIndex) => fileIndex !== index));
   };
 
+  const detailPath = React.useMemo(
+    () => URL.DIGITAL_DOC_DETAIL.replace(":eldocNo", eldocNo),
+    [eldocNo],
+  );
+
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const resolvedEndYmd =
@@ -166,6 +216,7 @@ export default function DigitalDocForm() {
     const formPayload: FormValues = {
       ...values,
       docClsfNo: values.docSclsfNo || values.docMclsfNo || values.docLclsfNo,
+      hldPrdMmCnt: values.hldPrdDfyrs === "0" ? values.hldPrdMmCnt : "0",
       endYmd: resolvedEndYmd,
     };
 
@@ -185,12 +236,36 @@ export default function DigitalDocForm() {
     }
 
     try {
+      if (isModify) {
+        await dispatch(
+          updateDigitalDoc({
+            eldocNo,
+            docClsfNo: formPayload.docClsfNo,
+            docNo: formPayload.docNo,
+            docTtl: formPayload.docTtl,
+            clctYmd: formPayload.clctYmd,
+            hldPrdDfyrs: formPayload.hldPrdDfyrs,
+            hldPrdMmCnt: formPayload.hldPrdMmCnt,
+            endYmd: formPayload.endYmd,
+            addExpln: formPayload.addExpln,
+            uploadFiles,
+          }),
+        ).unwrap();
+        navigate(langPath(detailPath, curLang), {
+          state: {
+            sourceListPath: navState?.sourceListPath ?? URL.DIGITAL_DOC_LIST,
+            listState: navState?.listState,
+          },
+        });
+        return;
+      }
+
       const payload: DigitalDocCreatePayload = {
         ...formPayload,
         uploadFiles,
       };
       await dispatch(createDigitalDoc(payload)).unwrap();
-      navigate(URL.DIGITAL_DOC_LIST);
+      navigate(langPath(URL.DIGITAL_DOC_LIST, curLang));
     } catch (error) {
       notifications.show(getErrorMessage(error), {
         severity: "error",
@@ -200,13 +275,27 @@ export default function DigitalDocForm() {
   };
 
   const handleCancel = () => {
-    navigate(URL.DIGITAL_DOC_LIST);
+    if (isModify) {
+      navigate(langPath(detailPath, curLang), {
+        state: {
+          sourceListPath: navState?.sourceListPath ?? URL.DIGITAL_DOC_LIST,
+          listState: navState?.listState,
+        },
+      });
+      return;
+    }
+
+    navigate(langPath(URL.DIGITAL_DOC_LIST, curLang));
   };
+
+  if (isModify && detailLoading && (!detail || detail.eldocNo !== eldocNo)) {
+    return <PageStatus isLoading={detailLoading} />;
+  }
 
   return (
     <form onSubmit={handleSave}>
       <TableWrapper
-        aria-label="디지털 문서 상세 정보"
+        aria-label="전자문서 상세 정보"
         colgroup={
           <colgroup>
             <col className="tbl-col-w-100" />
@@ -326,25 +415,21 @@ export default function DigitalDocForm() {
                   fullWidth
                   size="small"
                   name="hldPrdDfyrs"
-                  value={values.hldPrdDfyrs}
+                  value={String(values.hldPrdDfyrs)}
                   onChange={(e) => {
-                    const selected = e.target.value;
+                    const selected = String(e.target.value);
                     handleFieldChange("hldPrdDfyrs", selected);
                     if (selected !== "0") {
-                      handleFieldChange("hldPrdMmCnt", "");
+                      handleFieldChange("hldPrdMmCnt", "0");
                     }
                   }}
-                  disabled={isHoldingPeriodLocked}
                   error={!!errors.hldPrdDfyrs}
                 >
-                  <MenuItem value="1">1년</MenuItem>
-                  <MenuItem value="3">3년</MenuItem>
-                  <MenuItem value="5">5년</MenuItem>
-                  <MenuItem value="10">10년</MenuItem>
-                  <MenuItem value="30">30년</MenuItem>
-                  <MenuItem value="90">준영구</MenuItem>
-                  <MenuItem value="99">영구</MenuItem>
-                  <MenuItem value="0">직접입력</MenuItem>
+                  {RETENTION_YEAR_OPTIONS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
               <TextField
@@ -358,9 +443,9 @@ export default function DigitalDocForm() {
                     e.target.value.replace(/[^0-9]/g, ""),
                   )
                 }
-                placeholder="월"
+                placeholder="개월"
                 type="text"
-                disabled={isHoldingPeriodLocked || values.hldPrdDfyrs !== "0"}
+                disabled={values.hldPrdDfyrs !== "0"}
                 error={!!errors.hldPrdMmCnt}
                 helperText={errors.hldPrdMmCnt || ""}
               />
@@ -387,8 +472,7 @@ export default function DigitalDocForm() {
                 helperText={errors.endYmd || ""}
               />
               <Typography variant="body1" color="text.secondary">
-                * 보존연한을 직접 입력하신 경우 종료일자를 달력에서 선택하여
-                입력해 주세요.
+                * 보존연한을 직접 입력하신 경우 종료일자를 달력에서 선택해 입력해 주세요.
               </Typography>
             </Stack>
           </TableCell>
@@ -410,9 +494,21 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>첨부파일</LabelCell>
+          <LabelCell>파일업로드</LabelCell>
           <TableCell colSpan={3}>
             <Stack spacing={1}>
+              {isModify && eldocNo && (
+                <Box>
+                  <Typography variant="subtitle2" mb={0.5}>
+                    기존 첨부파일
+                  </Typography>
+                  <UploadFiles
+                    taskSeTrgtId={eldocNo}
+                    readOnly
+                    requireDownloadReason
+                  />
+                </Box>
+              )}
               <Stack direction="row" spacing={1} alignItems="center">
                 <Button
                   component="label"
@@ -491,7 +587,7 @@ export default function DigitalDocForm() {
           취소
         </Button>
         <Button size="large" variant="outlined" type="submit" disabled={saving}>
-          등록
+          {isModify ? "수정" : "등록"}
         </Button>
       </Stack>
     </form>

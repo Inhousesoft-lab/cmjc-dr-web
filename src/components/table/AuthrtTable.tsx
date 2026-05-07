@@ -1,14 +1,14 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
-  TableRow,
-  TableCell,
   Button,
-  Select,
-  MenuItem,
-  Typography,
+  IconButton,
+  Stack,
+  TableCell,
+  TableRow,
+  TextField,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import useNotifications from "@/hooks/useNotifications";
-import { useState, useCallback } from "react";
 import { useDialogs } from "@/hooks/useDialogs/useDialogs";
 import TableWrapper from "./TableWrapper";
 import LabelCell from "./LabelCell";
@@ -25,6 +25,8 @@ import {
   selectDigitalDocAuthrtSaving,
 } from "@/features/digitalDoc/DigitalDocSelectors";
 import https from "@/api/axiosInstance";
+import DepartmentTreeDialog from "@/pages/ko/MemberManagement/DepartmentTreeDialog";
+import type { DepartmentRow } from "@/types/member";
 
 const styleGroup = {
   content: {
@@ -34,29 +36,23 @@ const styleGroup = {
   },
 };
 
-type InstitutionOption = {
-  deptNo: string;
-  deptNm: string;
-};
-
-type ResearcherOption = {
-  mbrId: string;
-  mbrNm: string;
-};
-
-const ALL_INDIVIDUAL_OPTION: ResearcherOption = {
-  mbrId: "ALL",
-  mbrNm: "전체",
-};
-
 export interface AuthrtTableProps {
   eldocNo: string;
   tableAriaLabel?: string;
 }
 
+const normalizeDepartment = (item: any): DepartmentRow => ({
+  rowNo: Number(item?.rowNo ?? item?.row_no ?? 0),
+  deptNo: String(item?.deptNo ?? item?.dept_no ?? ""),
+  deptNm: String(item?.deptNm ?? item?.dept_nm ?? ""),
+  upDeptNo: String(item?.upDeptNo ?? item?.up_dept_no ?? ""),
+  useEn: String(item?.useEn ?? item?.use_en ?? item?.useYn ?? item?.use_yn ?? ""),
+  useYn: String(item?.useYn ?? item?.use_yn ?? item?.useEn ?? item?.use_en ?? ""),
+});
+
 export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   eldocNo,
-  tableAriaLabel = "문서고 공람 이력",
+  tableAriaLabel = "문서 공람 관리",
 }) => {
   const dispatch = useAppDispatch();
   const dialogs = useDialogs();
@@ -66,10 +62,10 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   const authrtSaving = useAppSelector(selectDigitalDocAuthrtSaving);
   const authrtError = useAppSelector(selectDigitalDocAuthrtError);
 
-  const [deptId, setDeptId] = useState<string>("");
-  const [indvId, setIndvId] = useState<string>("");
-  const [institutions, setInstitutions] = useState<InstitutionOption[]>([]);
-  const [researchers, setResearchers] = useState<ResearcherOption[]>([]);
+  const [deptId, setDeptId] = useState("");
+  const [deptNm, setDeptNm] = useState("");
+  const [departments, setDepartments] = useState<DepartmentRow[]>([]);
+  const [departmentDialogOpen, setDepartmentDialogOpen] = useState(false);
 
   React.useEffect(() => {
     if (!eldocNo) return;
@@ -77,13 +73,22 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   }, [dispatch, eldocNo]);
 
   React.useEffect(() => {
-    const fetchInstitutions = async () => {
+    const fetchDepartments = async () => {
       try {
         const res = await https.get("/api/dr/departments", {
           params: { pageNum: 1, pageSize: 1000 },
         });
         const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
-        setInstitutions((payload.list ?? []) as InstitutionOption[]);
+        const list = Array.isArray(payload?.list)
+          ? payload.list
+          : Array.isArray(payload)
+            ? payload
+            : [];
+        setDepartments(
+          list
+            .map(normalizeDepartment)
+            .filter((item: DepartmentRow) => item.deptNo && item.deptNm),
+        );
       } catch (error) {
         notifications.show(getErrorMessage(error), {
           severity: "error",
@@ -92,36 +97,8 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
       }
     };
 
-    fetchInstitutions();
+    fetchDepartments();
   }, [notifications]);
-
-  React.useEffect(() => {
-    if (!deptId) {
-      setResearchers([]);
-      setIndvId("");
-      return;
-    }
-
-    const fetchResearchers = async () => {
-      try {
-        const res = await https.get("/api/dr/members", {
-          params: { deptNo: deptId, pageNum: 1, pageSize: 1000 },
-        });
-        const payload = (res as any)?.data?.data ?? (res as any)?.data ?? {};
-        setResearchers([
-          ALL_INDIVIDUAL_OPTION,
-          ...((payload.list ?? []) as ResearcherOption[]),
-        ]);
-      } catch (error) {
-        notifications.show(getErrorMessage(error), {
-          severity: "error",
-          autoHideDuration: 3000,
-        });
-      }
-    };
-
-    fetchResearchers();
-  }, [deptId, notifications]);
 
   React.useEffect(() => {
     if (!authrtError) return;
@@ -141,7 +118,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
         return;
       }
 
-      const confirmed = await dialogs.confirm("공람 이력을 삭제 할까요?", {
+      const confirmed = await dialogs.confirm("공람 정보를 삭제하시겠습니까?", {
         title: "삭제 확인",
         severity: "error",
         okText: "삭제",
@@ -152,7 +129,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
 
       try {
         await dispatch(deleteDigitalDocAuthrt({ eldocNo, inqAuthrtNo })).unwrap();
-        notifications.show("삭제했습니다.", {
+        notifications.show("삭제되었습니다.", {
           severity: "success",
           autoHideDuration: 3000,
         });
@@ -168,8 +145,8 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
   );
 
   const handleSave = useCallback(async () => {
-    if (isEmpty(deptId) || isEmpty(indvId)) {
-      await dialogs.alert("부서와 이름을 모두 선택해 주세요.", {
+    if (isEmpty(deptId)) {
+      await dialogs.alert("부서를 선택해 주세요.", {
         title: "알림",
         okText: "확인",
       });
@@ -177,16 +154,13 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
     }
 
     try {
-      await dispatch(
-        createDigitalDocAuthrt({ eldocNo, deptId, indvId }),
-      ).unwrap();
-      notifications.show("등록했습니다.", {
+      await dispatch(createDigitalDocAuthrt({ eldocNo, deptId })).unwrap();
+      notifications.show("등록되었습니다.", {
         severity: "success",
         autoHideDuration: 3000,
       });
       setDeptId("");
-      setIndvId("");
-      setResearchers([]);
+      setDeptNm("");
       dispatch(fetchDigitalDocAuthrtList(eldocNo));
     } catch (error) {
       notifications.show(getErrorMessage(error), {
@@ -194,7 +168,12 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
         autoHideDuration: 3000,
       });
     }
-  }, [deptId, indvId, dialogs, dispatch, eldocNo, notifications]);
+  }, [deptId, dialogs, dispatch, eldocNo, notifications]);
+
+  const handleDepartmentSelect = useCallback((department: DepartmentRow) => {
+    setDeptId(department.deptNo);
+    setDeptNm(department.deptNm);
+  }, []);
 
   return (
     <div className="tbl_wrap">
@@ -203,8 +182,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
         colgroup={
           <colgroup>
             <col className="tbl-col-w-15p" />
-            <col className="tbl-col-w-30p" />
-            <col className="tbl-col-w-30p" />
+            <col />
             <col className="tbl-col-w-15p" />
           </colgroup>
         }
@@ -212,18 +190,14 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
         <TableRow>
           <LabelCell rowSpan={Math.max(rows.length, 1) + 2}>공람</LabelCell>
           <LabelCell>부서</LabelCell>
-          <LabelCell>이름</LabelCell>
           <LabelCell>삭제</LabelCell>
         </TableRow>
 
         {rows.length > 0 ? (
           rows.map((row) => (
-            <TableRow key={row.inqAuthrtNo || `${row.deptId}-${row.indvId}`}>
+            <TableRow key={row.inqAuthrtNo || row.deptId}>
               <TableCell align="center" sx={styleGroup.content}>
                 {(row as any).deptNm || row.deptId || "-"}
-              </TableCell>
-              <TableCell align="center" sx={styleGroup.content}>
-                {(row as any).indvNm || (row.indvId === "ALL" ? "전체" : row.indvId) || "-"}
               </TableCell>
               <TableCell align="center" sx={styleGroup.content}>
                 <Button
@@ -240,7 +214,7 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
           ))
         ) : (
           <TableRow>
-            <TableCell colSpan={3} align="center" sx={styleGroup.content}>
+            <TableCell colSpan={2} align="center" sx={styleGroup.content}>
               {authrtLoading ? "조회 중..." : "공람 데이터가 없습니다."}
             </TableCell>
           </TableRow>
@@ -248,43 +222,23 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
 
         <TableRow>
           <TableCell>
-            <Select
-              size="small"
-              fullWidth
-              displayEmpty
-              value={deptId}
-              onChange={(event) => setDeptId(event.target.value as string)}
-              aria-label="추가할 부서 선택"
-            >
-              <MenuItem value="">
-                <Typography>부서</Typography>
-              </MenuItem>
-              {institutions.map((institution) => (
-                <MenuItem key={institution.deptNo} value={institution.deptNo}>
-                  {institution.deptNm}
-                </MenuItem>
-              ))}
-            </Select>
-          </TableCell>
-          <TableCell>
-            <Select
-              size="small"
-              fullWidth
-              displayEmpty
-              value={indvId}
-              onChange={(event) => setIndvId(event.target.value as string)}
-              aria-label="추가할 이름 선택"
-              disabled={!deptId}
-            >
-              <MenuItem value="">
-                <Typography>이름</Typography>
-              </MenuItem>
-              {researchers.map((researcher) => (
-                <MenuItem key={researcher.mbrId} value={researcher.mbrId}>
-                  {researcher.mbrNm}
-                </MenuItem>
-              ))}
-            </Select>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <TextField
+                fullWidth
+                size="small"
+                placeholder="부서"
+                value={deptNm}
+                inputProps={{ readOnly: true }}
+                onClick={() => setDepartmentDialogOpen(true)}
+              />
+              <IconButton
+                aria-label="부서조회"
+                onClick={() => setDepartmentDialogOpen(true)}
+                sx={{ flexShrink: 0 }}
+              >
+                <SearchIcon />
+              </IconButton>
+            </Stack>
           </TableCell>
           <TableCell align="center">
             <Button
@@ -299,6 +253,14 @@ export const AuthrtTable: React.FC<AuthrtTableProps> = ({
           </TableCell>
         </TableRow>
       </TableWrapper>
+
+      <DepartmentTreeDialog
+        open={departmentDialogOpen}
+        departments={departments}
+        selectedDeptNo={deptId}
+        onClose={() => setDepartmentDialogOpen(false)}
+        onSelect={handleDepartmentSelect}
+      />
     </div>
   );
 };

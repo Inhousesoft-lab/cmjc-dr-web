@@ -7,6 +7,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
+import useDraggableDialog from "@/hooks/useDraggableDialog";
 
 export interface OpenDialogOptions<R> {
   /**
@@ -194,10 +195,23 @@ export interface AlertDialogProps
 
 export function AlertDialog({ open, payload, onClose }: AlertDialogProps) {
   const okButtonProps = useDialogLoadingButton(() => onClose());
+  const { paperSx, handleDragStart } = useDraggableDialog();
 
   return (
-    <Dialog maxWidth="xs" fullWidth open={open} onClose={() => onClose()}>
-      <DialogTitle>{payload.title ?? "Alert"}</DialogTitle>
+    <Dialog
+      maxWidth="xs"
+      fullWidth
+      open={open}
+      onClose={() => onClose()}
+      slotProps={{
+        paper: {
+          sx: paperSx,
+        },
+      }}
+    >
+      <DialogTitle onMouseDown={handleDragStart} sx={{ cursor: "move" }}>
+        {payload.title ?? "Alert"}
+      </DialogTitle>
       <DialogContent>{payload.msg}</DialogContent>
       <DialogActions>
         <Button disabled={!open} {...okButtonProps}>
@@ -218,10 +232,23 @@ export interface ConfirmDialogProps
 export function ConfirmDialog({ open, payload, onClose }: ConfirmDialogProps) {
   const cancelButtonProps = useDialogLoadingButton(() => onClose(false));
   const okButtonProps = useDialogLoadingButton(() => onClose(true));
+  const { paperSx, handleDragStart } = useDraggableDialog();
 
   return (
-    <Dialog maxWidth="xs" fullWidth open={open} onClose={() => onClose(false)}>
-      <DialogTitle>{payload.title ?? "Confirm"}</DialogTitle>
+    <Dialog
+      maxWidth="xs"
+      fullWidth
+      open={open}
+      onClose={() => onClose(false)}
+      slotProps={{
+        paper: {
+          sx: paperSx,
+        },
+      }}
+    >
+      <DialogTitle onMouseDown={handleDragStart} sx={{ cursor: "move" }}>
+        {payload.title ?? "Confirm"}
+      </DialogTitle>
       <DialogContent>{payload.msg}</DialogContent>
       <DialogActions>
         <Button autoFocus disabled={!open} {...cancelButtonProps}>
@@ -247,6 +274,7 @@ export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
   const cancelButtonProps = useDialogLoadingButton(() => onClose(null));
 
   const [loading, setLoading] = React.useState(false);
+  const { paperSx, handleDragStart } = useDraggableDialog();
 
   const name = "input";
   return (
@@ -258,6 +286,7 @@ export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
       slotProps={{
         paper: {
           component: "form",
+          sx: paperSx,
           onSubmit: async (event: React.FormEvent<HTMLDivElement>) => {
             event.preventDefault();
             try {
@@ -277,7 +306,9 @@ export function PromptDialog({ open, payload, onClose }: PromptDialogProps) {
         },
       }}
     >
-      <DialogTitle>{payload.title ?? "Confirm"}</DialogTitle>
+      <DialogTitle onMouseDown={handleDragStart} sx={{ cursor: "move" }}>
+        {payload.title ?? "Confirm"}
+      </DialogTitle>
       <DialogContent>
         <DialogContentText>{payload.msg} </DialogContentText>
         <TextField

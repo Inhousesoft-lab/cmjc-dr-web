@@ -1,6 +1,5 @@
 import { SafeError } from "@/features/com/Api";
 import { notifyUnauthorized } from "@/utils/authSession";
-import { setDrMenuUrlHeader } from "@/utils/drMenuUrl";
 import axios, { AxiosInstance } from "axios";
 
 /**
@@ -45,7 +44,6 @@ const https: AxiosInstance = axios.create({
 });
 
 https.interceptors.request.use((config) => {
-  setDrMenuUrlHeader(config.headers);
   if (config.data instanceof FormData) {
     delete config.headers["Content-Type"];
   }

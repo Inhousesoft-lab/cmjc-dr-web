@@ -17,6 +17,7 @@ export default function Login() {
   const { loginSubmitting, isAuthenticated, initialized } = useAppSelector(
     (s) => s.auth,
   );
+  const user = useAppSelector((s) => s.auth.user);
   const { list, loaded: menuLoaded, loading: menuLoading } = useAppSelector(
     (s) => s.menuList,
   );
@@ -26,7 +27,7 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
 
   const fallbackPath =
-    list.length > 0 ? getDefaultLandingPath(lang, list) : `/${lang ?? "ko"}`;
+    list.length > 0 ? getDefaultLandingPath(lang, list, user) : `/${lang ?? "ko"}`;
   const fromPath = (location.state as any)?.from?.pathname;
   const storedPath = getPostLoginRedirect();
   const targetPath = canUsePostLoginRedirect(fromPath)
