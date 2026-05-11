@@ -13,6 +13,7 @@ interface User {
   deptNo?: string;
   deptNm?: string;
   authrtCd?: string;
+  passwordChangeRequired?: boolean;
   roles: string[];
 }
 
@@ -30,6 +31,62 @@ interface AuthError {
 }
 
 type LoginArgs = { userId: string; password: string };
+const INITIAL_PASSWORD_VALUE = "******";
+
+const toBooleanFlag = (value: unknown): boolean => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+
+  const normalized = String(value ?? "").trim().toUpperCase();
+  return ["Y", "YES", "TRUE", "1", "T"].includes(normalized);
+};
+
+const resolvePasswordChangeRequired = (payload: Record<string, any>) => {
+  const candidates = [
+    payload.passwordChangeRequired,
+    payload.password_change_required,
+    payload.mustChangePassword,
+    payload.must_change_password,
+    payload.needPasswordChange,
+    payload.need_password_change,
+    payload.passwordResetRequired,
+    payload.password_reset_required,
+    payload.passwordExpired,
+    payload.password_expired,
+    payload.firstLogin,
+    payload.first_login,
+    payload.firstLoginYn,
+    payload.first_login_yn,
+    payload.frstLoginYn,
+    payload.frst_login_yn,
+    payload.frstLgnYn,
+    payload.frst_lgn_yn,
+    payload.initialPasswordYn,
+    payload.initial_password_yn,
+    payload.initPwdYn,
+    payload.init_pwd_yn,
+    payload.initPswdYn,
+    payload.init_pswd_yn,
+    payload.tempPasswordYn,
+    payload.temp_password_yn,
+    payload.tempPwdYn,
+    payload.temp_pwd_yn,
+    payload.tempPswdYn,
+    payload.temp_pswd_yn,
+    payload.pwdChgRequired,
+    payload.pwd_chg_required,
+    payload.pwdChgReqYn,
+    payload.pwd_chg_req_yn,
+    payload.pswdChgRequired,
+    payload.pswd_chg_required,
+    payload.pswdChgReqYn,
+    payload.pswd_chg_req_yn,
+    payload.pswdInitYn,
+    payload.pswd_init_yn,
+  ];
+
+  return candidates.some(toBooleanFlag);
+};
 
 const normalizeUser = (payload: Partial<User>): User | null => {
   if (!payload.authenticated || !payload.userId) {
@@ -51,6 +108,9 @@ const normalizeUser = (payload: Partial<User>): User | null => {
     deptNo: payload.deptNo ? String(payload.deptNo) : undefined,
     deptNm: payload.deptNm ? String(payload.deptNm) : undefined,
     authrtCd: payload.authrtCd ? String(payload.authrtCd) : undefined,
+    passwordChangeRequired: resolvePasswordChangeRequired(
+      payload as Record<string, any>,
+    ),
     roles,
   };
 };
@@ -97,6 +157,13 @@ export const login = createAsyncThunk<
       return thunkAPI.rejectWithValue({
         message: "로그인 사용자 정보를 확인하지 못했습니다.",
       });
+    }
+
+    if (normalizedPassword === INITIAL_PASSWORD_VALUE) {
+      return {
+        ...user,
+        passwordChangeRequired: true,
+      };
     }
 
     return user;
@@ -163,6 +230,11 @@ const authSlice = createSlice({
       state.loginSubmitting = false;
       state.initialized = true;
     },
+    markPasswordChanged(state) {
+      if (state.user) {
+        state.user.passwordChangeRequired = false;
+      }
+    },
   },
   extraReducers(builder) {
     builder
@@ -225,7 +297,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, markPasswordChanged } = authSlice.actions;
 
 export const requestLogout = createAsyncThunk<
   void,

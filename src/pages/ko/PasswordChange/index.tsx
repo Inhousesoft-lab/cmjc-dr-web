@@ -1,10 +1,13 @@
 import React from "react";
-import { Button, Stack, TextField } from "@mui/material";
+import { Alert, Button, Stack, TextField } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import https from "@/api/axiosInstance";
 import { changePasswordApiPath } from "@/api/auth/PasswordApiPaths";
 import { getLangFromPathname } from "@/routes/lang";
 import useNotifications from "@/hooks/useNotifications";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { markPasswordChanged } from "@/features/auth/AuthSlice";
+import { shouldForcePasswordChange } from "@/features/auth/authAccess";
 
 type PasswordForm = {
   currentPassword: string;
@@ -19,10 +22,13 @@ const INITIAL_FORM: PasswordForm = {
 };
 
 export default function PasswordChange() {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const notifications = useNotifications();
   const lang = getLangFromPathname(location.pathname);
+  const user = useAppSelector((state) => state.auth.user);
+  const isForced = shouldForcePasswordChange(user);
   const [values, setValues] = React.useState<PasswordForm>(INITIAL_FORM);
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -73,7 +79,8 @@ export default function PasswordChange() {
         severity: "success",
         autoHideDuration: 2500,
       });
-      navigate(`/${lang}`, { replace: true });
+      dispatch(markPasswordChanged());
+      navigate(`/${lang}/digitalDoc/list`, { replace: true });
     } catch (error) {
       notifications.show(getErrorMessage(error), {
         severity: "error",
@@ -88,6 +95,11 @@ export default function PasswordChange() {
     <div className="password-change">
       <form className="password-change__form" onSubmit={handleSubmit}>
         <Stack spacing={2}>
+          {isForced && (
+            <Alert severity="warning">
+              최초 로그인 시에는 비밀번호 변경 후 서비스를 이용할 수 있습니다.
+            </Alert>
+          )}
           <TextField
             label="현재 비밀번호"
             type="password"
@@ -110,14 +122,16 @@ export default function PasswordChange() {
             autoComplete="new-password"
           />
           <Stack direction="row" spacing={1} justifyContent="flex-end">
-            <Button
-              type="button"
-              variant="outlined"
-              onClick={() => navigate(-1)}
-              disabled={submitting}
-            >
-              취소
-            </Button>
+            {!isForced && (
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => navigate(-1)}
+                disabled={submitting}
+              >
+                취소
+              </Button>
+            )}
             <Button type="submit" variant="contained" disabled={submitting}>
               변경
             </Button>

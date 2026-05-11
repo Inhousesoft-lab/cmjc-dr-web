@@ -1,5 +1,6 @@
 export type AuthUserLike = {
   authrtCd?: string | null;
+  passwordChangeRequired?: boolean | null;
   roles?: string[] | null;
 };
 
@@ -32,4 +33,8 @@ export const isDrAdminUser = (user?: AuthUserLike | null) => {
 
 export const isDrCancelAdminUser = (user?: AuthUserLike | null) => {
   return getAuthorityCodeSet(user).has(DR_AUTHORITY_CODES.CANCEL_ADMIN);
+};
+
+export const shouldForcePasswordChange = (user?: AuthUserLike | null) => {
+  return user?.passwordChangeRequired === true;
 };

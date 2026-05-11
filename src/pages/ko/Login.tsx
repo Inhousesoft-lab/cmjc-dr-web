@@ -1,57 +1,44 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { login } from "@/features/auth/AuthSlice";
-import { getDefaultLandingPath } from "@/routes/defaultLanding";
-import {
-  canUsePostLoginRedirect,
-  clearPostLoginRedirect,
-  getPostLoginRedirect,
-} from "@/utils/authSession";
+import { shouldForcePasswordChange } from "@/features/auth/authAccess";
+import { clearPostLoginRedirect } from "@/utils/authSession";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function Login() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
   const { lang } = useParams<{ lang: string }>();
   const { loginSubmitting, isAuthenticated, initialized } = useAppSelector(
     (s) => s.auth,
   );
   const user = useAppSelector((s) => s.auth.user);
-  const { list, loaded: menuLoaded, loading: menuLoading } = useAppSelector(
-    (s) => s.menuList,
-  );
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const fallbackPath =
-    list.length > 0 ? getDefaultLandingPath(lang, list, user) : `/${lang ?? "ko"}`;
-  const fromPath = (location.state as any)?.from?.pathname;
-  const storedPath = getPostLoginRedirect();
-  const targetPath = canUsePostLoginRedirect(fromPath)
-    ? fromPath
-    : storedPath || fallbackPath;
+  const currentLang = lang ?? "ko";
+  const documentListPath = `/${currentLang}/digitalDoc/list`;
+  const passwordChangePath = `/${currentLang}/password-change`;
 
   useEffect(() => {
     if (!initialized || !isAuthenticated) {
       return;
     }
 
-    if (!menuLoaded && menuLoading) {
-      return;
-    }
-
     clearPostLoginRedirect();
-    navigate(targetPath, { replace: true });
+    navigate(
+      shouldForcePasswordChange(user) ? passwordChangePath : documentListPath,
+      { replace: true },
+    );
   }, [
     initialized,
     isAuthenticated,
-    menuLoaded,
-    menuLoading,
+    documentListPath,
     navigate,
-    targetPath,
+    passwordChangePath,
+    user,
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,7 +59,12 @@ export default function Login() {
 
     if (login.fulfilled.match(result)) {
       clearPostLoginRedirect();
-      navigate(targetPath, { replace: true });
+      navigate(
+        shouldForcePasswordChange(result.payload)
+          ? passwordChangePath
+          : documentListPath,
+        { replace: true },
+      );
       return;
     }
 
