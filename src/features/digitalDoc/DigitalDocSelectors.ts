@@ -123,6 +123,26 @@ export const selectDigitalDocSaveError = createSelector(
   (s) => s.saveError,
 );
 
+export const selectDigitalDocLastCreateResult = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.lastCreateResult,
+);
+
+export const selectDigitalDocFirstPageOcrResult = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.firstPageOcrResult,
+);
+
+export const selectDigitalDocFirstPageOcrLoading = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.firstPageOcrLoading,
+);
+
+export const selectDigitalDocFirstPageOcrError = createSelector(
+  [selectDigitalDocListState],
+  (s) => s.firstPageOcrError,
+);
+
 export const selectDigitalDocUpdating = createSelector(
   [selectDigitalDocListState],
   (s) => s.saving,

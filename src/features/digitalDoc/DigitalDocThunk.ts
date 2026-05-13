@@ -3,6 +3,7 @@ import { z } from "zod";
 import https from "@/api/axiosInstance";
 import {
   deleteEDocAuthrtApiPath,
+  extractEDocFirstPageOcrApiPath,
   insertEDocApiPath,
   insertEDocAuthrtApiPath,
   selectEDocAuthrtHistoryApiPath,
@@ -29,6 +30,8 @@ import type {
   DigitalAuthrt,
   DigitalAuthrtHistory,
   DigitalDoc,
+  DigitalDocCreateResult,
+  DigitalDocFirstPageOcrResult,
   DigitalDocHistory,
   SearchValues,
 } from "@/types/digitalDoc";
@@ -282,8 +285,27 @@ export type DigitalDocCreatePayload = {
   uploadFiles?: File[];
 };
 
+export const extractDigitalDocFirstPageOcr = createAsyncThunk<
+  DigitalDocFirstPageOcrResult,
+  File,
+  { rejectValue: string }
+>("digitalDoc/firstPageOcr", async (file, { rejectWithValue }) => {
+  try {
+    const formData = new FormData();
+    formData.append("uploadFile", file);
+
+    const res = await https.post(extractEDocFirstPageOcrApiPath(), formData, {
+      timeout: 180000,
+    });
+    const payload = (res as any)?.data?.data ?? {};
+    return payload as DigitalDocFirstPageOcrResult;
+  } catch (error) {
+    return rejectWithValue(getErrorMessage(error));
+  }
+});
+
 export const createDigitalDoc = createAsyncThunk<
-  string,
+  DigitalDocCreateResult,
   DigitalDocCreatePayload,
   { rejectValue: string }
 >("digitalDoc/create", async (payload, { rejectWithValue }) => {
@@ -313,12 +335,28 @@ export const createDigitalDoc = createAsyncThunk<
     });
 
     const res = await https.post(insertEDocApiPath(), formData);
-    const eldocNo = (res as any)?.data?.data?.eldocNo ?? "";
-    return String(eldocNo);
+    return normalizeCreateResult((res as any)?.data?.data);
   } catch (error) {
     return rejectWithValue(getErrorMessage(error));
   }
 });
+
+const normalizeCreateResult = (payload: unknown): DigitalDocCreateResult => {
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const data = payload as Record<string, any>;
+    return {
+      result: Number(data.result ?? 0),
+      eldocNo: String(data.eldocNo ?? ""),
+      firstPageOcr: data.firstPageOcr ?? null,
+    };
+  }
+
+  return {
+    result: Number(payload ?? 0),
+    eldocNo: "",
+    firstPageOcr: null,
+  };
+};
 
 export type DigitalDocUpdatePayload = {
   eldocNo: string;

@@ -54,6 +54,23 @@ export interface DigitalDocUpdate {
   addExpln: string; // 비고
 }
 
+export interface DigitalDocFirstPageOcrResult {
+  called: boolean;
+  success: boolean;
+  skipped: boolean;
+  skipReason?: string | null;
+  filename?: string | null;
+  errorMessage?: string | null;
+  response?: Record<string, unknown> | null;
+  fields?: Record<string, string> | null;
+}
+
+export interface DigitalDocCreateResult {
+  result: number;
+  eldocNo: string;
+  firstPageOcr?: DigitalDocFirstPageOcrResult | null;
+}
+
 export interface DigitalAuthrt {
   eldocNo: string; // 전자문서번호
   inqAuthrtNo: string; // 공람번호

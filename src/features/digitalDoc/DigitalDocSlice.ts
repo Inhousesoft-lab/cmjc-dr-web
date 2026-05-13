@@ -3,6 +3,7 @@ import {
   createDigitalDocAuthrt,
   createDigitalDoc,
   deleteDigitalDocAuthrt,
+  extractDigitalDocFirstPageOcr,
   fetchDigitalDocAuthrtHistoryList,
   fetchDigitalDocAuthrtList,
   fetchDigitalDocDialogDetail,
@@ -15,6 +16,8 @@ import type {
   DigitalAuthrt,
   DigitalAuthrtHistory,
   DigitalDoc,
+  DigitalDocCreateResult,
+  DigitalDocFirstPageOcrResult,
   DigitalDocHistory,
 } from "@/types/digitalDoc";
 
@@ -25,6 +28,8 @@ export interface DigitalDocListState {
   docHistoryRows: DigitalDocHistory[];
   detail: DigitalDoc | null;
   dialogDetail: DigitalDoc | null;
+  lastCreateResult: DigitalDocCreateResult | null;
+  firstPageOcrResult: DigitalDocFirstPageOcrResult | null;
   rowCount: number;
   loading: boolean;
   currentListRequestId: string | null;
@@ -36,6 +41,7 @@ export interface DigitalDocListState {
   detailLoading: boolean;
   dialogDetailLoading: boolean;
   saving: boolean;
+  firstPageOcrLoading: boolean;
   saveSuccess: boolean;
   updateSuccess: boolean;
   error: string | null;
@@ -47,6 +53,7 @@ export interface DigitalDocListState {
   dialogDetailError: string | null;
   saveError: string | null;
   updateError: string | null;
+  firstPageOcrError: string | null;
 }
 
 const initialState: DigitalDocListState = {
@@ -56,6 +63,8 @@ const initialState: DigitalDocListState = {
   docHistoryRows: [],
   detail: null,
   dialogDetail: null,
+  lastCreateResult: null,
+  firstPageOcrResult: null,
   rowCount: 0,
   loading: false,
   currentListRequestId: null,
@@ -67,6 +76,7 @@ const initialState: DigitalDocListState = {
   detailLoading: false,
   dialogDetailLoading: false,
   saving: false,
+  firstPageOcrLoading: false,
   saveSuccess: false,
   updateSuccess: false,
   error: null,
@@ -78,6 +88,7 @@ const initialState: DigitalDocListState = {
   dialogDetailError: null,
   saveError: null,
   updateError: null,
+  firstPageOcrError: null,
 };
 
 const digitalDocSlice = createSlice({
@@ -90,6 +101,10 @@ const digitalDocSlice = createSlice({
       state.saveError = null;
       state.updateSuccess = false;
       state.updateError = null;
+      state.lastCreateResult = null;
+      state.firstPageOcrResult = null;
+      state.firstPageOcrError = null;
+      state.firstPageOcrLoading = false;
     },
   },
   extraReducers: (builder) => {
@@ -224,15 +239,33 @@ const digitalDocSlice = createSlice({
         state.docHistoryError =
           action.payload || action.error.message || "문서 이력 조회 실패";
       })
+      .addCase(extractDigitalDocFirstPageOcr.pending, (state) => {
+        state.firstPageOcrLoading = true;
+        state.firstPageOcrResult = null;
+        state.firstPageOcrError = null;
+      })
+      .addCase(extractDigitalDocFirstPageOcr.fulfilled, (state, action) => {
+        state.firstPageOcrLoading = false;
+        state.firstPageOcrResult = action.payload;
+        state.firstPageOcrError = null;
+      })
+      .addCase(extractDigitalDocFirstPageOcr.rejected, (state, action) => {
+        state.firstPageOcrLoading = false;
+        state.firstPageOcrResult = null;
+        state.firstPageOcrError =
+          action.payload || action.error.message || "첫 페이지 OCR 처리 실패";
+      })
       .addCase(createDigitalDoc.pending, (state) => {
         state.saving = true;
         state.saveSuccess = false;
         state.saveError = null;
+        state.lastCreateResult = null;
       })
-      .addCase(createDigitalDoc.fulfilled, (state) => {
+      .addCase(createDigitalDoc.fulfilled, (state, action) => {
         state.saving = false;
         state.saveSuccess = true;
         state.saveError = null;
+        state.lastCreateResult = action.payload;
       })
       .addCase(createDigitalDoc.rejected, (state, action) => {
         state.saving = false;

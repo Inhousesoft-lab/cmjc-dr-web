@@ -26,6 +26,7 @@ import { useDocClsfOptions } from "@/hooks/useDocClsfOptions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import {
   createDigitalDoc,
+  extractDigitalDocFirstPageOcr,
   fetchDigitalDocDetail,
   updateDigitalDoc,
   type DigitalDocCreatePayload,
@@ -34,6 +35,8 @@ import {
   selectDigitalDocDetail,
   selectDigitalDocDetailError,
   selectDigitalDocDetailLoading,
+  selectDigitalDocFirstPageOcrError,
+  selectDigitalDocFirstPageOcrResult,
   selectDigitalDocSaveError,
   selectDigitalDocSaving,
 } from "@/features/digitalDoc/DigitalDocSelectors";
@@ -42,7 +45,10 @@ import useNotifications from "@/hooks/useNotifications";
 import URL from "@/constants/url";
 import { resetDigitalDocSaveState } from "@/features/digitalDoc/DigitalDocSlice";
 import { getLangFromPathname, langPath } from "@/routes/lang";
-import type { SearchValues } from "@/types/digitalDoc";
+import type {
+  DigitalDocFirstPageOcrResult,
+  SearchValues,
+} from "@/types/digitalDoc";
 
 type FormValues = Omit<DigitalDocCreatePayload, "uploadFiles">;
 type FieldErrors = Partial<Record<keyof FormValues, string>>;
@@ -70,6 +76,138 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
+function isPdfFile(file: File) {
+  return (
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf")
+  );
+}
+
+const normalizeOcrFieldKey = (key: string) =>
+  key.replace(/\s/g, "").toLowerCase();
+
+const getOcrFieldValue = (
+  fields: DigitalDocFirstPageOcrResult["fields"] | undefined | null,
+  keys: string[],
+) => {
+  const entries = Object.entries(fields ?? {});
+  const normalizedKeys = keys.map(normalizeOcrFieldKey);
+
+  for (const [key, value] of entries) {
+    if (!normalizedKeys.includes(normalizeOcrFieldKey(key))) continue;
+
+    const text = String(value ?? "").trim();
+    if (text) return text;
+  }
+
+  return "";
+};
+
+const normalizeDateParts = (
+  yearValue: string,
+  monthValue: string,
+  dayValue: string,
+) => {
+  const year = yearValue.length === 2 ? `20${yearValue}` : yearValue;
+  const month = monthValue.padStart(2, "0");
+  const day = dayValue.padStart(2, "0");
+
+  if (!/^\d{4}$/.test(year) || !/^\d{2}$/.test(month) || !/^\d{2}$/.test(day)) {
+    return "";
+  }
+
+  const y = Number(year);
+  const m = Number(month);
+  const d = Number(day);
+  const date = new Date(Date.UTC(y, m - 1, d));
+
+  if (
+    date.getUTCFullYear() !== y ||
+    date.getUTCMonth() !== m - 1 ||
+    date.getUTCDate() !== d
+  ) {
+    return "";
+  }
+
+  return `${year}${month}${day}`;
+};
+
+const normalizeOcrDate = (value: string) => {
+  const raw = value.trim();
+  if (!raw) return "";
+
+  const parts = raw.match(/\d+/g) ?? [];
+  if (parts.length >= 3) {
+    return normalizeDateParts(parts[0]!, parts[1]!, parts[2]!);
+  }
+
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (digits.length >= 8) {
+    return normalizeDateParts(
+      digits.slice(0, 4),
+      digits.slice(4, 6),
+      digits.slice(6, 8),
+    );
+  }
+
+  if (digits.length === 6) {
+    return normalizeDateParts(
+      digits.slice(0, 2),
+      digits.slice(2, 4),
+      digits.slice(4, 6),
+    );
+  }
+
+  return "";
+};
+
+const getFirstPageOcrFormValues = (
+  result: DigitalDocFirstPageOcrResult,
+): Partial<FormValues> => {
+  const docNo = getOcrFieldValue(result.fields, ["문서번호", "docNo", "doc_no"]);
+  const docTtl = getOcrFieldValue(result.fields, [
+    "문서제목",
+    "문서명",
+    "docTtl",
+    "docTitle",
+    "doc_ttl",
+  ]);
+  const clctYmd = normalizeOcrDate(
+    getOcrFieldValue(result.fields, [
+      "수집일자",
+      "수집일",
+      "clctYmd",
+      "collectDate",
+      "collectionDate",
+    ]),
+  );
+  const endYmd = normalizeOcrDate(
+    getOcrFieldValue(result.fields, [
+      "종료일자",
+      "종료일",
+      "endYmd",
+      "endDate",
+    ]),
+  );
+  const addExpln = getOcrFieldValue(result.fields, [
+    "비고",
+    "addExpln",
+    "remark",
+    "remarks",
+    "note",
+  ]);
+
+  return Object.fromEntries(
+    Object.entries({
+      docNo,
+      docTtl,
+      clctYmd,
+      endYmd,
+      addExpln,
+    }).filter(([, value]) => !!value),
+  ) as Partial<FormValues>;
+};
+
 export default function DigitalDocForm() {
   const { eldocNo = "" } = useParams<{ eldocNo?: string }>();
   const location = useLocation();
@@ -82,6 +220,8 @@ export default function DigitalDocForm() {
   const detail = useAppSelector(selectDigitalDocDetail);
   const detailLoading = useAppSelector(selectDigitalDocDetailLoading);
   const detailError = useAppSelector(selectDigitalDocDetailError);
+  const firstPageOcrResult = useAppSelector(selectDigitalDocFirstPageOcrResult);
+  const firstPageOcrError = useAppSelector(selectDigitalDocFirstPageOcrError);
 
   const isModify = !!eldocNo;
   const curLang = getLangFromPathname(location.pathname);
@@ -126,6 +266,38 @@ export default function DigitalDocForm() {
   }, [detailError, notifications]);
 
   React.useEffect(() => {
+    if (!firstPageOcrError) return;
+    notifications.show(firstPageOcrError, {
+      severity: "error",
+      autoHideDuration: 3000,
+    });
+  }, [firstPageOcrError, notifications]);
+
+  React.useEffect(() => {
+    if (
+      !firstPageOcrResult ||
+      !firstPageOcrResult.success ||
+      firstPageOcrResult.skipped
+    ) {
+      return;
+    }
+
+    const nextValues = getFirstPageOcrFormValues(firstPageOcrResult);
+    const populatedFields = Object.keys(nextValues) as (keyof FormValues)[];
+
+    if (populatedFields.length === 0) return;
+
+    setValues((prev) => ({ ...prev, ...nextValues }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      populatedFields.forEach((key) => {
+        next[key] = undefined;
+      });
+      return next;
+    });
+  }, [firstPageOcrResult]);
+
+  React.useEffect(() => {
     return () => {
       dispatch(resetDigitalDocSaveState());
     };
@@ -163,6 +335,9 @@ export default function DigitalDocForm() {
     );
 
     if (selectedFiles.length > 0) {
+      if (uploadFiles.length === 0 && isPdfFile(selectedFiles[0])) {
+        dispatch(extractDigitalDocFirstPageOcr(selectedFiles[0]));
+      }
       setUploadFiles((prev) => [...prev, ...selectedFiles]);
     }
   };

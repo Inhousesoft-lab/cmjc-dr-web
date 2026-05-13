@@ -10,6 +10,9 @@ export const selectEDocDetailApiPath = (eldocNo: string) => `/api/dr/electronicd
 // 등록
 export const insertEDocApiPath = () => "/api/dr/electronicdocument/add";
 
+// 첫 페이지 OCR
+export const extractEDocFirstPageOcrApiPath = () => "/api/dr/electronicdocument/first-page-ocr";
+
 // 임시 등록
 export const insertEDocTempApiPath = () => "/api/dr/electronicdocument/temp/add";
 
