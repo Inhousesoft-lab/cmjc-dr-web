@@ -277,8 +277,6 @@ export type DigitalDocCreatePayload = {
   docNo: string;
   docTtl: string;
   clctYmd: string;
-  hldPrdDfyrs: string | number;
-  hldPrdMmCnt: string;
   endYmd: string;
   addExpln: string;
   uploadFiles?: File[];
@@ -328,8 +326,6 @@ export type DigitalDocUpdatePayload = {
   docNo: string;
   docTtl: string;
   clctYmd: string;
-  hldPrdDfyrs: string | number;
-  hldPrdMmCnt: string;
   endYmd: string;
   addExpln: string;
   uploadFiles?: File[];

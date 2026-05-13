@@ -22,11 +22,9 @@
 
 ## 검증 규칙 (zod)
 
-- 필수: `docLclsfNo`, `docMclsfNo`, `docSclsfNo`, `docNo`, `docTtl`, `clctYmd`, `hldPrdDfyrs`
+- 필수: `docLclsfNo`, `docMclsfNo`, `docSclsfNo`, `docNo`, `docTtl`, `clctYmd`, `endYmd`
 - 날짜 형식: `YYYY-MM-DD`
-- 보존연한 직접입력(`hldPrdDfyrs === "0"`)인 경우:
-  - `hldPrdMmCnt`는 0보다 큰 숫자
-  - `endYmd`는 필수
+- 종료일자는 수집일자보다 빠를 수 없음
 
 ## 폼 상태와 파생값
 

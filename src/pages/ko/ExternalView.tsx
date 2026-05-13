@@ -32,7 +32,6 @@ type ExternalViewRow = {
   category: string;
   title: string;
   date: string;
-  term: string;
   canView: boolean;
   canDownload: boolean;
   downloadReasonRequired: boolean;
@@ -67,12 +66,6 @@ const alignedCellStyle: CellStyle = {
   alignItems: "center",
 };
 
-const multilineCenteredCellStyle: CellStyle = {
-  ...centeredCellStyle,
-  whiteSpace: "pre-line",
-  lineHeight: 1.35,
-};
-
 const formatCompactDate = (value: string) => {
   if (!value) return "-";
   if (/^\d{8}$/.test(value)) {
@@ -82,16 +75,6 @@ const formatCompactDate = (value: string) => {
     return value.slice(2).replace(/-/g, ".");
   }
   return value;
-};
-
-const formatRetentionTerm = (row: ExternalViewDocument) => {
-  if (row.hldPrdDfyrs && row.hldPrdDfyrs !== "0") {
-    return `(${row.hldPrdDfyrs}년)`;
-  }
-  if (row.hldPrdMmCnt) {
-    return `(${row.hldPrdMmCnt}개월)`;
-  }
-  return "";
 };
 
 const formatFileSize = (bytes?: number) => {
@@ -318,7 +301,6 @@ export default function ExternalView() {
         category: [row.docLclsfNm, row.docMclsfNm, row.docSclsfNm].filter(Boolean).join(" > "),
         title: row.docTtl || "-",
         date: formatCompactDate(row.clctYmd),
-        term: formatRetentionTerm(row),
         canView: row.canView,
         canDownload: row.canDownload,
         downloadReasonRequired: row.downloadReasonRequired,
@@ -430,7 +412,7 @@ export default function ExternalView() {
         minWidth: 240,
       },
       {
-        headerName: "수집일자 / 보유기간",
+        headerName: "수집일자",
         field: "date",
         width: 170,
         minWidth: 170,
@@ -439,12 +421,7 @@ export default function ExternalView() {
         wrapHeaderText: true,
         autoHeaderHeight: true,
         headerClass: "ag-center-header",
-        cellStyle: multilineCenteredCellStyle,
-        cellRenderer: (params: ICellRendererParams<ExternalViewRow>) => {
-          const row = params.data;
-          if (!row) return "-";
-          return row.term ? `${row.date}\n${row.term}` : row.date;
-        },
+        cellStyle: centeredCellStyle,
       },
       {
         headerName: "첨부파일",

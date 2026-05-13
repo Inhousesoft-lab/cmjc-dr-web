@@ -34,9 +34,6 @@ export interface DocDestruction {
   docNo: string; // 문서번호
   docTitle: string; // 문서제목
   clctYmd: string; // 수집일자
-  hldPrdDfyrs: string; // 보존연한(년)
-  hldPrdMmCnt: string; // 보존연한(월)
-  collectDateLabel: string; // 수집일자(보존연한) 라벨
   dstrcAprvDt: string; // 파기일자
   rsn: string; // 폐기사유
   dstrcPrcsPrstCd: string; // 파기처리현황코드
@@ -77,8 +74,6 @@ export interface DocDestructionHistory {
   docNo: string; // 문서번호
   docTtl: string; // 문서제목
   clctYmd: string; // 수집일자
-  hldPrdDfyrs: string; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
-  hldPrdMmCnt: string; // 보유기간 월
   endYmd: string; // 종료일자
   addExpln: string; // 비고
   deptId: string; // 기본권한(등록자 부서아이디)

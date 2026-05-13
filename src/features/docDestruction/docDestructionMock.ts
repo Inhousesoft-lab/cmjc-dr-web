@@ -26,9 +26,6 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     docNo: "DOC-2026-0001",
     docTitle: "파기 승인 테스트 문서 A",
     clctYmd: "20260301",
-    hldPrdDfyrs: "1",
-    hldPrdMmCnt: "0",
-    collectDateLabel: "20260301(1년)",
     dstrcAprvDt: "",
     rsn: "보존기간 만료",
     dstrcPrcsPrstCd: "01",
@@ -55,9 +52,6 @@ const defaultMockRows: MockDocDestructionRecord[] = [
     docNo: "DOC-2026-0002",
     docTitle: "파기 승인 테스트 문서 B",
     clctYmd: "20260302",
-    hldPrdDfyrs: "3",
-    hldPrdMmCnt: "0",
-    collectDateLabel: "20260302(3년)",
     dstrcAprvDt: "20260308",
     rsn: "개인정보 파기 승인 대기",
     dstrcPrcsPrstCd: "03",
@@ -200,7 +194,6 @@ export const getMockDocDestructionDetail = (eldocNo: string) => {
     docTtl: row.docTtl || row.docTitle,
     dstrcAprvDt: row.dstrcAprvDt,
     endYmd: row.endYmd || row.endDate,
-    collectDateLabel: row.collectDateLabel,
   };
 };
 

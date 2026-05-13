@@ -80,8 +80,6 @@ const mapHoldingInstitutionRow = (item: any): HoldingInstitution => {
     docNo: toStr(item?.docNo),
     docTtl: toStr(item?.docTtl),
     clctYmd: toStr(item?.clctYmd),
-    hldPrdDfyrs: toStr(item?.hldPrdDfyrs),
-    hldPrdMmCnt: toStr(item?.hldPrdMmCnt),
     endYmd: toStr(item?.endYmd),
     addExpln: toStr(item?.addExpln),
     deptId: toStr(item?.deptId),
@@ -158,7 +156,7 @@ export const fetchHoldingInstitutionList = createAsyncThunk<
 
       const { list: rawList, total: extractedTotal } = extractListAndTotal(payload);
       if (!Array.isArray(rawList)) {
-        return rejectWithValue("보유기간 목록 응답 형식이 올바르지 않습니다.");
+        return rejectWithValue("문서 목록 응답 형식이 올바르지 않습니다.");
       }
 
       const normalizedRows = rawList.map((row) => {

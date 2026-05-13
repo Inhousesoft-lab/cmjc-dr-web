@@ -32,22 +32,9 @@ const INITIAL_SEARCH_PARAMS: SearchValues = {
   docSclsfNo: "",
   docNo: "",
   docTtl: "",
-  hldPrdDfyrs: "",
   pageNum: 1,
   pageSize: 10,
 };
-
-const HOLD_PERIOD_ITEMS = [
-  { name: "전체", code: "" },
-  { name: "1년", code: "1" },
-  { name: "3년", code: "3" },
-  { name: "5년", code: "5" },
-  { name: "10년", code: "10" },
-  { name: "30년", code: "30" },
-  { name: "준영구", code: "90" },
-  { name: "영구", code: "99" },
-  { name: "직접입력", code: "0" },
-];
 
 export default function HoldingInstitutionList() {
   const collectDateRangeErrorMessage = "수집일자 종료일은 시작일보다 빠를 수 없습니다.";
@@ -302,23 +289,6 @@ export default function HoldingInstitutionList() {
           />
           <GridField
             item={3}
-            label="보유기간"
-            value={
-              <MuiSelect
-                id="hldPrdDfyrs"
-                items={HOLD_PERIOD_ITEMS}
-                value={searchParams.hldPrdDfyrs}
-                onChange={(e) =>
-                  setSearchParams((prev) => ({
-                    ...prev,
-                    hldPrdDfyrs: e.target.value,
-                  }))
-                }
-              />
-            }
-          />
-          <GridField
-            item={3}
             label="문서번호"
             value={
               <TextField
@@ -355,7 +325,7 @@ export default function HoldingInstitutionList() {
               />
             }
           />
-          <GridField item={6} label="" value={null} blank />
+          <GridField item={9} label="" value={null} blank />
         </Grid>
         <Box className="table-view-actions">
           <Stack spacing={1} alignItems="center">

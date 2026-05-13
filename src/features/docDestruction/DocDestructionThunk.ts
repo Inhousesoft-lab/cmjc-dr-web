@@ -50,12 +50,6 @@ const extractErrorMessage = (error: unknown) => {
   );
 };
 
-const getHoldingPeriodLabel = (years: string, months: string) => {
-  const yearText = years ? `${years}년` : "";
-  const monthText = months ? `${months}개월` : "";
-  return `${yearText}${monthText}`.trim();
-};
-
 const getRegistrantLabel = (
   registrantDept: string,
   deptNm: string,
@@ -93,9 +87,6 @@ export const normalizeDocDestructionRow = (
   index: number,
 ): DocDestruction => {
   const docTitle = String(raw.docTitle || raw.docTtl || "").trim();
-  const holdingPeriod = getHoldingPeriodLabel(raw.hldPrdDfyrs, raw.hldPrdMmCnt);
-  const collectDateLabel =
-    raw.collectDateLabel || (raw.clctYmd ? `${raw.clctYmd}${holdingPeriod ? `(${holdingPeriod})` : ""}` : "");
   const nestedDocClsf = (raw as any)?.docClsf;
   const docLclsfNm = String((raw as any).docLclsfNm || nestedDocClsf?.docLclsfNm || "").trim();
   const docMclsfNm = String((raw as any).docMclsfNm || nestedDocClsf?.docMclsfNm || "").trim();
@@ -119,9 +110,6 @@ export const normalizeDocDestructionRow = (
     docNo: raw.docNo,
     docTitle,
     clctYmd: raw.clctYmd,
-    hldPrdDfyrs: raw.hldPrdDfyrs,
-    hldPrdMmCnt: raw.hldPrdMmCnt,
-    collectDateLabel,
     dstrcAprvDt: raw.dstrcAprvDt || raw.dstrcAprvYmd,
     rsn: raw.rsn,
     dstrcPrcsPrstCd: raw.dstrcPrcsPrstCd,
@@ -198,9 +186,6 @@ export const fetchDocDestructionList = createAsyncThunk<
 const normalizeDocDestructionDetail = (
   raw: DocDestructionDetailRaw,
 ): DocDestructionDetailPayload => {
-  const holdingPeriod = getHoldingPeriodLabel(raw.hldPrdDfyrs, raw.hldPrdMmCnt);
-  const collectDateLabel =
-    raw.collectDateLabel || (raw.clctYmd ? `${raw.clctYmd}${holdingPeriod ? `(${holdingPeriod})` : ""}` : "");
   const fileNm = String(raw.fileNm || "").trim();
 
   return {
@@ -211,7 +196,6 @@ const normalizeDocDestructionDetail = (
     endYmd: raw.endYmd || raw.endDate,
     fileNm,
     dataTypeLabel: fileNm,
-    collectDateLabel,
   };
 };
 

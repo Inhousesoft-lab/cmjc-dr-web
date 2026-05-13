@@ -72,8 +72,6 @@ export default function DigitalDocForm() {
       docTtl: "", // 문서제목
       clctYmd: "", // 수집일자
       addExpln: "", // 비고
-      hldPrdDfyrs: "1",
-      hldPrdMmCnt: "",
       endYmd: "",
     },
   });

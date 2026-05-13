@@ -25,8 +25,6 @@ export interface DigitalDoc {
   docNo: string; // 문서번호
   docTtl: string; // 문서제목
   clctYmd: string; // 수집일자
-  hldPrdDfyrs: any; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
-  hldPrdMmCnt: any; // 보유기간 월
   endYmd: string; // 종료일자
   addExpln: string; // 비고
   deptId: string; // 기본권한(등록자 부서아이디)
@@ -52,8 +50,6 @@ export interface DigitalDocUpdate {
   docNo: string; // 문서번호
   docTtl: string; // 문서제목
   clctYmd: string; // 수집일자
-  hldPrdDfyrs: string | number; // 보유기간 거치연수
-  hldPrdMmCnt: string; // 보유기간 월수
   endYmd: string; // 종료일자
   addExpln: string; // 비고
 }
@@ -84,8 +80,6 @@ export interface DigitalDocHistory {
   docNo: string; // 문서번호
   docTtl: string; // 문서제목
   clctYmd: string; // 수집일자
-  hldPrdDfyrs: string | number; // 보유기간 년(1/3/5/10/30/준영구/영구/직접입력)
-  hldPrdMmCnt: string; // 보유기간 월
   endYmd: string; // 종료일자
   addExpln: string; // 비고
   deptId: string; // 기본권한(등록자 부서아이디)

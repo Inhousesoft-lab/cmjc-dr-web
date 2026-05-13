@@ -16,12 +16,6 @@ export const insertEDocTempApiPath = () => "/api/dr/electronicdocument/temp/add"
 // 수정
 export const updateEDocApiPath = () => "/api/dr/electronicdocument/update";
 
-// 전자문서 보유기간 선택 수정
-export const updateEDocEhldprdApiPath = () => "/api/dr/electronicdocument/updatehldprd";
-
-// 전자문서 보유기간 일괄 수정
-export const updateEDocEhldprdAllApiPath = () => "/api/dr/electronicdocument/updatehldprdall";
-
 // 삭제
 export const deleteEDocApiPath = () => "/api/dr/electronicdocument/delete";
 

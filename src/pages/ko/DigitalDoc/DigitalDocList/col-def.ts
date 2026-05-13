@@ -1,6 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import type { DigitalDoc } from "@/types/digitalDoc";
-import { formatCalculatedEndYmd, formatDateDash } from "@/utils/formater";
+import { formatDateDash } from "@/utils/formater";
 
 export const listDefs: ColDef<DigitalDoc>[] = [
   {
@@ -37,26 +37,10 @@ export const listDefs: ColDef<DigitalDoc>[] = [
     cellStyle: { textAlign: "center" },
   },
   {
-    headerName: "수집일자\n(보존연한)",
+    headerName: "수집일자",
     field: "clctYmd",
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => {
-      const v = formatDateDash(params.value);
-
-      let nextVal = "\n";
-      if (params.data.hldPrdDfyrs === "0") {
-        nextVal += "(" + params.data.hldPrdMmCnt + "개월)";
-      } else if (
-        params.data.hldPrdDfyrs === "90" ||
-        params.data.hldPrdDfyrs === "99"
-      ) {
-        nextVal += params.data.hldPrdDfyrs === "90" ? "(반영구)" : "(영구)";
-      } else {
-        nextVal += "(" + params.data.hldPrdDfyrs + "년)";
-      }
-
-      return v + nextVal;
-    },
+    valueFormatter: (params: any) => formatDateDash(params.value),
   },
   {
     headerName: "종료일자",
@@ -67,13 +51,7 @@ export const listDefs: ColDef<DigitalDoc>[] = [
     maxWidth: 118,
     flex: 0,
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => {
-      return formatCalculatedEndYmd(
-        params?.data?.clctYmd,
-        params?.data?.hldPrdDfyrs,
-        params?.data?.hldPrdMmCnt,
-      );
-    },
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "등록자(부서)",

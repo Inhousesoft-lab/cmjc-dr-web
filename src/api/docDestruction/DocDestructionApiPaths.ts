@@ -13,10 +13,6 @@ export const selectDocDestructionHistoryApiPath = (eldocNo: string) => `/api/dr/
 // 문서파기 신청 및 승인
 export const updateDocDestructionApiPath = () => "/api/dr/docDestruction/docPrcsPrstUpdate";
 
-// 전자문서 보유기간 일괄 수정
-export const updateDocDestructionAllApiPath = () => "/api/dr/docDestruction/updatehldprdall";
-
-
 /**
  * 공람
  */

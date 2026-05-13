@@ -1,11 +1,8 @@
 import {
   Box,
   Button,
-  FormControl,
   FormLabel,
   IconButton,
-  MenuItem,
-  Select,
   Stack,
   TableCell,
   TableRow,
@@ -44,7 +41,6 @@ import { digitalDocFormValidator } from "@/features/digitalDoc/DigitalDocValidat
 import useNotifications from "@/hooks/useNotifications";
 import URL from "@/constants/url";
 import { resetDigitalDocSaveState } from "@/features/digitalDoc/DigitalDocSlice";
-import { calculateEndYmdByPeriod } from "@/utils/formater";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import type { SearchValues } from "@/types/digitalDoc";
 
@@ -59,22 +55,9 @@ const INITIAL_FORM_VALUES: FormValues = {
   docNo: "",
   docTtl: "",
   clctYmd: "",
-  hldPrdDfyrs: "1",
-  hldPrdMmCnt: "",
   endYmd: "",
   addExpln: "",
 };
-
-const RETENTION_YEAR_OPTIONS = [
-  { value: "1", label: "1년" },
-  { value: "3", label: "3년" },
-  { value: "5", label: "5년" },
-  { value: "10", label: "10년" },
-  { value: "30", label: "30년" },
-  { value: "90", label: "준영구" },
-  { value: "99", label: "영구" },
-  { value: "0", label: "직접입력" },
-];
 
 const toDatePickerValue = (value: unknown) => {
   const digits = String(value ?? "").replace(/[^0-9]/g, "");
@@ -121,16 +104,6 @@ export default function DigitalDocForm() {
     values.docMclsfNo,
   );
 
-  const calculatedEndYmd = React.useMemo(
-    () =>
-      calculateEndYmdByPeriod(
-        values.clctYmd,
-        values.hldPrdDfyrs,
-        values.hldPrdMmCnt,
-      ),
-    [values.clctYmd, values.hldPrdDfyrs, values.hldPrdMmCnt],
-  );
-
   React.useEffect(() => {
     if (!isModify || !eldocNo) return;
     dispatch(fetchDigitalDocDetail(eldocNo));
@@ -169,23 +142,12 @@ export default function DigitalDocForm() {
       docNo: detail.docNo ?? "",
       docTtl: detail.docTtl ?? "",
       clctYmd: toDatePickerValue(detail.clctYmd),
-      hldPrdDfyrs: String(detail.hldPrdDfyrs ?? "1"),
-      hldPrdMmCnt: String(detail.hldPrdMmCnt ?? ""),
       endYmd: toDatePickerValue(detail.endYmd),
       addExpln: detail.addExpln ?? "",
     });
     setUploadFiles([]);
     setErrors({});
   }, [detail, eldocNo, isModify]);
-
-  React.useEffect(() => {
-    if (values.hldPrdDfyrs === "0") return;
-
-    setValues((prev) => {
-      if (prev.endYmd === calculatedEndYmd) return prev;
-      return { ...prev, endYmd: calculatedEndYmd };
-    });
-  }, [calculatedEndYmd, values.hldPrdDfyrs]);
 
   const handleFieldChange = <K extends keyof FormValues>(
     key: K,
@@ -271,14 +233,10 @@ export default function DigitalDocForm() {
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const resolvedEndYmd =
-      values.hldPrdDfyrs === "0" ? values.endYmd : calculatedEndYmd;
 
     const formPayload: FormValues = {
       ...values,
       docClsfNo: values.docSclsfNo || values.docMclsfNo || values.docLclsfNo,
-      hldPrdMmCnt: values.hldPrdDfyrs === "0" ? values.hldPrdMmCnt : "0",
-      endYmd: resolvedEndYmd,
     };
 
     const validated = digitalDocFormValidator(formPayload);
@@ -305,8 +263,6 @@ export default function DigitalDocForm() {
             docNo: formPayload.docNo,
             docTtl: formPayload.docTtl,
             clctYmd: formPayload.clctYmd,
-            hldPrdDfyrs: formPayload.hldPrdDfyrs,
-            hldPrdMmCnt: formPayload.hldPrdMmCnt,
             endYmd: formPayload.endYmd,
             addExpln: formPayload.addExpln,
             uploadFiles,
@@ -353,6 +309,135 @@ export default function DigitalDocForm() {
     return <PageStatus isLoading={detailLoading} />;
   }
 
+  const fileUploadRow = (
+    <TableRow>
+      <LabelCell>파일업로드</LabelCell>
+      <TableCell colSpan={3}>
+        <Stack spacing={1}>
+          {isModify && eldocNo && (
+            <Box>
+              <Typography variant="subtitle2" mb={0.5}>
+                기존 첨부파일
+              </Typography>
+              <UploadFiles
+                taskSeTrgtId={eldocNo}
+                readOnly
+                requireDownloadReason
+              />
+            </Box>
+          )}
+          <Box
+            role="button"
+            tabIndex={saving ? -1 : 0}
+            aria-label="파일 드래그 앤 드롭 또는 클릭하여 업로드"
+            aria-disabled={saving}
+            className={[
+              "upload-container",
+              isFileDragging ? "is-dragging" : "",
+              saving ? "is-disabled" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            onDragEnter={handleFileDragEnter}
+            onDragOver={handleFileDragOver}
+            onDragLeave={handleFileDragLeave}
+            onDrop={handleFileDrop}
+            onClick={() => {
+              if (saving) return;
+              fileInputRef.current?.click();
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              if (saving) return;
+              fileInputRef.current?.click();
+            }}
+            sx={(theme) => ({
+              minHeight: 164,
+              "--upload-border-color": isFileDragging
+                ? theme.palette.primary.main
+                : theme.palette.grey[300],
+              "--upload-background-color": isFileDragging
+                ? theme.palette.action.hover
+                : theme.palette.background.paper,
+              "--upload-hover-border-color": theme.palette.primary.main,
+              "--upload-hover-background-color": theme.palette.action.hover,
+            })}
+          >
+            <CloudUploadIcon
+              sx={{ fontSize: 64, color: "primary.main", mb: 2 }}
+            />
+            <Typography variant="h6" gutterBottom>
+              {isFileDragging
+                ? "여기에 파일을 놓아 업로드"
+                : "클릭하거나 파일을 드래그하여 업로드"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              여러 파일을 선택할 수 있습니다
+            </Typography>
+            {uploadFiles.length > 0 && (
+              <Typography variant="caption" color="text.secondary" mt={0.75}>
+                {uploadFiles.length}개 파일
+              </Typography>
+            )}
+            <input
+              ref={fileInputRef}
+              hidden
+              type="file"
+              multiple
+              onChange={handleFileInputChange}
+              disabled={saving}
+            />
+          </Box>
+          {uploadFiles.length > 0 && (
+            <Stack spacing={0.5}>
+              {uploadFiles.map((file, index) => (
+                <Box
+                  key={`${file.name}-${file.size}-${index}`}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 1,
+                    py: 0.75,
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 1,
+                  }}
+                >
+                  <AttachFileIcon fontSize="small" color="action" />
+                  <Typography
+                    variant="body2"
+                    title={file.name}
+                    sx={{ flex: 1, minWidth: 0 }}
+                    noWrap
+                  >
+                    {file.name}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ width: 90, textAlign: "right", flexShrink: 0 }}
+                  >
+                    {formatFileSize(file.size)}
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    aria-label="첨부파일 삭제"
+                    onClick={() => handleRemoveUploadFile(index)}
+                    disabled={saving}
+                  >
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              ))}
+            </Stack>
+          )}
+        </Stack>
+      </TableCell>
+    </TableRow>
+  );
+
   return (
     <form onSubmit={handleSave}>
       <TableWrapper
@@ -366,6 +451,7 @@ export default function DigitalDocForm() {
           </colgroup>
         }
       >
+        {fileUploadRow}
         <TableRow>
           <LabelCell required>문서분류</LabelCell>
           <TableCell colSpan={3}>
@@ -468,74 +554,15 @@ export default function DigitalDocForm() {
               helperText={errors.clctYmd || ""}
             />
           </TableCell>
-          <LabelCell required>보존연한</LabelCell>
+          <LabelCell required>종료일자</LabelCell>
           <TableCell>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <FormControl fullWidth>
-                <Select
-                  fullWidth
-                  size="small"
-                  name="hldPrdDfyrs"
-                  value={String(values.hldPrdDfyrs)}
-                  onChange={(e) => {
-                    const selected = String(e.target.value);
-                    handleFieldChange("hldPrdDfyrs", selected);
-                    if (selected !== "0") {
-                      handleFieldChange("hldPrdMmCnt", "0");
-                    }
-                  }}
-                  error={!!errors.hldPrdDfyrs}
-                >
-                  {RETENTION_YEAR_OPTIONS.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <TextField
-                size="small"
-                fullWidth
-                name="hldPrdMmCnt"
-                value={values.hldPrdMmCnt}
-                onChange={(e) =>
-                  handleFieldChange(
-                    "hldPrdMmCnt",
-                    e.target.value.replace(/[^0-9]/g, ""),
-                  )
-                }
-                placeholder="개월"
-                type="text"
-                disabled={values.hldPrdDfyrs !== "0"}
-                error={!!errors.hldPrdMmCnt}
-                helperText={errors.hldPrdMmCnt || ""}
-              />
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{ whiteSpace: "nowrap", flexShrink: 0, minWidth: 28 }}
-              >
-                개월
-              </Typography>
-            </Stack>
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell required={values.hldPrdDfyrs === "0"}>종료일자</LabelCell>
-          <TableCell colSpan={3}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <MuiDatePickerFt
-                name="endYmd"
-                value={values.endYmd}
-                onChange={(value) => handleFieldChange("endYmd", value)}
-                disabled={values.hldPrdDfyrs !== "0"}
-                error={!!errors.endYmd}
-                helperText={errors.endYmd || ""}
-              />
-              <Typography variant="body1" color="text.secondary">
-                * 보존연한을 직접 입력하신 경우 종료일자를 달력에서 선택해 입력해 주세요.
-              </Typography>
-            </Stack>
+            <MuiDatePickerFt
+              name="endYmd"
+              value={values.endYmd}
+              onChange={(value) => handleFieldChange("endYmd", value)}
+              error={!!errors.endYmd}
+              helperText={errors.endYmd || ""}
+            />
           </TableCell>
         </TableRow>
         <TableRow>
@@ -552,132 +579,6 @@ export default function DigitalDocForm() {
               minRows={3}
               size="small"
             />
-          </TableCell>
-        </TableRow>
-        <TableRow>
-          <LabelCell>파일업로드</LabelCell>
-          <TableCell colSpan={3}>
-            <Stack spacing={1}>
-              {isModify && eldocNo && (
-                <Box>
-                  <Typography variant="subtitle2" mb={0.5}>
-                    기존 첨부파일
-                  </Typography>
-                  <UploadFiles
-                    taskSeTrgtId={eldocNo}
-                    readOnly
-                    requireDownloadReason
-                  />
-                </Box>
-              )}
-              <Box
-                role="button"
-                tabIndex={saving ? -1 : 0}
-                aria-label="파일 드래그 앤 드롭 또는 클릭하여 업로드"
-                aria-disabled={saving}
-                className={[
-                  "upload-container",
-                  isFileDragging ? "is-dragging" : "",
-                  saving ? "is-disabled" : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                onDragEnter={handleFileDragEnter}
-                onDragOver={handleFileDragOver}
-                onDragLeave={handleFileDragLeave}
-                onDrop={handleFileDrop}
-                onClick={() => {
-                  if (saving) return;
-                  fileInputRef.current?.click();
-                }}
-                onKeyDown={(event) => {
-                  if (event.key !== "Enter" && event.key !== " ") return;
-                  event.preventDefault();
-                  if (saving) return;
-                  fileInputRef.current?.click();
-                }}
-                sx={(theme) => ({
-                  minHeight: 164,
-                  "--upload-border-color": isFileDragging
-                    ? theme.palette.primary.main
-                    : theme.palette.grey[300],
-                  "--upload-background-color": isFileDragging
-                    ? theme.palette.action.hover
-                    : theme.palette.background.paper,
-                  "--upload-hover-border-color": theme.palette.primary.main,
-                  "--upload-hover-background-color": theme.palette.action.hover,
-                })}
-              >
-                <CloudUploadIcon
-                  sx={{ fontSize: 64, color: "primary.main", mb: 2 }}
-                />
-                <Typography variant="h6" gutterBottom>
-                  {isFileDragging
-                    ? "여기에 파일을 놓아 업로드"
-                    : "클릭하거나 파일을 드래그하여 업로드"}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  여러 파일을 선택할 수 있습니다
-                </Typography>
-                {uploadFiles.length > 0 && (
-                  <Typography variant="caption" color="text.secondary" mt={0.75}>
-                    {uploadFiles.length}개 파일
-                  </Typography>
-                )}
-                <input
-                  ref={fileInputRef}
-                  hidden
-                  type="file"
-                  multiple
-                  onChange={handleFileInputChange}
-                  disabled={saving}
-                />
-              </Box>
-              {uploadFiles.length > 0 && (
-                <Stack spacing={0.5}>
-                  {uploadFiles.map((file, index) => (
-                    <Box
-                      key={`${file.name}-${file.size}-${index}`}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        px: 1,
-                        py: 0.75,
-                        border: 1,
-                        borderColor: "divider",
-                        borderRadius: 1,
-                      }}
-                    >
-                      <AttachFileIcon fontSize="small" color="action" />
-                      <Typography
-                        variant="body2"
-                        title={file.name}
-                        sx={{ flex: 1, minWidth: 0 }}
-                        noWrap
-                      >
-                        {file.name}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ width: 90, textAlign: "right", flexShrink: 0 }}
-                      >
-                        {formatFileSize(file.size)}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        aria-label="첨부파일 삭제"
-                        onClick={() => handleRemoveUploadFile(index)}
-                        disabled={saving}
-                      >
-                        <DeleteOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  ))}
-                </Stack>
-              )}
-            </Stack>
           </TableCell>
         </TableRow>
       </TableWrapper>

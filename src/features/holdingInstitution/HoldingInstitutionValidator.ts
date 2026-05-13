@@ -18,8 +18,6 @@ export const holdingInstitutionRowSchema = z.looseObject({
   docNo: stringField,
   docTtl: stringField,
   clctYmd: stringField,
-  hldPrdDfyrs: stringField,
-  hldPrdMmCnt: stringField,
   endYmd: stringField,
   addExpln: stringField,
   deptId: stringField,

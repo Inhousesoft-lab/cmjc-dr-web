@@ -179,7 +179,7 @@ const menuItems: Menu[] = [
 
   //     {
   //       path: "holdingInstitution/list",
-  //       label: "보유기간 관리",
+  //       label: "문서 보유기관 관리",
   //       menuType: "MENU",
   //       element: {
   //         ko: "HoldingInstitutionList",

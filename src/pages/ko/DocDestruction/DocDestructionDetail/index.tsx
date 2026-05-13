@@ -15,7 +15,6 @@ import {
   selectDocDestructionDetailLoading,
 } from "@/features/docDestruction/DocDestructionSelectors";
 import type { SearchValues } from "@/types/docDestruction";
-import { formatCalculatedEndYmd } from "@/utils/formater";
 
 export default function DocDestructionDetail() {
   const location = useLocation();
@@ -58,33 +57,6 @@ export default function DocDestructionDetail() {
     const mm = digits.slice(4, 6);
     const dd = digits.slice(6, 8);
     return `${yyyy}-${mm}-${dd}`;
-  };
-
-  const formatCollectDate = (
-    clctYmd: unknown,
-    hldPrdDfyrs: unknown,
-    hldPrdMmCnt: unknown,
-    collectDateLabel: unknown,
-  ) => {
-    const dateText = formatDateOnly(clctYmd);
-    let years = String(hldPrdDfyrs ?? "").trim();
-    let months = String(hldPrdMmCnt ?? "").trim();
-
-    if (!years || !months) {
-      const raw = String(collectDateLabel ?? "");
-      const m = raw.match(/(\d+)\s*년\s*(\d+)\s*개월/);
-      if (m) {
-        if (!years) years = m[1];
-        if (!months) months = m[2];
-      }
-    }
-
-    if (dateText === "-" && !years && !months) return "-";
-    if (!years && !months) return dateText;
-
-    const y = years || "0";
-    const mm = months || "0";
-    return `${dateText}(${y}년 ${mm}개월)`;
   };
 
   const formatActorAndDate = (actor: unknown, date: unknown) => {
@@ -163,22 +135,9 @@ export default function DocDestructionDetail() {
         </TableRow>
         <TableRow>
           <LabelCell>수집일자</LabelCell>
-          <TableCell>
-            {formatCollectDate(
-              detail?.clctYmd,
-              detail?.hldPrdDfyrs,
-              detail?.hldPrdMmCnt,
-              detail?.collectDateLabel,
-            )}
-          </TableCell>
+          <TableCell>{formatDateOnly(detail?.clctYmd)}</TableCell>
           <LabelCell>종료일자</LabelCell>
-          <TableCell>
-            {formatCalculatedEndYmd(
-              detail?.clctYmd,
-              detail?.hldPrdDfyrs,
-              detail?.hldPrdMmCnt,
-            )}
-          </TableCell>
+          <TableCell>{formatDateOnly(detail?.endYmd || detail?.endDate)}</TableCell>
         </TableRow>
         <TableRow>
           <LabelCell>신청자</LabelCell>

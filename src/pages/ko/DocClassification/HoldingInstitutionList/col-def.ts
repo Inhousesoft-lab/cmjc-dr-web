@@ -1,4 +1,4 @@
-import { formatDateDash, formatPeriod } from "@/utils/formater";
+import { formatDateDash } from "@/utils/formater";
 
 export const listDefs = [
   {
@@ -44,17 +44,6 @@ export const listDefs = [
     flex: 0,
     cellStyle: { textAlign: "center" },
     valueFormatter: (params: any) => formatDateDash(params?.value),
-  },
-  {
-    headerName: "보유기간",
-    field: "hldPrdDfyrs",
-    width: 104,
-    minWidth: 104,
-    maxWidth: 104,
-    flex: 0,
-    cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) =>
-      formatPeriod(params?.data?.hldPrdDfyrs, params?.data?.hldPrdMmCnt),
   },
   {
     headerName: "종료일자",

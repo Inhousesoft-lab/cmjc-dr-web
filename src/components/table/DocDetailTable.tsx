@@ -2,7 +2,7 @@ import type React from "react";
 import { Grid, TextField } from "@mui/material";
 import GridField from "../common/GridField";
 import UploadFiles from "../file/UploadFiles";
-import { formatDateDash, holdPeriodLabel } from "@/utils/formater";
+import { formatDateDash } from "@/utils/formater";
 import type { DigitalDoc, DigitalDocHistory } from "@/types/digitalDoc";
 
 interface DocDetailTableProps {
@@ -14,7 +14,6 @@ interface DocDetailTableProps {
   showAttachments?: boolean;
   attachmentsContent?: React.ReactNode;
   clctYmdContent?: React.ReactNode;
-  holdPeriodContent?: React.ReactNode;
   endYmdContent?: React.ReactNode;
   addExplnContent?: React.ReactNode;
   onDocNoChange?: (value: string) => void;
@@ -30,7 +29,6 @@ export default function DocDetailTable({
   showAttachments = true,
   attachmentsContent,
   clctYmdContent,
-  holdPeriodContent,
   endYmdContent,
   addExplnContent,
   onDocNoChange,
@@ -43,10 +41,6 @@ export default function DocDetailTable({
   ]
     .filter(Boolean)
     .join(" > ");
-  const holdLabel = holdPeriodLabel(
-    detail?.hldPrdDfyrs ?? "",
-    detail?.hldPrdMmCnt ?? "",
-  );
   const endDateLabel = formatDateDash(detail?.endYmd ?? "");
   const showDownloadReason = String((detail as any)?.actCn ?? "").includes(
     "다운로드",
@@ -98,10 +92,6 @@ export default function DocDetailTable({
             ? clctYmdContent
             : formatDateDash(detail?.clctYmd ?? "")
         }
-      />
-      <GridField
-        label="보존연한"
-        value={editable && holdPeriodContent ? holdPeriodContent : holdLabel}
       />
       <GridField
         label="종료일자"

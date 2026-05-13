@@ -14,7 +14,6 @@ export interface SearchValues extends Paging {
   docSclsfNo: string;
   docNo: string;
   docTtl: string;
-  hldPrdDfyrs: string;
 }
 
 export interface HoldingInstitution {
@@ -24,8 +23,6 @@ export interface HoldingInstitution {
   docNo: string;
   docTtl: string;
   clctYmd: string;
-  hldPrdDfyrs: string;
-  hldPrdMmCnt: string;
   endYmd: string;
   addExpln: string;
   deptId: string;

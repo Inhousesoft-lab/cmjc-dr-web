@@ -24,8 +24,6 @@ export const digitalDocRowSchema = z.looseObject({
   docNo: stringField,
   docTtl: stringField,
   clctYmd: stringField,
-  hldPrdDfyrs: stringField,
-  hldPrdMmCnt: stringField,
   endYmd: stringField,
   addExpln: stringField,
   deptId: stringField,
@@ -64,8 +62,6 @@ export const digitalDocHistoryRowSchema = z.looseObject({
   docNo: stringField,
   docTtl: stringField,
   clctYmd: stringField,
-  hldPrdDfyrs: stringField,
-  hldPrdMmCnt: stringField,
   endYmd: stringField,
   addExpln: stringField,
   deptId: stringField,
@@ -154,35 +150,11 @@ export const digitalDocFormSchema = z
     docNo: z.string().trim().min(1, "문서번호를 입력해 주세요."),
     docTtl: z.string().trim().min(1, "문서제목을 입력해 주세요."),
     clctYmd: dateField,
-    hldPrdDfyrs: z.preprocess(
-      (v) => (v == null ? "" : String(v)),
-      z.string().trim().min(1, "보존연한을 선택해 주세요."),
-    ),
-    hldPrdMmCnt: optionalString,
-    endYmd: optionalString,
+    endYmd: dateField,
     addExpln: optionalString,
     docClsfNo: optionalString,
   })
   .superRefine((data, ctx) => {
-    if (data.hldPrdDfyrs !== "0") return;
-
-    if (!/^\d+$/.test(data.hldPrdMmCnt) || Number(data.hldPrdMmCnt) <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["hldPrdMmCnt"],
-        message: "직접입력 시 보존 개월 수를 입력해 주세요.",
-      });
-    }
-
-    if (!/^\d{4}-\d{2}-\d{2}$|^\d{8}$/.test(data.endYmd)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["endYmd"],
-        message: "직접입력 시 종료일자를 선택해 주세요.",
-      });
-      return;
-    }
-
     if (isDateRangeInvalid(data.clctYmd, data.endYmd)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -206,34 +178,10 @@ export const digitalDocUpdateSchema = z
     docNo: z.string().trim().min(1, "문서번호를 입력해 주세요."),
     docTtl: z.string().trim().min(1, "문서제목을 입력해 주세요."),
     clctYmd: dateField,
-    hldPrdDfyrs: z.preprocess(
-      (v) => (v == null ? "" : String(v)),
-      z.string().trim().min(1, "보존연한을 선택해 주세요."),
-    ),
-    hldPrdMmCnt: optionalString,
-    endYmd: optionalString,
+    endYmd: dateField,
     addExpln: optionalString,
   })
   .superRefine((data, ctx) => {
-    if (data.hldPrdDfyrs !== "0") return;
-
-    if (!/^\d+$/.test(data.hldPrdMmCnt) || Number(data.hldPrdMmCnt) <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["hldPrdMmCnt"],
-        message: "직접입력 시 보존 개월 수를 입력해 주세요.",
-      });
-    }
-
-    if (!/^\d{4}-\d{2}-\d{2}$|^\d{8}$/.test(data.endYmd)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["endYmd"],
-        message: "직접입력 시 종료일자를 선택해 주세요.",
-      });
-      return;
-    }
-
     if (isDateRangeInvalid(data.clctYmd, data.endYmd)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

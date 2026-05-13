@@ -1,10 +1,6 @@
 import type { ColDef } from "ag-grid-community";
 import type { DocDestruction } from "@/types/docDestruction";
-import {
-  formatCalculatedEndYmd,
-  formatDateDash,
-  formatPeriod,
-} from "@/utils/formater";
+import { formatDateDash } from "@/utils/formater";
 
 export const listDefs: ColDef<DocDestruction>[] = [
   {
@@ -32,20 +28,10 @@ export const listDefs: ColDef<DocDestruction>[] = [
     cellStyle: { textAlign: "center" },
   },
   {
-    headerName: "수집일자\n(보존연한)",
-    field: "collectDateLabel",
+    headerName: "수집일자",
+    field: "clctYmd",
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) => {
-      const ymd = formatDateDash(params?.data?.clctYmd);
-      const period = formatPeriod(
-        params?.data?.hldPrdDfyrs,
-        params?.data?.hldPrdMmCnt,
-      );
-      if (ymd === "-" && period === "-") return "-";
-      if (period === "-") return ymd;
-      if (ymd === "-") return `(${period})`;
-      return `${ymd}(${period})`;
-    },
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "종료일자",
@@ -55,12 +41,7 @@ export const listDefs: ColDef<DocDestruction>[] = [
     maxWidth: 118,
     flex: 0,
     cellStyle: { textAlign: "center" },
-    valueFormatter: (params: any) =>
-      formatCalculatedEndYmd(
-        params?.data?.clctYmd,
-        params?.data?.hldPrdDfyrs,
-        params?.data?.hldPrdMmCnt,
-      ),
+    valueFormatter: (params: any) => formatDateDash(params?.value),
   },
   {
     headerName: "등록자(부서)",
