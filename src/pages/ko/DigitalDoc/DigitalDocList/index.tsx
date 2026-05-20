@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router-dom";
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import { listDefs } from "./col-def";
 import AgGridContainer from "@/components/grid/AgGridContainer";

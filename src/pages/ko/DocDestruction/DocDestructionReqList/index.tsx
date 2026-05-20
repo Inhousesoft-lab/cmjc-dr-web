@@ -13,7 +13,7 @@ import React, {
   useState,
 } from "react";
 import MuiSelect from "@/components/elements/MuiSelect";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router-dom";
 import useNotifications from "@/hooks/useNotifications";
 import { DocDestruction } from "@/types/docDestruction";
 import { ColDef } from "ag-grid-community";

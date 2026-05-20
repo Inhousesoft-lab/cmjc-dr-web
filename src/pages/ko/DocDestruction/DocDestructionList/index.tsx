@@ -15,7 +15,7 @@ import DocDestructionManagementPrintButton from "@/components/biz/DocDestruction
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import MuiSelect from "@/components/elements/MuiSelect";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router-dom";
 import useNotifications from "@/hooks/useNotifications";
 import { DocDestruction } from "@/types/docDestruction";
 import { ColDef } from "ag-grid-community";

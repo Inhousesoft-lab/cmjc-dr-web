@@ -15,7 +15,7 @@ import {
   CloudUpload as CloudUploadIcon,
   DeleteOutline as DeleteOutlineIcon,
 } from "@mui/icons-material";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { MuiDatePickerFt } from "@/components/elements/MuiDatePickerFt";
 import MuiSelect from "@/components/elements/MuiSelect";
 import PageStatus from "@/components/common/PageStatus";
