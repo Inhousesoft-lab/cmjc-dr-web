@@ -14,6 +14,7 @@ import { withAppBase } from "@/utils/appBase";
 
 import NotificationsProvider from "@/hooks/useNotifications/NotificationsProvider";
 import DialogsProvider from "@/hooks/useDialogs/DialogsProvider";
+import GlobalLoadingIndicator from "@/components/common/GlobalLoadingIndicator";
 
 import AppTheme from "./theme/AppTheme";
 import UseLangStylesReady from "./UseLangStylesReady";
@@ -61,6 +62,7 @@ export default function App() {
 
   return (
     <AppTheme>
+      <GlobalLoadingIndicator />
       <NotificationsProvider>
         <DialogsProvider>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

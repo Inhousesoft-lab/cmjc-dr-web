@@ -1,5 +1,10 @@
 import axios, { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { notifyUnauthorized } from "@/utils/authSession";
+import {
+  trackGlobalApiRequest,
+  untrackGlobalApiError,
+  untrackGlobalApiResponse,
+} from "@shared/utils/apiLoading";
 
 export const getApiBaseURL = () => {
   const envUrl = String(import.meta.env.VITE_API_BASE_URL ?? "").trim();
@@ -40,6 +45,12 @@ const apiClient = axios.create({
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
+
+apiClient.interceptors.request.use(trackGlobalApiRequest, untrackGlobalApiError);
+apiClient.interceptors.response.use(
+  untrackGlobalApiResponse,
+  untrackGlobalApiError,
+);
 
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   if (config.data instanceof FormData) {

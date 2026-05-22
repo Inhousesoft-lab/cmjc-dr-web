@@ -1,5 +1,10 @@
 import { SafeError } from "@/features/com/Api";
 import { notifyUnauthorized } from "@/utils/authSession";
+import {
+  trackGlobalApiRequest,
+  untrackGlobalApiError,
+  untrackGlobalApiResponse,
+} from "@shared/utils/apiLoading";
 import axios, { AxiosInstance } from "axios";
 
 /**
@@ -42,6 +47,12 @@ const https: AxiosInstance = axios.create({
   // 개발 환경처럼 API와 UI 오리진이 다를 때 쿠키 전송을 위해 필요
   withCredentials: true,
 });
+
+https.interceptors.request.use(trackGlobalApiRequest, untrackGlobalApiError);
+https.interceptors.response.use(
+  untrackGlobalApiResponse,
+  untrackGlobalApiError,
+);
 
 https.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {
