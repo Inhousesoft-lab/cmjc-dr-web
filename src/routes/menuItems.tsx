@@ -123,7 +123,7 @@ const menuItems: Menu[] = [
   },
   {
     path: "members",
-    label: "관리자",
+    label: "회원관리",
     menuType: "MENU",
     element: {
       ko: "MemberManagement",
