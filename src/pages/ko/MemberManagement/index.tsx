@@ -21,6 +21,7 @@ import type { DepartmentRow, MemberRow, MemberSearchValues } from "@/types/membe
 import { getLangFromPathname, langPath } from "@/routes/lang";
 import useNotifications from "@/hooks/useNotifications";
 import { getErrorMessage } from "@/utils/globalFunc";
+import AdminTabs from "@/components/common/AdminTabs";
 import DepartmentTreeDialog from "./DepartmentTreeDialog";
 import { listDefs } from "./col-def";
 
@@ -175,6 +176,8 @@ export default function MemberManagement() {
 
   return (
     <div>
+      <AdminTabs />
+
       <Stack
         component="form"
         direction="row"

@@ -1,0 +1,78 @@
+.article-management {
+  &__toolbar {
+    margin-bottom: 12px;
+  }
+
+  &__table {
+    border: 1px solid #9fa8b2;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+
+    .MuiTableCell-root {
+      border-color: #9fa8b2;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .MuiTableCell-head {
+      height: 42px;
+      padding: 10px 12px;
+      background: #f6f8f9;
+      color: #212124;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+      text-align: left;
+      word-break: keep-all;
+    }
+
+    .MuiTableCell-body {
+      height: 48px;
+      background: #fff;
+    }
+
+    .MuiOutlinedInput-root {
+      background: #fff;
+    }
+  }
+
+  &__row--system {
+    .MuiTableCell-body {
+      background: #eef4f7;
+    }
+
+    .MuiOutlinedInput-root.Mui-disabled {
+      background: #e4ecef;
+    }
+
+    .MuiInputBase-input.Mui-disabled {
+      -webkit-text-fill-color: #4b5a63;
+    }
+  }
+
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+  }
+
+  &__empty {
+    height: 120px;
+    color: var(--color-text-1);
+  }
+}
+
+@media (max-width: 700px) {
+  .article-management {
+    &__table {
+      .MuiTableCell-head {
+        font-size: 14px;
+      }
+
+      .MuiTableCell-root {
+        padding: 6px;
+      }
+    }
+  }
+}

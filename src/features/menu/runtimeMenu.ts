@@ -160,6 +160,7 @@ const appendHiddenStaticRoutes = (menus: Menu[]): Menu[] => {
 const DOC_CLASSIFICATION_PATH_PREFIX = normalizePath("docClassification");
 const DOC_DESTRUCTION_APPROVAL_PATH = normalizePath("destruction/appvList");
 const MEMBER_MANAGEMENT_PATH_PREFIX = normalizePath("members");
+const ARTICLE_MANAGEMENT_PATH_PREFIX = normalizePath("article");
 
 type ExcludedMenuRule = {
   path: string;
@@ -181,6 +182,10 @@ const getExcludedMenuRules = (user?: AuthUserLike | null) => {
         path: MEMBER_MANAGEMENT_PATH_PREFIX,
         includeChildren: true,
       },
+      {
+        path: ARTICLE_MANAGEMENT_PATH_PREFIX,
+        includeChildren: true,
+      },
     ];
   }
 
@@ -194,6 +199,10 @@ const getExcludedMenuRules = (user?: AuthUserLike | null) => {
     },
     {
       path: MEMBER_MANAGEMENT_PATH_PREFIX,
+      includeChildren: true,
+    },
+    {
+      path: ARTICLE_MANAGEMENT_PATH_PREFIX,
       includeChildren: true,
     },
   ];

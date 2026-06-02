@@ -13,6 +13,7 @@ import ExternalView from "@/pages/ko/ExternalView";
 import MemberManagement from "@/pages/ko/MemberManagement";
 import MemberForm from "@/pages/ko/MemberManagement/MemberForm";
 import PasswordChange from "@/pages/ko/PasswordChange";
+import ArticleManagement from "@/pages/ko/ArticleManagement";
 
 import DocDestructionReqList from "@/pages/ko/DocDestruction/DocDestructionReqList";
 import DocDestructionAppvList from "@/pages/ko/DocDestruction/DocDestructionAppvList";
@@ -34,6 +35,7 @@ export const componentMap = {
   MemberManagement,
   MemberForm,
   PasswordChange,
+  ArticleManagement,
   DocDestructionEntry,
   DocDestructionReqList,
   DocDestructionAppvList,

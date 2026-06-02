@@ -25,7 +25,7 @@ export default function SimpleHeader() {
     });
   }, [dispatch, lang, navigate]);
 
-  const onMemberManagement = React.useCallback(() => {
+  const onAdminManagement = React.useCallback(() => {
     navigate(langPath("members", lang));
   }, [lang, navigate]);
 
@@ -46,9 +46,9 @@ export default function SimpleHeader() {
               <button
                 type="button"
                 className="btn_member_manage"
-                onClick={onMemberManagement}
+                onClick={onAdminManagement}
               >
-                회원관리
+                관리자
               </button>
             ) : (
               <button

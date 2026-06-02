@@ -123,11 +123,21 @@ const menuItems: Menu[] = [
   },
   {
     path: "members",
-    label: "회원관리",
+    label: "관리자",
     menuType: "MENU",
     element: {
       ko: "MemberManagement",
       en: "MemberManagement",
+    },
+    menu: false,
+  },
+  {
+    path: "article/list",
+    label: "항목관리",
+    menuType: "MENU",
+    element: {
+      ko: "ArticleManagement",
+      en: "ArticleManagement",
     },
     menu: false,
   },
