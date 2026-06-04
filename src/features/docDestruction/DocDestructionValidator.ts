@@ -8,6 +8,15 @@ const numberField = z.preprocess((v) => {
   return Number.isFinite(n) ? n : 0;
 }, z.number());
 
+const customArticleSchema = z.looseObject({
+  customArticleId: stringField.optional().default(""),
+  eldocNo: stringField.optional().default(""),
+  articleId: stringField.optional().default(""),
+  articleNm: stringField.optional().default(""),
+  articleCn: stringField.optional().default("-"),
+  articleSeq: numberField.optional().default(0),
+});
+
 const addDateRangeIssue = (
   ctx: z.RefinementCtx,
   fromValue: string,
@@ -87,6 +96,7 @@ export const docDestructionDetailSchema = z.looseObject({
   dataTypeLabel: stringField.optional().default(""),
   addExpln: stringField.optional().default(""),
   rsn: stringField.optional().default(""),
+  customArticles: z.array(customArticleSchema).optional().default([]),
 });
 
 export const docDestructionSearchSchema = z

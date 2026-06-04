@@ -27,6 +27,9 @@ export default function DocDestructionDetail() {
   const detail = useAppSelector(selectDocDestructionDetail);
   const isLoading = useAppSelector(selectDocDestructionDetailLoading);
   const detailError = useAppSelector(selectDocDestructionDetailError);
+  const customArticles = Array.isArray(detail?.customArticles)
+    ? detail.customArticles
+    : [];
 
   React.useEffect(() => {
     if (!eldocNo) return;
@@ -162,6 +165,14 @@ export default function DocDestructionDetail() {
           <LabelCell>파기사유</LabelCell>
           <TableCell colSpan={3}>{showValue(detail?.rsn)}</TableCell>
         </TableRow>
+        {customArticles.map((article, index) => (
+          <TableRow key={`${article.articleId || "custom"}-${index}`}>
+            <LabelCell>
+              {showValue(article.articleNm || article.articleId || "추가항목")}
+            </LabelCell>
+            <TableCell colSpan={3}>{showValue(article.articleCn)}</TableCell>
+          </TableRow>
+        ))}
       </TableWrapper>
     </div>
   );
