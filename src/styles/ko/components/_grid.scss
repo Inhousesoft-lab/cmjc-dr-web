@@ -41,6 +41,8 @@
   word-break: keep-all;
   border-bottom: 1px solid #e7e7e7;
   min-height: 42px;
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
 }
@@ -49,6 +51,8 @@
   background: #fff;
   border-bottom: 1px solid #e7e7e7;
   min-height: 42px;
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
 }
@@ -65,7 +69,18 @@
 .table-view__value-cell .MuiTypography-root {
   margin: 0;
   display: block;
+  width: 100%;
+  min-width: 0;
   padding: 6px 10px;
+}
+
+.table-view__custom-value {
+  display: block;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 
 .table-view__label-cell--blank,

@@ -11,6 +11,19 @@ const numberField = z
   .optional()
   .default(0);
 
+const customArticleSchema = z.looseObject({
+  eldocNo: stringField.optional(),
+  articleId: stringField,
+  articleNm: stringField.optional(),
+  articleCn: stringField,
+  articleSeq: numberField,
+});
+
+const customArticleListSchema = z.preprocess(
+  (v) => (v == null ? [] : v),
+  z.array(customArticleSchema),
+);
+
 export const digitalDocRowSchema = z.looseObject({
   rowNo: numberField,
   docLclsfNo: stringField,
@@ -39,6 +52,7 @@ export const digitalDocRowSchema = z.looseObject({
   rgtrNm: stringField,
   mdfcnDt: stringField,
   mdfrId: stringField,
+  customArticles: customArticleListSchema,
 });
 
 export const digitalDocListSchema = z.looseObject({
@@ -153,6 +167,7 @@ export const digitalDocFormSchema = z
     endYmd: dateField,
     addExpln: optionalString,
     docClsfNo: optionalString,
+    customArticles: customArticleListSchema,
   })
   .superRefine((data, ctx) => {
     if (isDateRangeInvalid(data.clctYmd, data.endYmd)) {
@@ -180,6 +195,7 @@ export const digitalDocUpdateSchema = z
     clctYmd: dateField,
     endYmd: dateField,
     addExpln: optionalString,
+    customArticles: customArticleListSchema,
   })
   .superRefine((data, ctx) => {
     if (isDateRangeInvalid(data.clctYmd, data.endYmd)) {

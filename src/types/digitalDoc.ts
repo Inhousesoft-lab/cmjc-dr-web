@@ -40,6 +40,7 @@ export interface DigitalDoc {
   rgtrNm: string;
   mdfcnDt: string; // 수정일자
   mdfrId: string; // 수정자
+  customArticles?: DigitalDocCustomArticle[];
 }
 
 export interface DigitalDocUpdate {
@@ -52,6 +53,15 @@ export interface DigitalDocUpdate {
   clctYmd: string; // 수집일자
   endYmd: string; // 종료일자
   addExpln: string; // 비고
+  customArticles?: DigitalDocCustomArticle[];
+}
+
+export interface DigitalDocCustomArticle {
+  eldocNo?: string;
+  articleId: string;
+  articleNm?: string;
+  articleCn: string;
+  articleSeq?: number;
 }
 
 export interface DigitalDocFirstPageOcrResult {

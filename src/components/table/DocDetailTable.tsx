@@ -3,7 +3,21 @@ import { Grid, TextField } from "@mui/material";
 import GridField from "../common/GridField";
 import UploadFiles from "../file/UploadFiles";
 import { formatDateDash } from "@/utils/formater";
-import type { DigitalDoc, DigitalDocHistory } from "@/types/digitalDoc";
+import type {
+  DigitalDoc,
+  DigitalDocCustomArticle,
+  DigitalDocHistory,
+} from "@/types/digitalDoc";
+
+const getCustomArticles = (
+  detail: DigitalDoc | DigitalDocHistory | null,
+): DigitalDocCustomArticle[] => {
+  if (!detail || !("customArticles" in detail)) {
+    return [];
+  }
+
+  return detail.customArticles ?? [];
+};
 
 interface DocDetailTableProps {
   eldocNo: string;
@@ -47,6 +61,7 @@ export default function DocDetailTable({
   );
   const downloadReasonLabel = showDownloadReason ? "다운로드 사유" : "";
   const downloadReasonValue = showDownloadReason ? detail?.rsn || "-" : "";
+  const customArticles = getCustomArticles(detail);
 
   return (
     <Grid container spacing={0} className="table-view-grid">
@@ -97,13 +112,13 @@ export default function DocDetailTable({
         label="종료일자"
         value={editable && endYmdContent ? endYmdContent : endDateLabel}
       />
-      <GridField
-        item={6}
-        label={downloadReasonLabel}
-        value={downloadReasonValue}
-        blankLabel={!showDownloadReason}
-        blank={!showDownloadReason}
-      />
+      {showDownloadReason && (
+        <GridField
+          item={12}
+          label={downloadReasonLabel}
+          value={downloadReasonValue}
+        />
+      )}
       <GridField
         item={12}
         label="비고"
@@ -133,6 +148,18 @@ export default function DocDetailTable({
           />
         </>
       )}
+      {customArticles.map((article, index) => (
+        <GridField
+          key={`${article.articleId || "custom"}-${index}`}
+          item={12}
+          label={article.articleNm || article.articleId || "추가항목"}
+          value={
+            <span className="table-view__custom-value">
+              {article.articleCn ?? ""}
+            </span>
+          }
+        />
+      ))}
     </Grid>
   );
 }

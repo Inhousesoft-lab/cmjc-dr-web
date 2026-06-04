@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   FormLabel,
   IconButton,
   Stack,
@@ -36,6 +37,7 @@ import {
   selectDigitalDocDetailError,
   selectDigitalDocDetailLoading,
   selectDigitalDocFirstPageOcrError,
+  selectDigitalDocFirstPageOcrLoading,
   selectDigitalDocFirstPageOcrResult,
   selectDigitalDocSaveError,
   selectDigitalDocSaving,
@@ -45,13 +47,68 @@ import useNotifications from "@/hooks/useNotifications";
 import URL from "@/constants/url";
 import { resetDigitalDocSaveState } from "@/features/digitalDoc/DigitalDocSlice";
 import { getLangFromPathname, langPath } from "@/routes/lang";
+import https from "@/api/axiosInstance";
+import { selectArticleFormLabelsApiPath } from "@/api/article/ArticleApiPaths";
 import type {
+  DigitalDocCustomArticle,
   DigitalDocFirstPageOcrResult,
   SearchValues,
 } from "@/types/digitalDoc";
 
 type FormValues = Omit<DigitalDocCreatePayload, "uploadFiles">;
 type FieldErrors = Partial<Record<keyof FormValues, string>>;
+type TableLabelKey =
+  | "docClsf"
+  | "docNo"
+  | "docTtl"
+  | "clctYmd"
+  | "endYmd"
+  | "addExpln";
+
+type ArticleLabelRow = {
+  articleId?: string;
+  article_id?: string;
+  articleNo?: string;
+  article_no?: string;
+  articleNm?: string;
+  article_nm?: string;
+  articleSeq?: number;
+  article_seq?: number;
+  systemYn?: string;
+  system_yn?: string;
+  useYn?: string;
+  use_yn?: string;
+};
+
+type TableLabels = Record<TableLabelKey, string>;
+type DynamicArticleField = {
+  articleId: string;
+  label: string;
+  value: string;
+};
+
+type ArticleFormLabels = {
+  tableLabels: TableLabels;
+  dynamicFields: DynamicArticleField[];
+};
+
+const TABLE_LABEL_KEYS: TableLabelKey[] = [
+  "docClsf",
+  "docNo",
+  "docTtl",
+  "clctYmd",
+  "endYmd",
+  "addExpln",
+];
+
+const DEFAULT_TABLE_LABELS: TableLabels = {
+  docClsf: "문서분류",
+  docNo: "문서번호",
+  docTtl: "문서제목",
+  clctYmd: "수집일자",
+  endYmd: "종료일자",
+  addExpln: "비고",
+};
 
 const INITIAL_FORM_VALUES: FormValues = {
   docLclsfNo: "",
@@ -68,6 +125,90 @@ const INITIAL_FORM_VALUES: FormValues = {
 const toDatePickerValue = (value: unknown) => {
   const digits = String(value ?? "").replace(/[^0-9]/g, "");
   return digits.length >= 8 ? digits.slice(0, 8) : "";
+};
+
+const normalizeLabel = (value: string) =>
+  value.replace(/\s/g, "").toLowerCase();
+
+const getArticleLabelName = (row: ArticleLabelRow) =>
+  String(row.articleNm ?? row.article_nm ?? "").trim();
+
+const getArticleLabelId = (row: ArticleLabelRow, index: number) =>
+  String(
+    row.articleId ??
+      row.article_id ??
+      row.articleNo ??
+      row.article_no ??
+      `article-${index}`,
+  ).trim();
+
+const getArticleLabelSeq = (row: ArticleLabelRow) => {
+  const seq = Number(row.articleSeq ?? row.article_seq ?? 0);
+  return Number.isFinite(seq) ? seq : 0;
+};
+
+const getArticleSystemYn = (row: ArticleLabelRow) =>
+  String(row.systemYn ?? row.system_yn ?? "N").trim().toUpperCase() === "Y"
+    ? "Y"
+    : "N";
+
+const getArticleUseYn = (row: ArticleLabelRow) =>
+  String(row.useYn ?? row.use_yn ?? "Y").trim().toUpperCase() === "N"
+    ? "N"
+    : "Y";
+
+const extractArticleLabelRows = (payload: unknown): ArticleLabelRow[] => {
+  if (Array.isArray(payload)) return payload as ArticleLabelRow[];
+
+  if (payload && typeof payload === "object") {
+    const data = payload as Record<string, unknown>;
+    if (Array.isArray(data.data)) return data.data as ArticleLabelRow[];
+    if (Array.isArray(data.list)) return data.list as ArticleLabelRow[];
+    if (Array.isArray(data.rows)) return data.rows as ArticleLabelRow[];
+  }
+
+  return [];
+};
+
+const buildArticleFormLabels = (rows: ArticleLabelRow[]): ArticleFormLabels => {
+  const labels = rows
+    .filter((row) => getArticleUseYn(row) === "Y")
+    .map((row, index) => ({
+      articleId: getArticleLabelId(row, index),
+      name: getArticleLabelName(row),
+      seq: getArticleLabelSeq(row),
+      systemYn: getArticleSystemYn(row),
+      index,
+    }))
+    .filter(({ name }) => !!name && normalizeLabel(name) !== "파일업로드")
+    .sort(
+      (a, b) =>
+        (a.systemYn === "Y" ? 0 : 1) - (b.systemYn === "Y" ? 0 : 1) ||
+        a.seq - b.seq ||
+        a.index - b.index,
+    );
+
+  const systemLabels = labels.filter((label) => label.systemYn === "Y");
+  const dynamicFields = labels
+    .filter((label) => label.systemYn !== "Y")
+    .map((label) => ({
+      articleId: label.articleId,
+      label: label.name,
+      value: "",
+    }));
+
+  const tableLabels = TABLE_LABEL_KEYS.reduce<TableLabels>(
+    (acc, key, index) => ({
+      ...acc,
+      [key]: systemLabels[index]?.name || DEFAULT_TABLE_LABELS[key],
+    }),
+    { ...DEFAULT_TABLE_LABELS },
+  );
+
+  return {
+    tableLabels,
+    dynamicFields,
+  };
 };
 
 function formatFileSize(bytes: number) {
@@ -163,9 +304,16 @@ const normalizeOcrDate = (value: string) => {
 
 const getFirstPageOcrFormValues = (
   result: DigitalDocFirstPageOcrResult,
+  tableLabels: TableLabels,
 ): Partial<FormValues> => {
-  const docNo = getOcrFieldValue(result.fields, ["문서번호", "docNo", "doc_no"]);
+  const docNo = getOcrFieldValue(result.fields, [
+    tableLabels.docNo,
+    "문서번호",
+    "docNo",
+    "doc_no",
+  ]);
   const docTtl = getOcrFieldValue(result.fields, [
+    tableLabels.docTtl,
     "문서제목",
     "문서명",
     "docTtl",
@@ -174,6 +322,7 @@ const getFirstPageOcrFormValues = (
   ]);
   const clctYmd = normalizeOcrDate(
     getOcrFieldValue(result.fields, [
+      tableLabels.clctYmd,
       "수집일자",
       "수집일",
       "clctYmd",
@@ -183,6 +332,7 @@ const getFirstPageOcrFormValues = (
   );
   const endYmd = normalizeOcrDate(
     getOcrFieldValue(result.fields, [
+      tableLabels.endYmd,
       "종료일자",
       "종료일",
       "endYmd",
@@ -190,6 +340,7 @@ const getFirstPageOcrFormValues = (
     ]),
   );
   const addExpln = getOcrFieldValue(result.fields, [
+    tableLabels.addExpln,
     "비고",
     "addExpln",
     "remark",
@@ -208,6 +359,25 @@ const getFirstPageOcrFormValues = (
   ) as Partial<FormValues>;
 };
 
+const getFirstPageOcrDynamicArticleValues = (
+  result: DigitalDocFirstPageOcrResult,
+  fields: DynamicArticleField[],
+) => {
+  const values = new Map<string, string>();
+
+  fields.forEach((field) => {
+    const value = getOcrFieldValue(result.fields, [field.label, field.articleId]);
+    if (value) {
+      values.set(field.articleId, value);
+    }
+  });
+
+  return values;
+};
+
+const getUploadFileKey = (file: File) =>
+  `${file.name}:${file.size}:${file.lastModified}`;
+
 export default function DigitalDocForm() {
   const { eldocNo = "" } = useParams<{ eldocNo?: string }>();
   const location = useLocation();
@@ -221,6 +391,7 @@ export default function DigitalDocForm() {
   const detailLoading = useAppSelector(selectDigitalDocDetailLoading);
   const detailError = useAppSelector(selectDigitalDocDetailError);
   const firstPageOcrResult = useAppSelector(selectDigitalDocFirstPageOcrResult);
+  const firstPageOcrLoading = useAppSelector(selectDigitalDocFirstPageOcrLoading);
   const firstPageOcrError = useAppSelector(selectDigitalDocFirstPageOcrError);
 
   const isModify = !!eldocNo;
@@ -235,14 +406,59 @@ export default function DigitalDocForm() {
   const [values, setValues] = React.useState<FormValues>(INITIAL_FORM_VALUES);
   const [errors, setErrors] = React.useState<FieldErrors>({});
   const [uploadFiles, setUploadFiles] = React.useState<File[]>([]);
+  const [tableLabels, setTableLabels] =
+    React.useState<TableLabels>(DEFAULT_TABLE_LABELS);
+  const [dynamicArticleFields, setDynamicArticleFields] = React.useState<
+    DynamicArticleField[]
+  >([]);
   const [isFileDragging, setIsFileDragging] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const fileDragDepthRef = React.useRef(0);
+  const customArticleHydratedKeyRef = React.useRef("");
+  const lastOcrFileKeyRef = React.useRef("");
+  const appliedOcrKeyRef = React.useRef("");
 
   const { lclsfList, mclsfList, sclsfList } = useDocClsfOptions(
     values.docLclsfNo,
     values.docMclsfNo,
   );
+  const dynamicArticleLabelKey = React.useMemo(
+    () =>
+      dynamicArticleFields
+        .map((field) => `${field.articleId}:${field.label}`)
+        .join("|"),
+    [dynamicArticleFields],
+  );
+
+  React.useEffect(() => {
+    let active = true;
+
+    https
+      .get(selectArticleFormLabelsApiPath())
+      .then((res) => {
+        if (!active) return;
+        const payload = (res as any)?.data?.data ?? (res as any)?.data ?? [];
+        const labels = buildArticleFormLabels(extractArticleLabelRows(payload));
+        setTableLabels(labels.tableLabels);
+        setDynamicArticleFields((prev) =>
+          labels.dynamicFields.map((field) => ({
+            ...field,
+            value:
+              prev.find((saved) => saved.articleId === field.articleId)
+                ?.value ?? "",
+          })),
+        );
+      })
+      .catch(() => {
+        if (!active) return;
+        setTableLabels(DEFAULT_TABLE_LABELS);
+        setDynamicArticleFields([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   React.useEffect(() => {
     if (!isModify || !eldocNo) return;
@@ -282,20 +498,47 @@ export default function DigitalDocForm() {
       return;
     }
 
-    const nextValues = getFirstPageOcrFormValues(firstPageOcrResult);
+    const applyKey = JSON.stringify({
+      filename: firstPageOcrResult.filename ?? "",
+      fields: firstPageOcrResult.fields ?? {},
+      tableLabels,
+      dynamicArticleLabelKey,
+    });
+    if (appliedOcrKeyRef.current === applyKey) {
+      return;
+    }
+
+    const nextValues = getFirstPageOcrFormValues(firstPageOcrResult, tableLabels);
+    const nextDynamicValues = getFirstPageOcrDynamicArticleValues(
+      firstPageOcrResult,
+      dynamicArticleFields,
+    );
     const populatedFields = Object.keys(nextValues) as (keyof FormValues)[];
 
-    if (populatedFields.length === 0) return;
+    if (populatedFields.length === 0 && nextDynamicValues.size === 0) return;
+    appliedOcrKeyRef.current = applyKey;
 
-    setValues((prev) => ({ ...prev, ...nextValues }));
-    setErrors((prev) => {
-      const next = { ...prev };
-      populatedFields.forEach((key) => {
-        next[key] = undefined;
+    if (populatedFields.length > 0) {
+      setValues((prev) => ({ ...prev, ...nextValues }));
+      setErrors((prev) => {
+        const next = { ...prev };
+        populatedFields.forEach((key) => {
+          next[key] = undefined;
+        });
+        return next;
       });
-      return next;
-    });
-  }, [firstPageOcrResult]);
+    }
+
+    if (nextDynamicValues.size > 0) {
+      setDynamicArticleFields((prev) =>
+        prev.map((field) =>
+          nextDynamicValues.has(field.articleId)
+            ? { ...field, value: nextDynamicValues.get(field.articleId) ?? "" }
+            : field,
+        ),
+      );
+    }
+  }, [dynamicArticleFields, dynamicArticleLabelKey, firstPageOcrResult, tableLabels]);
 
   React.useEffect(() => {
     return () => {
@@ -319,7 +562,36 @@ export default function DigitalDocForm() {
     });
     setUploadFiles([]);
     setErrors({});
+    customArticleHydratedKeyRef.current = "";
   }, [detail, eldocNo, isModify]);
+
+  React.useEffect(() => {
+    if (
+      !isModify ||
+      !detail ||
+      detail.eldocNo !== eldocNo ||
+      dynamicArticleFields.length === 0
+    ) {
+      return;
+    }
+
+    const hydrateKey = `${detail.eldocNo}:${dynamicArticleFields
+      .map((field) => field.articleId)
+      .join(",")}`;
+    if (customArticleHydratedKeyRef.current === hydrateKey) {
+      return;
+    }
+
+    setDynamicArticleFields((prev) =>
+      prev.map((field) => {
+        const saved = detail.customArticles?.find(
+          (article) => article.articleId === field.articleId,
+        );
+        return saved ? { ...field, value: saved.articleCn ?? "" } : field;
+      }),
+    );
+    customArticleHydratedKeyRef.current = hydrateKey;
+  }, [detail, dynamicArticleFields, eldocNo, isModify]);
 
   const handleFieldChange = <K extends keyof FormValues>(
     key: K,
@@ -329,14 +601,39 @@ export default function DigitalDocForm() {
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  const handleDynamicArticleFieldChange = (
+    articleId: string,
+    value: string,
+  ) => {
+    setDynamicArticleFields((prev) =>
+      prev.map((field) =>
+        field.articleId === articleId ? { ...field, value } : field,
+      ),
+    );
+  };
+
+  const getCustomArticlePayload = (): DigitalDocCustomArticle[] =>
+    dynamicArticleFields
+      .map((field) => ({
+        articleId: field.articleId,
+        articleNm: field.label,
+        articleCn: field.value.trim(),
+      }))
+      .filter((field) => field.articleId && field.articleCn);
+
   const appendUploadFiles = (files: FileList | File[] | null) => {
     const selectedFiles = Array.from(files ?? []).filter(
       (file) => file instanceof File,
     );
 
     if (selectedFiles.length > 0) {
-      if (uploadFiles.length === 0 && isPdfFile(selectedFiles[0])) {
-        dispatch(extractDigitalDocFirstPageOcr(selectedFiles[0]));
+      const firstPdf = selectedFiles.find(isPdfFile);
+      if (firstPdf) {
+        const ocrFileKey = getUploadFileKey(firstPdf);
+        if (lastOcrFileKeyRef.current !== ocrFileKey) {
+          lastOcrFileKeyRef.current = ocrFileKey;
+          dispatch(extractDigitalDocFirstPageOcr(firstPdf));
+        }
       }
       setUploadFiles((prev) => [...prev, ...selectedFiles]);
     }
@@ -412,6 +709,7 @@ export default function DigitalDocForm() {
     const formPayload: FormValues = {
       ...values,
       docClsfNo: values.docSclsfNo || values.docMclsfNo || values.docLclsfNo,
+      customArticles: getCustomArticlePayload(),
     };
 
     const validated = digitalDocFormValidator(formPayload);
@@ -440,6 +738,7 @@ export default function DigitalDocForm() {
             clctYmd: formPayload.clctYmd,
             endYmd: formPayload.endYmd,
             addExpln: formPayload.addExpln,
+            customArticles: formPayload.customArticles,
             uploadFiles,
           }),
         ).unwrap();
@@ -497,6 +796,7 @@ export default function DigitalDocForm() {
               <UploadFiles
                 taskSeTrgtId={eldocNo}
                 readOnly
+                allowDelete
                 requireDownloadReason
               />
             </Box>
@@ -550,6 +850,14 @@ export default function DigitalDocForm() {
             <Typography variant="body2" color="text.secondary">
               여러 파일을 선택할 수 있습니다
             </Typography>
+            {firstPageOcrLoading && (
+              <Stack direction="row" spacing={1} alignItems="center" mt={1}>
+                <CircularProgress size={16} />
+                <Typography variant="caption" color="text.secondary">
+                  OCR 추출 중...
+                </Typography>
+              </Stack>
+            )}
             {uploadFiles.length > 0 && (
               <Typography variant="caption" color="text.secondary" mt={0.75}>
                 {uploadFiles.length}개 파일
@@ -628,7 +936,7 @@ export default function DigitalDocForm() {
       >
         {fileUploadRow}
         <TableRow>
-          <LabelCell required>문서분류</LabelCell>
+          <LabelCell required>{tableLabels.docClsf}</LabelCell>
           <TableCell colSpan={3}>
             <Stack direction="row" spacing={1}>
               <Stack spacing={0.5} width="100%">
@@ -686,7 +994,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell required>문서번호</LabelCell>
+          <LabelCell required>{tableLabels.docNo}</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -694,7 +1002,7 @@ export default function DigitalDocForm() {
               name="docNo"
               value={values.docNo}
               onChange={(e) => handleFieldChange("docNo", e.target.value)}
-              placeholder="문서번호"
+              placeholder={tableLabels.docNo}
               size="small"
               error={!!errors.docNo}
               helperText={errors.docNo || ""}
@@ -702,7 +1010,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell required>문서제목</LabelCell>
+          <LabelCell required>{tableLabels.docTtl}</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               hiddenLabel
@@ -711,7 +1019,7 @@ export default function DigitalDocForm() {
               name="docTtl"
               value={values.docTtl}
               onChange={(e) => handleFieldChange("docTtl", e.target.value)}
-              placeholder="문서제목"
+              placeholder={tableLabels.docTtl}
               size="small"
               error={!!errors.docTtl}
               helperText={errors.docTtl || ""}
@@ -719,7 +1027,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell required>수집일자</LabelCell>
+          <LabelCell required>{tableLabels.clctYmd}</LabelCell>
           <TableCell>
             <MuiDatePickerFt
               name="clctYmd"
@@ -729,7 +1037,7 @@ export default function DigitalDocForm() {
               helperText={errors.clctYmd || ""}
             />
           </TableCell>
-          <LabelCell required>종료일자</LabelCell>
+          <LabelCell required>{tableLabels.endYmd}</LabelCell>
           <TableCell>
             <MuiDatePickerFt
               name="endYmd"
@@ -741,7 +1049,7 @@ export default function DigitalDocForm() {
           </TableCell>
         </TableRow>
         <TableRow>
-          <LabelCell>비고</LabelCell>
+          <LabelCell>{tableLabels.addExpln}</LabelCell>
           <TableCell colSpan={3}>
             <TextField
               fullWidth
@@ -749,13 +1057,34 @@ export default function DigitalDocForm() {
               name="addExpln"
               value={values.addExpln}
               onChange={(e) => handleFieldChange("addExpln", e.target.value)}
-              placeholder="비고"
+              placeholder={tableLabels.addExpln}
               multiline
               minRows={3}
               size="small"
             />
           </TableCell>
         </TableRow>
+        {dynamicArticleFields.map((field) => (
+          <TableRow key={field.articleId}>
+            <LabelCell>{field.label}</LabelCell>
+            <TableCell colSpan={3}>
+              <TextField
+                fullWidth
+                id={`article-${field.articleId}`}
+                name={`article-${field.articleId}`}
+                value={field.value}
+                onChange={(e) =>
+                  handleDynamicArticleFieldChange(
+                    field.articleId,
+                    e.target.value,
+                  )
+                }
+                placeholder={field.label}
+                size="small"
+              />
+            </TableCell>
+          </TableRow>
+        ))}
       </TableWrapper>
 
       <Stack direction="row" spacing={1} justifyContent="flex-end" mt={2}>

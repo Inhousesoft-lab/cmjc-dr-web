@@ -31,6 +31,7 @@ import type {
   DigitalAuthrtHistory,
   DigitalDoc,
   DigitalDocCreateResult,
+  DigitalDocCustomArticle,
   DigitalDocFirstPageOcrResult,
   DigitalDocHistory,
   SearchValues,
@@ -282,6 +283,7 @@ export type DigitalDocCreatePayload = {
   clctYmd: string;
   endYmd: string;
   addExpln: string;
+  customArticles?: DigitalDocCustomArticle[];
   uploadFiles?: File[];
 };
 
@@ -309,8 +311,8 @@ export const createDigitalDoc = createAsyncThunk<
   DigitalDocCreatePayload,
   { rejectValue: string }
 >("digitalDoc/create", async (payload, { rejectWithValue }) => {
-  const { uploadFiles = [], ...formPayload } = payload;
-  const validated = digitalDocFormValidator(formPayload);
+  const { uploadFiles = [], customArticles = [], ...formPayload } = payload;
+  const validated = digitalDocFormValidator({ ...formPayload, customArticles });
   if (!validated.success) {
     const firstIssue = validated.issues[0];
     return rejectWithValue(
@@ -366,6 +368,7 @@ export type DigitalDocUpdatePayload = {
   clctYmd: string;
   endYmd: string;
   addExpln: string;
+  customArticles?: DigitalDocCustomArticle[];
   uploadFiles?: File[];
 };
 
@@ -374,8 +377,8 @@ export const updateDigitalDoc = createAsyncThunk<
   DigitalDocUpdatePayload,
   { rejectValue: string }
 >("digitalDoc/update", async (payload, { rejectWithValue }) => {
-  const { uploadFiles = [], ...formPayload } = payload;
-  const validated = digitalDocUpdateValidator(formPayload);
+  const { uploadFiles = [], customArticles = [], ...formPayload } = payload;
+  const validated = digitalDocUpdateValidator({ ...formPayload, customArticles });
   if (!validated.success) {
     const firstIssue = validated.issues[0];
     return rejectWithValue(

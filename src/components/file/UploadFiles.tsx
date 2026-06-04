@@ -40,6 +40,7 @@ interface FileProps {
   initialGroupId?: string;
   setGroupId?: (id: string) => void;
   readOnly?: boolean;
+  allowDelete?: boolean;
   requireDownloadReason?: boolean;
 }
 
@@ -63,6 +64,7 @@ export default function UploadFiles({
   initialGroupId,
   setGroupId,
   readOnly = false,
+  allowDelete = false,
   requireDownloadReason = false,
 }: FileProps) {
   const [fileList, setFileList] = useState<FileWithId[]>([]);
@@ -103,6 +105,7 @@ export default function UploadFiles({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const dragDepthRef = useRef(0);
+  const canDelete = !readOnly || allowDelete;
 
   const showSnackbar = (
     message: string,
@@ -422,7 +425,7 @@ export default function UploadFiles({
 
   // 개별 파일 삭제 액션
   const fileRemoveOnly = async (atchFileId: string) => {
-    if (readOnly) return;
+    if (!canDelete) return;
     if (window.confirm("파일을 삭제하시겠습니까?")) {
       try {
         const responses = await FileApi.fileDelete({
@@ -451,7 +454,7 @@ export default function UploadFiles({
 
   // 선택된 파일 삭제 ==============================================
   const handleDeleteSelected = async () => {
-    if (readOnly) return;
+    if (!canDelete) return;
     const deleteList = savedFileList
       .filter((f) => f.check)
       .map((d) => d.atchFileId)
@@ -626,7 +629,7 @@ export default function UploadFiles({
 
       {savedFileList.length > 0 && (
         <Box sx={{ mt: 2 }}>
-          {!readOnly && (
+          {canDelete && (
             <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
               <Button
                 variant="outlined"
@@ -665,7 +668,7 @@ export default function UploadFiles({
                 <ListItem
                   key={file.atchFileId}
                   secondaryAction={
-                    readOnly ? undefined : (
+                    canDelete ? (
                       <IconButton
                         edge="end"
                         disabled={
@@ -678,10 +681,10 @@ export default function UploadFiles({
                       >
                         <DeleteIcon />
                       </IconButton>
-                    )
+                    ) : undefined
                   }
                 >
-                  {!readOnly && (
+                  {canDelete && (
                     <MuiCheckbox
                       id={file.atchFileId ?? ""}
                       checked={file.check}
